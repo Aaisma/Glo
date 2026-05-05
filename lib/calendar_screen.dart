@@ -98,19 +98,24 @@ class CalendarScreen extends StatelessWidget {
                               Text(
                                 day["en"]!,
                                 style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 12, // smaller English date
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Text(
                                 day["np"]!,
                                 style: const TextStyle(
-                                    fontSize: 10, color: Colors.black54),
+                                  fontSize: 9, // smaller Nepali date
+                                  color: Colors.black54,
+                                ),
                               ),
                               if (day.containsKey("marker"))
                                 Text(
                                   day["marker"]!,
                                   style: const TextStyle(
-                                      fontSize: 9, color: Colors.red),
+                                    fontSize: 8, // smaller marker
+                                    color: Colors.red,
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
                             ],
@@ -135,9 +140,10 @@ class CalendarScreen extends StatelessWidget {
                   const Text(
                     "Today's Notes",
                     style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.pink),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.pink,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   // Editable text box
