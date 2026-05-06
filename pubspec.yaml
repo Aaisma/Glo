@@ -64,6 +64,7 @@ flutter:
     
     - assets/images/background.png
     - assets/images/journal.png
+    - assets/images/flower.png
     - assets/images/watertracker.png
     - assets/images/medication.png
     - assets/images/acnetracker.png
