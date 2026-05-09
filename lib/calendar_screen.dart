@@ -98,14 +98,14 @@ class CalendarScreen extends StatelessWidget {
                               Text(
                                 day["en"]!,
                                 style: const TextStyle(
-                                  fontSize: 12, // smaller English date
+                                  fontSize: 15, // smaller English date
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 day["np"]!,
                                 style: const TextStyle(
-                                  fontSize: 9, // smaller Nepali date
+                                  fontSize: 13, // smaller Nepali date
                                   color: Colors.black54,
                                 ),
                               ),
