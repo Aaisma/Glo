@@ -1,5 +1,3 @@
-//Skeleton with imports. Change as necessary
-
 import 'package:flutter/material.dart';
 import 'package:nepali_date_picker/nepali_date_picker.dart';
 import 'package:nepali_utils/nepali_utils.dart';
@@ -12,22 +10,20 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  NepaliDateTime? _selectedDate;
+  NepaliDateTime? _selectedDateTime;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Nepali Calendar"),
-      ),
+      appBar: AppBar(title: const Text("Nepali Calendar")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Show selected date
             Text(
-              _selectedDate != null
-                  ? NepaliDateFormat("yyyy-MM-dd").format(_selectedDate!)
+              _selectedDateTime != null
+                  ? NepaliDateFormat("yyyy-MM-dd").format(_selectedDateTime!)
                   : "No date selected",
               style: const TextStyle(fontSize: 18),
             ),
@@ -36,17 +32,13 @@ class _CalendarPageState extends State<CalendarPage> {
             // Button to open Nepali date picker
             ElevatedButton(
               onPressed: () async {
-                final picked = await showMaterialDatePicker(
+                _selectedDateTime = await showNepaliDatePicker(
                   context: context,
                   initialDate: NepaliDateTime.now(),
                   firstDate: NepaliDateTime(2000),
                   lastDate: NepaliDateTime(2090),
                 );
-                if (picked != null) {
-                  setState(() {
-                    _selectedDate = picked;
-                  });
-                }
+                setState((){});
               },
               child: const Text("Pick Nepali Date"),
             ),
