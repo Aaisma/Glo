@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'calendar_screen.dart'; // make sure this file is inside lib/
+import 'calendar_screen.dart'; // your calendar UI
+import 'register.dart'; // your register UI
 
 void main() {
   runApp(const MyApp());
@@ -12,11 +13,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Calendar App',
+      title: 'Glo App',
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: CalendarScreen(),
+      // Start with Register screen
+      home: const RegisterScreen(),
     );
   }
 }
