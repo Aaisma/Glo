@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'calendar_screen.dart'; // import your calendar screen
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -75,7 +74,7 @@ class RegisterScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    // Register button
+                    // Register button (no navigation, just UI feedback)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -87,11 +86,10 @@ class RegisterScreen extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {
-                          // Navigate to CalendarScreen when Register is pressed
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CalendarScreen(),
+                          // For now, just show feedback
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Register button pressed"),
                             ),
                           );
                         },
