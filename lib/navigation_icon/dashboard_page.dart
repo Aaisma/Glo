@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:glo/navigation_icon/profile_page.dart';
 
-import '../../components/dashboard_card.dart';
-import '../../components/top_navigation.dart';
-import '../../components/bottom_navigation.dart';
+import '../../../components/dashboard_card.dart';
+import '../../../components/top_navigation.dart';
+import '../../../components/bottom_navigation.dart';
 
 // Navigation pages
-import 'calender_page.dart';
+import 'calendar_page.dart';
+import 'notification_page.dart';
 import 'notification_page.dart';
 import 'profile_page.dart';
 import 'insight_page.dart';
 import 'history_page.dart';
 
 // Wellness pages
-import '../../dashboard_card/log_symptom_page.dart';
-import '../../dashboard_card/ovulation_page.dart';
+import '../../../dashboard_card/log_symptom_page.dart';
+import '../../../dashboard_card/ovulation_page.dart';
 
 // Card pages
-import '../../cards/daily_journal_page.dart';
-import '../../cards/water_tracker_page.dart';
-import '../../cards/medication_page.dart';
-import '../../cards/skin_tracker_page.dart';
-import '../../cards/skin_derma_page.dart';
-import '../../cards/sleep_stress_page.dart';
+import '../../../cards/daily_journal_page.dart';
+import '../../../cards/water_tracker_page.dart';
+import '../../../cards/medication_page.dart';
+import '../../../cards/skin_tracker_page.dart';
+import '../../../cards/skin_derma_page.dart';
+import '../../../cards/sleep_stress_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -268,216 +270,6 @@ class DashboardHome extends StatelessWidget {
               const SizedBox(height: 20),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-
-import 'dart:async';
-import 'package:ai38ai/components/login_card.dart';
-import 'package:ai38ai/register_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  bool visibility = false;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: Colors.white),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                "Sign In",
-                style: TextStyle(
-                  color: Color(0XFF0b4096),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                "Lorem Epsum This is login page, Lorem Epsum This is login page",
-                style: TextStyle(color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: LoginCard("assets/images/faceebook.png", "Facebook"),
-                  ),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: LoginCard("assets/images/google.png", "Google"),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      color: Colors.grey.shade300,
-                      thickness: 2,
-                      height: 3,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text("OR"),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      color: Colors.grey.shade300,
-                      thickness: 2,
-                      height: 3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            TextFormField(
-              controller: emailController,
-              // maxLines: 5,
-              validator: (value) {
-                if (value == null) {
-                  return "email can't be null";
-                }
-                return null;
-              },
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email),
-                // suffixIcon: Icon(Icons.visibility),
-                hint: Text("abc@gmail.com"),
-                // label: Text("Email"),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-              ),
-            ),
-            SizedBox(height: 15),
-            TextFormField(
-              controller: passwordController,
-              obscureText: visibility,
-              // maxLines: 5,
-              validator: (value) {
-                if (value == null) {
-                  return "password can't be null";
-                }
-                return null;
-              },
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.password),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      visibility = !visibility;
-                    });
-                  },
-                  icon: Icon(
-                    visibility == true
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                ),
-                hint: Text("********"),
-                // label: Text("Email"),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-              ),
-            ),
-            SizedBox(height: 15),
-            Container(
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    "Forget Password?",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () async {
-                  final SharedPreferences prefs =
-                  await SharedPreferences.getInstance();
-                  final String? email = prefs.getString('email');
-                  final String? password = prefs.getString('password');
-                  if(email == emailController.text && password == passwordController.text){
-                    Fluttertoast.showToast(
-                      msg: "Login successfully",
-                    );
-                  }else{
-                    Fluttertoast.showToast(
-                      msg: "Invalid login",
-                    );
-                  }
-                  // String -> required
-                  // String? -> nullable
-                },
-                child: Text("Login"),
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Text("Don't have account?"),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => RegisterScreen()),
-                    );
-                  },
-                  child: Text("Sign up", style: TextStyle(color: Colors.blue)),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
