@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../authentication/register.dart';
+import '../authentication/login_screen.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});

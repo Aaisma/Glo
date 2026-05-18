@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:glo/navigation_icon/profile_page.dart';
 
 import '../../../components/dashboard_card.dart';
 import '../../../components/top_navigation.dart';
 import '../../../components/bottom_navigation.dart';
 
 // Navigation pages
-import 'calendar_page.dart';
-import 'notification_page.dart';
-import 'notification_page.dart';
-import 'profile_page.dart';
+import 'glo_profile.dart';
 import 'insight_page.dart';
 import 'history_page.dart';
 
@@ -39,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DashboardHome(),
     const InsightsPage(),
     const HistoryPage(),
-    const ProfilePage(),
+    const GloProfileScreen(),
   ];
 
   void _onNavTap(int index) {

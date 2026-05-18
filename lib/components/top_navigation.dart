@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:glo/navigation_icon/calendar_page.dart';
+import 'package:glo/navigation_icon/calendar_screen.dart';
 import 'package:glo/navigation_icon/notification_page.dart';
 
 class TopNavigation extends StatelessWidget {
-  const TopNavigation({Key? key}) : super(key: key);
+  const TopNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class TopNavigation extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CalenderPage()),
+                    MaterialPageRoute(builder: (_) => CalendarScreen()),
                   );
                 },
               ),
