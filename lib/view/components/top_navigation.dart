@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:glo/navigation_icon/calendar_screen.dart';
-import 'package:glo/navigation_icon/notification_page.dart';
+import 'package:glo/view/navigation_icon/calendar_screen.dart';
+import 'package:glo/view/navigation_icon/notification_page.dart';
 
 class TopNavigation extends StatelessWidget {
   const TopNavigation({super.key});

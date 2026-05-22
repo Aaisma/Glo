@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../components/dashboard_card.dart';
-import '../../../components/top_navigation.dart';
-import '../../../components/bottom_navigation.dart';
+import '../../../view/components/dashboard_card.dart';
+import '../../../view/components/top_navigation.dart';
+import '../../../view/components/bottom_navigation.dart';
 
 // Navigation pages
 import 'glo_profile.dart';
@@ -10,16 +10,16 @@ import 'insight_page.dart';
 import 'history_page.dart';
 
 // Wellness pages
-import '../../../dashboard_card/log_symptom_page.dart';
-import '../../../dashboard_card/ovulation_page.dart';
+import '../../../view/dashboard_card/log_symptom_page.dart';
+import '../../../view/dashboard_card/ovulation_page.dart';
 
 // Card pages
-import '../../../cards/daily_journal_page.dart';
-import '../../../cards/water_tracker_page.dart';
-import '../../../cards/medication_page.dart';
-import '../../../cards/skin_tracker_page.dart';
-import '../../../cards/skin_derma_page.dart';
-import '../../../cards/sleep_stress_page.dart';
+import '../../../view/cards/daily_journal_page.dart';
+import '../../../view/cards/water_tracker_page.dart';
+import '../../../view/cards/medication_page.dart';
+import '../../../view/cards/skin_tracker_page.dart';
+import '../../../view/cards/skin_derma_page.dart';
+import '../../../view/cards/sleep_stress_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
