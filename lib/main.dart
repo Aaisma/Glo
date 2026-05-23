@@ -14,13 +14,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Mood Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.pink,
-        scaffoldBackgroundColor: const Color(0xffFFF7FA),
+        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xffFFF8FA),
       ),
-
-      // HOME SCREEN
-      home: MoodTrackerScreen(),
-
+      home: const WellnessDashboard(),
     );
   }
 }
