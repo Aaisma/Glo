@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/videos/
     - assets/animations/
+    - assets/images/bg.png
 
     - assets/images/acnetracker.png
     - assets/images/background.png
