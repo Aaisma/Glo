@@ -17,6 +17,44 @@ class WellnessDashboard extends StatelessWidget {
 
             children: [
 
+              /// TOP BAR WITH BACK BUTTON
+              Row(
+                children: [
+
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.pink.shade300,
+                      size: 20,
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    "Mood Tracker",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.pink.shade300,
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  Icon(
+                    Icons.favorite_border,
+                    color: Colors.pink.shade300,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
               /// TOP SECTION
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -352,35 +390,6 @@ class WellnessDashboard extends StatelessWidget {
                       color: Colors.grey,
                     ),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              /// BACK BUTTON
-              Center(
-                child: ElevatedButton.icon(
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade200,
-
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 14,
-                    ),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-
-                  icon: const Icon(Icons.arrow_back),
-
-                  label: const Text("Back"),
                 ),
               ),
             ],
