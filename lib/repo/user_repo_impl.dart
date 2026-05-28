@@ -94,6 +94,7 @@ class UserRepoImpl implements UserRepo {
     return userId;
   }
 
+  @override
   Future<String> signInWithGoogle() async {
     // In version 7.2.0+, use GoogleSignIn.instance and authenticate()
     final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
@@ -126,6 +127,7 @@ class UserRepoImpl implements UserRepo {
     return user.uid;
   }
 
+  @override
   Future<String> signInWithFacebook() async {
     final LoginResult result = await FacebookAuth.instance.login();
 
@@ -154,6 +156,7 @@ class UserRepoImpl implements UserRepo {
     }
   }
 
+  @override
   Future<void> updateSurvey({
     required String userId,
     required String ageGroup,
