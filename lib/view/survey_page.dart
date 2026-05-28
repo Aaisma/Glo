@@ -20,16 +20,16 @@ class _SurveyPageState extends State<SurveyPage> {
   final _bmiController = TextEditingController();
   final _waterGoalController = TextEditingController();
   DateTime? _lastCycleDate;
-  
+
   String? _selectedAgeGroup;
   String? _selectedSkinType;
   final List<String> _selectedGoals = [];
   final List<String> _selectedAcneTypes = [];
-  
+
   bool _usesMedication = false;
   String? _medicationType; // Oral, Topical, Both
   String? _medicationTime; // AM, PM, Both
-  
+
   bool _visitsDerma = false;
   DateTime? _lastDermaVisit;
 
