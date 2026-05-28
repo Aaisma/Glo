@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'view/glo_splash_screen.dart';
 import 'view/navigation_icon/dashboard_page.dart';
+import 'view/survey_page.dart';
 
 void main() async {
   await Firebase.initializeApp(
@@ -21,7 +23,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: DashboardScreen(),
+      home: const SplashScreen(),
+      routes: {
+        '/dashboard': (context) => const DashboardScreen(),
+        '/survey': (context) => const SurveyPage(),
+      },
     );
   }
 }
