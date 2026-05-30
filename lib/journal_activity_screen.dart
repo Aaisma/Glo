@@ -5,491 +5,225 @@ class JournalActivityScreen extends StatefulWidget {
   const JournalActivityScreen({super.key});
 
   @override
-  State<JournalActivityScreen> createState() =>
-      _JournalActivityScreenState();
+  State<JournalActivityScreen> createState() => _JournalActivityScreenState();
 }
 
-class _JournalActivityScreenState
-    extends State<JournalActivityScreen> {
-  static const Color primaryPink =
-  Color(0xFFFF3E63);
+class _JournalActivityScreenState extends State<JournalActivityScreen> {
+  bool isRecording = false;
+  String timerText = "00:00";
 
-  final TextEditingController journalController =
-  TextEditingController();
+  void _toggleRecording() {
+    setState(() {
+      isRecording = !isRecording;
+      timerText = isRecording ? "Recording..." : "00:00";
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isRecording ? "Recording started" : "Recording stopped"),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
-  String selectedMood = "";
-
-  int streak = 3;
-
-  final List<Map<String, dynamic>> moods = [
-    {
-      "title": "Stressed",
-      "icon": Icons.psychology_outlined,
-    },
-    {
-      "title": "Motivated",
-      "icon": Icons.chat_bubble_outline,
-    },
-    {
-      "title": "Indifferent",
-      "icon": Icons.sentiment_neutral,
-    },
-    {
-      "title": "Calm",
-      "icon": Icons.water_drop_outlined,
-    },
-  ];
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    String date =
-    DateFormat('EEEE, dd MMM yyyy').format(DateTime.now());
+    final String todayDate = DateFormat('EEEE, MMM d, yyyy').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFF3E63),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Today's Journal",
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              todayDate,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () => _showMessage("No new notifications"),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+            // Mood Section
+            const Text(
+              "How are you feeling today?",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                moodChip("I'm a bit stressed"),
+                moodChip("I'm quite motivated"),
+                moodChip("I'm indifferent"),
+                moodChip("I feel calm"),
+              ],
+            ),
 
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            const SizedBox(height: 24),
 
-            children: [
+            // Write Journal
+            const Text(
+              "Write your journal",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: "Write how you feel today...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
 
-              /// TOP BAR
-              Row(
+            const SizedBox(height: 24),
+
+            // Voice Journal
+            const Text(
+              "Voice Journal",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: _toggleRecording,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFFF3E63)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.mic, color: const Color(0xFFFF3E63)),
+                    const SizedBox(width: 12),
+                    Text(isRecording ? "Tap to stop" : "Tap to record", style: const TextStyle(fontSize: 16)),
+                    const Spacer(),
+                    Text(timerText, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Activity Section
+            const Text(
+              "What did you do today?",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                activityCard("Log your activity", Icons.fitness_center, () => _showMessage("Activity logged")),
+                activityCard("Log your energy", Icons.bolt, () => _showMessage("Energy logged")),
+                activityCard("Gratitude note", Icons.favorite, () => _showMessage("Gratitude noted")),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Journal Streak Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF3E63).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    backgroundColor:
-                    Colors.grey.shade100,
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.black,
-                    ),
-                  ),
-
-                  const SizedBox(width: 15),
-
-                  const Text(
-                    "Today's Journal",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  Stack(
-                    children: [
-                      const Icon(
-                        Icons.notifications_none,
-                        size: 28,
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration:
-                          const BoxDecoration(
-                            color: primaryPink,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      )
+                  const Text("3 Day Streak", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text("Mon"), Text("Tue"), Text("Wed"), Text("Thu"), Text("Fri"), Text("Sat"), Text("Sun"),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 8),
+                  const Text("Longest streak: 7 days", style: TextStyle(color: Colors.grey)),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 24),
 
-              Text(
-                date,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF3E63),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-              ),
-
-              const SizedBox(height: 20),
-
-              /// FEELINGS CARD
-              buildFeelingsCard(),
-
-              const SizedBox(height: 20),
-
-              /// JOURNAL CARD
-              buildJournalCard(),
-
-              const SizedBox(height: 20),
-
-              /// VOICE CARD
-              buildVoiceCard(),
-
-              const SizedBox(height: 20),
-
-              /// ACTIVITY SECTION
-              buildActivitySection(),
-
-              const SizedBox(height: 20),
-
-              /// STREAK
-              buildStreakCard(),
-
-              const SizedBox(height: 30),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    shape:
-                    RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () {
-
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                      const SnackBar(
-                        content:
-                        Text("Journal Saved"),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Save Journal",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildFeelingsCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius:
-        BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-        children: [
-
-          const Text(
-            "How are you feeling today?",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          Row(
-            children: moods.map((mood) {
-              bool isSelected =
-                  selectedMood == mood["title"];
-
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedMood =
-                      mood["title"];
-                    });
-                  },
-                  child: Container(
-                    margin:
-                    const EdgeInsets.symmetric(
-                        horizontal: 4),
-                    padding:
-                    const EdgeInsets.all(10),
-                    decoration:
-                    BoxDecoration(
-                      color: isSelected
-                          ? primaryPink
-                          .withOpacity(0.15)
-                          : Colors.white,
-                      borderRadius:
-                      BorderRadius.circular(
-                          15),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          mood["icon"],
-                          color: primaryPink,
-                        ),
-                        const SizedBox(
-                            height: 6),
-                        Text(
-                          mood["title"],
-                          textAlign:
-                          TextAlign.center,
-                          style:
-                          const TextStyle(
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget buildJournalCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius:
-        BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-
-          Row(
-            children: const [
-              Icon(
-                Icons.edit_note,
-                color: primaryPink,
-              ),
-              SizedBox(width: 10),
-              Text(
-                "Write your journal",
-                style: TextStyle(
-                  fontWeight:
-                  FontWeight.bold,
-                ),
-              )
-            ],
-          ),
-
-          TextField(
-            controller: journalController,
-            maxLines: 5,
-            decoration:
-            const InputDecoration(
-              hintText:
-              "Write how you feel today...",
-              border: InputBorder.none,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget buildVoiceCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color:
-        primaryPink.withOpacity(0.08),
-        borderRadius:
-        BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-
-          const CircleAvatar(
-            backgroundColor:
-            Color(0x22FF3E63),
-            child: Icon(
-              Icons.mic,
-              color: primaryPink,
-            ),
-          ),
-
-          const SizedBox(width: 15),
-
-          const Expanded(
-            child: Text(
-              "Voice Journal",
-              style: TextStyle(
-                fontWeight:
-                FontWeight.bold,
-              ),
-            ),
-          ),
-
-          ElevatedButton(
-            onPressed: () {},
-            child:
-            const Text("Record"),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget buildActivitySection() {
-    return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
-      children: [
-
-        const Text(
-          "What did you do today?",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight:
-            FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: activityCard(
-                Icons.directions_run,
-                "Log Activity",
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: activityCard(
-                Icons.bolt,
-                "Log Energy",
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: activityCard(
-                Icons.eco,
-                "Gratitude",
+                onPressed: () => _showMessage("Journal saved successfully"),
+                child: const Text("Save Journal", style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget activityCard(
-      IconData icon,
-      String title,
-      ) {
-    return Container(
-      height: 140,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius:
-        BorderRadius.circular(18),
-      ),
-      child: Column(
-        mainAxisAlignment:
-        MainAxisAlignment.center,
-        children: [
-
-          Icon(
-            icon,
-            color: primaryPink,
-            size: 35,
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(title),
-
-          const SizedBox(height: 10),
-
-          const CircleAvatar(
-            radius: 15,
-            backgroundColor:
-            primaryPink,
-            child: Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 18,
-            ),
-          )
-        ],
       ),
     );
   }
 
-  Widget buildStreakCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius:
-        BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
+  Widget moodChip(String text) {
+    return ActionChip(
+      label: Text(text),
+      backgroundColor: const Color(0xFFFF3E63).withOpacity(0.1),
+      labelStyle: const TextStyle(color: Color(0xFFFF3E63)),
+      onPressed: () => _showMessage("Mood selected: $text"),
+    );
+  }
 
-          Row(
-            children: [
-              const Icon(
-                Icons.local_fire_department,
-                color: primaryPink,
-                size: 40,
-              ),
-              const SizedBox(width: 10),
-
-              Text(
-                "$streak Day Streak",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight:
-                  FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 15),
-
-          Row(
-            mainAxisAlignment:
-            MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              7,
-                  (index) => CircleAvatar(
-                radius: 14,
-                backgroundColor:
-                index < streak
-                    ? primaryPink
-                    : Colors.grey.shade300,
-                child: index < streak
-                    ? const Icon(
-                  Icons.check,
-                  color:
-                  Colors.white,
-                  size: 14,
-                )
-                    : null,
-              ),
-            ),
-          )
-        ],
+  Widget activityCard(String title, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 150,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFFF3E63)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: const Color(0xFFFF3E63), size: 28),
+            const SizedBox(height: 8),
+            Text(title, textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
