@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mood_tracker.dart';
+import 'journal_activity_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,12 +12,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Mood Tracker',
+      title: 'Daily Journal',
       theme: ThemeData(
-        fontFamily: 'Poppins',
-        scaffoldBackgroundColor: const Color(0xffFFF8FA),
+        primaryColor: const Color(0xFFFF3E63),
       ),
-      home: const WellnessDashboard(),
+      home:JournalActivityScreen(),
     );
   }
 }

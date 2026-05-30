@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 
-class WellnessDashboard extends StatelessWidget {
-  const WellnessDashboard({super.key});
+class MoodTracker extends StatelessWidget {
+  const MoodTracker({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,71 +17,61 @@ class WellnessDashboard extends StatelessWidget {
 
             children: [
 
-              /// TOP BAR WITH BACK BUTTON
-              Row(
-                children: [
-
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-
-                    icon: Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.pink.shade300,
-                      size: 20,
-                    ),
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  Text(
-                    "Mood Tracker",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pink.shade300,
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  Icon(
-                    Icons.favorite_border,
-                    color: Colors.pink.shade300,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
               /// TOP SECTION
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                 children: [
 
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    children: [
 
-                    children: const [
+                      /// BACK BUTTON
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
 
-                      Text(
-                        "Good Evening, Shiny 💖",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            size: 18,
+                          ),
                         ),
                       ),
 
-                      SizedBox(height: 5),
+                      const SizedBox(width: 12),
 
-                      Text(
-                        "How are you feeling today?",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: const [
+
+                          Text(
+                            "Good Evening, Shiny 💖",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+
+                          SizedBox(height: 5),
+
+                          Text(
+                            "How are you feeling today?",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -94,13 +84,12 @@ class WellnessDashboard extends StatelessWidget {
                       const SizedBox(width: 10),
 
                       topIcon(Icons.notifications_none),
-
                     ],
                   ),
                 ],
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 28),
 
               /// MOOD CARDS
               Row(
@@ -119,11 +108,10 @@ class WellnessDashboard extends StatelessWidget {
                   moodCard("Sad", "🥺", Colors.indigo.shade100),
 
                   moodCard("Angry", "😡", Colors.red.shade100),
-
                 ],
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 30),
 
               /// TRACK SYMPTOMS
               Row(
@@ -156,28 +144,27 @@ class WellnessDashboard extends StatelessWidget {
 
                 children: [
 
-                  symptomChip("Cramps"),
-                  symptomChip("Bloating"),
-                  symptomChip("Headache"),
-                  symptomChip("Acne"),
-                  symptomChip("Low Energy"),
-                  symptomChip("Stress"),
-                  symptomChip("Anxiety"),
-                  symptomChip("Back Pain"),
-                  symptomChip("Tender Breasts"),
+                  symptomChip("⚡ Cramps"),
+                  symptomChip("💨 Bloating"),
+                  symptomChip("🤕 Headache"),
+                  symptomChip("🌸 Acne"),
+                  symptomChip("😴 Low Energy"),
+                  symptomChip("😰 Stress"),
+                  symptomChip("💗 Anxiety"),
+                  symptomChip("🩹 Back Pain"),
+                  symptomChip("✨ Tender Breasts"),
                   symptomChip("+ More"),
-
                 ],
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 28),
 
-              /// GLO CARD
+              /// GLO INSIGHTS
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
 
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(28),
 
                   gradient: LinearGradient(
                     colors: [
@@ -191,8 +178,8 @@ class WellnessDashboard extends StatelessWidget {
                   children: [
 
                     Container(
-                      width: 60,
-                      height: 60,
+                      width: 65,
+                      height: 65,
 
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -232,7 +219,7 @@ class WellnessDashboard extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
 
                           Text(
                             "You've felt tired for 3 days in a row.\nThis may be related to your sleep\nor cycle phase.",
@@ -248,9 +235,9 @@ class WellnessDashboard extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 28),
 
-              /// TWO CARDS
+              /// NOTE + WELLNESS
               Row(
                 children: [
 
@@ -260,7 +247,7 @@ class WellnessDashboard extends StatelessWidget {
 
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(22),
                       ),
 
                       child: Column(
@@ -318,7 +305,7 @@ class WellnessDashboard extends StatelessWidget {
 
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(22),
                       ),
 
                       child: Column(
@@ -335,13 +322,13 @@ class WellnessDashboard extends StatelessWidget {
 
                           const SizedBox(height: 15),
 
-                          wellnessTile("Sleep", "6h 22m"),
+                          wellnessTile("🛌 Sleep", "6h 22m"),
 
-                          wellnessTile("Water", "2.2L"),
+                          wellnessTile("💧 Water", "2.2L"),
 
-                          wellnessTile("Stress", "Moderate"),
+                          wellnessTile("🔥 Stress", "Moderate"),
 
-                          wellnessTile("Energy", "Low"),
+                          wellnessTile("⚡ Energy", "Low"),
                         ],
                       ),
                     ),
@@ -351,7 +338,7 @@ class WellnessDashboard extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              /// GRAPH SECTION
+              /// GRAPH TITLE
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
@@ -361,6 +348,7 @@ class WellnessDashboard extends StatelessWidget {
                     "Your mood this week",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
 
@@ -375,21 +363,80 @@ class WellnessDashboard extends StatelessWidget {
 
               const SizedBox(height: 20),
 
+              /// GRAPH
               Container(
-                height: 150,
+                height: 220,
+                padding: const EdgeInsets.all(18),
 
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(28),
                 ),
 
-                child: const Center(
-                  child: Text(
-                    "Mood Graph Here",
-                    style: TextStyle(
-                      color: Colors.grey,
+                child: Column(
+                  children: [
+
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                        children: [
+
+                          moodPoint(90, "😍"),
+                          moodPoint(45, "🙂"),
+                          moodPoint(100, "🥰"),
+                          moodPoint(35, "😔"),
+                          moodPoint(70, "😊"),
+                          moodPoint(110, "😍"),
+                          moodPoint(55, "😌"),
+                        ],
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 15),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                      children: const [
+
+                        Text("Sun\n12",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+
+                        Text("Mon\n13",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+
+                        Text("Tue\n14",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+
+                        Text(
+                          "Wed\n15",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.pink,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text("Thu\n16",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+
+                        Text("Fri\n17",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+
+                        Text("Sat\n18",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -404,10 +451,9 @@ class WellnessDashboard extends StatelessWidget {
       String emoji,
       Color color,
       ) {
-
     return Container(
       width: 52,
-      height: 75,
+      height: 78,
 
       decoration: BoxDecoration(
         color: color,
@@ -436,10 +482,9 @@ class WellnessDashboard extends StatelessWidget {
   }
 
   static Widget selectedMoodCard() {
-
     return Container(
-      width: 58,
-      height: 90,
+      width: 60,
+      height: 92,
 
       decoration: BoxDecoration(
         color: Colors.white,
@@ -480,7 +525,6 @@ class WellnessDashboard extends StatelessWidget {
   }
 
   static Widget symptomChip(String text) {
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 14,
@@ -506,7 +550,6 @@ class WellnessDashboard extends StatelessWidget {
       String title,
       String value,
       ) {
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
 
@@ -529,7 +572,6 @@ class WellnessDashboard extends StatelessWidget {
   }
 
   static Widget topIcon(IconData icon) {
-
     return Container(
       padding: const EdgeInsets.all(10),
 
@@ -543,6 +585,45 @@ class WellnessDashboard extends StatelessWidget {
         size: 18,
         color: Colors.pink.shade300,
       ),
+    );
+  }
+
+  static Widget moodPoint(
+      double height,
+      String emoji,
+      ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+
+      children: [
+
+        Text(
+          emoji,
+          style: const TextStyle(fontSize: 18),
+        ),
+
+        const SizedBox(height: 6),
+
+        Container(
+          width: 3,
+          height: height,
+
+          decoration: BoxDecoration(
+            color: Colors.pink.shade200,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+
+        Container(
+          width: 14,
+          height: 14,
+
+          decoration: BoxDecoration(
+            color: Colors.pink.shade300,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ],
     );
   }
 }
