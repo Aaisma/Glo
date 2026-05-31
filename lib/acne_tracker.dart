@@ -1,30 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
-class AcneTrackerPage extends StatelessWidget {
+class AcneTrackerPage extends StatefulWidget {
   const AcneTrackerPage({super.key});
+
+  @override
+  State<AcneTrackerPage> createState() => _AcneTrackerPageState();
+}
+
+class _AcneTrackerPageState extends State<AcneTrackerPage> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        _selectedImage = image;
+      });
+    }
+  }
+
+  final Map<String, bool> _checklist = {
+    "Washed Face Twice": false,
+    "Applied Moisturizer": false,
+    "Avoided Touching Face": false,
+    "Stayed Hydrated": false,
+  };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text("Acne Tracker"),
         backgroundColor: Colors.pinkAccent,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Container(
-        // 👇 Background image setup
-        // Make sure you have assets/images/background.png
-        // and listed it in pubspec.yaml under flutter: assets:
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/images/background.png"), // 👈 background
@@ -62,6 +75,29 @@ class AcneTrackerPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
+              // Upload Photo Section
+              ElevatedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.camera_alt),
+                label: const Text("Upload a Photo"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pinkAccent.shade100,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (_selectedImage != null)
+                Image.file(
+                  File(_selectedImage!.path),
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+
+              const SizedBox(height: 20),
+
               // Acne Types Gallery
               const Text(
                 "Acne Types",
@@ -84,6 +120,34 @@ class AcneTrackerPage extends StatelessWidget {
                   acneImageCard("Cystic Acne", "assets/images/cystic.png"),
                 ],
               ),
+
+              const SizedBox(height: 20),
+
+              // Daily Care Checklist
+              const Text(
+                "Daily Care Checklist",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pinkAccent,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Column(
+                children: _checklist.keys.map((task) {
+                  return CheckboxListTile(
+                    title: Text(task),
+                    value: _checklist[task],
+                    activeColor: Colors.pinkAccent,
+                    onChanged: (val) {
+                      setState(() {
+                        _checklist[task] = val ?? false;
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+
               const SizedBox(height: 20),
 
               // Journal Section
@@ -130,6 +194,7 @@ class AcneTrackerPage extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
 
               // Motivation Section
@@ -155,7 +220,6 @@ class AcneTrackerPage extends StatelessWidget {
     );
   }
 
-  // 👇 Helper widget for acne images
   static Widget acneImageCard(String title, String assetPath) {
     return Container(
       width: 100,
@@ -164,7 +228,7 @@ class AcneTrackerPage extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         image: DecorationImage(
-          image: AssetImage(assetPath), // 👈 your acne image file
+          image: AssetImage(assetPath),
           fit: BoxFit.cover,
         ),
       ),
