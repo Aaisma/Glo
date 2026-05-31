@@ -1,26 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const AcneTrackerApp());
-}
-
-class AcneTrackerApp extends StatelessWidget {
-  const AcneTrackerApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Acne Tracker',
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFFFE4E1), // baby pink
-        primaryColor: Colors.pinkAccent,
-      ),
-      home: const AcneTrackerPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
 class AcneTrackerPage extends StatelessWidget {
   const AcneTrackerPage({super.key});
 
@@ -28,194 +7,179 @@ class AcneTrackerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Acne Tracker'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text("Acne Tracker"),
         backgroundColor: Colors.pinkAccent,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Upload a Photo'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pinkAccent.shade100,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 40, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+      body: Container(
+        // 👇 Background image setup
+        // Make sure you have assets/images/background.png
+        // and listed it in pubspec.yaml under flutter: assets:
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/background.png"), // 👈 background
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Current Acne Status
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: const [
+                      Text(
+                        "Current Acne Status",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.pinkAccent,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text("Severity: Moderate"),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Acne Types
-            const SectionTitle(title: 'Acne Types', subtitle: 'Identify Your Breakouts'),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                acneCard('Whiteheads'),
-                acneCard('Blackheads'),
-                acneCard('Papules'),
-                acneCard('Pustules'),
-                acneCard('Nodules'),
-                acneCard('Cystic Acne'),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Acne Causes
-            const SectionTitle(title: 'Acne Causes', subtitle: 'Learn About Triggers'),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                causeCard('Hormones', Icons.female),
-                causeCard('Diet & Food', Icons.fastfood),
-                causeCard('Stress', Icons.sentiment_dissatisfied),
-                causeCard('Skincare Products', Icons.spa),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Progress Chart (placeholder)
-            const SectionTitle(title: 'Progress Chart', subtitle: 'Breakout Severity Over Time'),
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+              // Acne Types Gallery
+              const Text(
+                "Acne Types",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pinkAccent,
+                ),
               ),
-              child: const Center(child: Text('📈 Chart Placeholder')),
-            ),
-            const SizedBox(height: 20),
-
-            // Daily Care Checklist
-            const SectionTitle(title: 'Daily Care Checklist', subtitle: 'Track Your Routine'),
-            checklistItem('Washed Face Twice'),
-            checklistItem('Applied Moisturizer'),
-            checklistItem('Avoided Touching Face'),
-            checklistItem('Stayed Hydrated'),
-            const SizedBox(height: 20),
-
-            // Product Tracker
-            const SectionTitle(title: 'Product Tracker', subtitle: 'Skincare Products Used'),
-            productItem('Salicylic Acid Cleanser', 4),
-            productItem('Niacinamide Serum', 3),
-            const SizedBox(height: 20),
-
-            // Daily Journal
-            const SectionTitle(title: 'Daily Journal', subtitle: 'Write About Your Day'),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Today's Entry...",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  acneImageCard("Whiteheads", "assets/images/whiteheads.png"),
+                  acneImageCard("Blackheads", "assets/images/blackheads.png"),
+                  acneImageCard("Papules", "assets/images/papules.png"),
+                  acneImageCard("Pustules", "assets/images/pustules.png"),
+                  acneImageCard("Nodules", "assets/images/nodules.png"),
+                  acneImageCard("Cystic Acne", "assets/images/cystic.png"),
+                ],
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'April 22, 2022 - "Feeling frustrated today. Skin is breaking out a lot."',
-              style: TextStyle(color: Colors.black54),
-            ),
-            const Text(
-              'April 20, 2022 - "Tried a new cleanser. Hoping it helps!"',
-              style: TextStyle(color: Colors.black54),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Tips & Advice
-            const SectionTitle(title: 'Tips & Advice', subtitle: 'Daily Skincare Guidance'),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+              // Journal Section
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Daily Journal",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.pinkAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: "Write your notes...",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "May 31, 2026 - 'Skin feels better today after using moisturizer.'",
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                      const Text(
+                        "May 30, 2026 - 'Breakouts increased after stress.'",
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: const Text(
-                'Tip of the Day: Avoid touching your face to reduce acne flare-ups.',
-                style: TextStyle(color: Colors.black87),
+              const SizedBox(height: 20),
+
+              // Motivation Section
+              Card(
+                color: Colors.pink[50],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+                child: const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    "✨ Stay confident, healing takes time! ✨",
+                    style: TextStyle(fontSize: 16, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget acneCard(String title) => Container(
-    width: 100,
-    height: 80,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Center(child: Text(title)),
-  );
-
-  Widget causeCard(String title, IconData icon) => Container(
-    width: 150,
-    height: 80,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: Colors.pinkAccent),
-        const SizedBox(height: 5),
-        Text(title),
-      ],
-    ),
-  );
-
-  Widget checklistItem(String text) => Row(
-    children: [
-      Checkbox(value: true, onChanged: (val) {}),
-      Text(text),
-    ],
-  );
-
-  Widget productItem(String name, int rating) => ListTile(
-    title: Text(name),
-    subtitle: Row(
-      children: List.generate(
-        5,
-            (index) => Icon(
-          index < rating ? Icons.star : Icons.star_border,
-          color: Colors.pinkAccent,
-          size: 20,
+  // 👇 Helper widget for acne images
+  static Widget acneImageCard(String title, String assetPath) {
+    return Container(
+      width: 100,
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(assetPath), // 👈 your acne image file
+          fit: BoxFit.cover,
         ),
       ),
-    ),
-  );
-}
-
-class SectionTitle extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  const SectionTitle({super.key, required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-        Text(subtitle, style: const TextStyle(color: Colors.black54)),
-        const SizedBox(height: 10),
-      ],
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          color: Colors.black54,
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+          child: Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'calendar_screen.dart'; // your calendar UI
-import 'register.dart'; // your register UI
+import 'register.dart';        // ✅ make sure file name matches
+import 'calendar_screen.dart';
+import 'water_tracker.dart';
+import 'acne_tracker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,13 +14,61 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Glo App',
       theme: ThemeData(
-        primarySwatch: Colors.pink,
+        scaffoldBackgroundColor: const Color(0xFFFFE4E1), // baby pink
+        primaryColor: Colors.pinkAccent,
       ),
-      // Start with Register screen
-      home: const RegisterScreen(),
+      debugShowCheckedModeBanner: false,
+      home: const DashboardPage(),
+      routes: {
+        '/register': (context) => RegisterScreen(),   // ✅ removed const
+        '/calendar': (context) => CalendarScreen(),   // ✅ removed const
+        '/water': (context) => WaterTrackerScreen(),
+        '/acne': (context) => AcneTrackerPage(),
+      },
+    );
+  }
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Dashboard"),
+        backgroundColor: Colors.pinkAccent,
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/register'),
+              child: const Text("Go to Register"),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/calendar'),
+              child: const Text("Go to Calendar"),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/water'),
+              child: const Text("Go to Water Tracker"),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/acne'),
+              child: const Text("Go to Acne Tracker"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
