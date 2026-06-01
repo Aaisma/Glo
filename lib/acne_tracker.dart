@@ -29,13 +29,14 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
     "Stayed Hydrated": false,
   };
 
-  final List<String> _products = [];
+  // 👇 Product tracker with ratings
+  final List<Map<String, dynamic>> _products = [];
   final TextEditingController _productController = TextEditingController();
 
   void _addProduct() {
     if (_productController.text.isNotEmpty) {
       setState(() {
-        _products.add(_productController.text);
+        _products.add({"name": _productController.text, "rating": 0});
         _productController.clear();
       });
     }
@@ -44,6 +45,12 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
   void _removeProduct(int index) {
     setState(() {
       _products.removeAt(index);
+    });
+  }
+
+  void _updateRating(int index, int rating) {
+    setState(() {
+      _products[index]["rating"] = rating;
     });
   }
 
@@ -62,7 +69,6 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
             fit: BoxFit.cover,
           ),
         ),
-        // 👇 This ensures the whole screen scrolls
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -143,7 +149,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
 
               const SizedBox(height: 20),
 
-              // Product Tracker
+              // Product Tracker with Star Rating
               const Text("Product Tracker",
                   style: TextStyle(
                       fontSize: 18,
@@ -165,7 +171,20 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
               Column(
                 children: List.generate(_products.length, (index) {
                   return ListTile(
-                    title: Text(_products[index]),
+                    title: Text(_products[index]["name"]),
+                    subtitle: Row(
+                      children: List.generate(5, (starIndex) {
+                        return IconButton(
+                          icon: Icon(
+                            Icons.star,
+                            color: starIndex < _products[index]["rating"]
+                                ? Colors.amber
+                                : Colors.grey,
+                          ),
+                          onPressed: () => _updateRating(index, starIndex + 1),
+                        );
+                      }),
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _removeProduct(index),
