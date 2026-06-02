@@ -149,19 +149,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
 
-          // Notes section (half screen)
+          // Notes section (half screen, redesigned)
           Expanded(
             flex: 1,
             child: Container(
               padding: const EdgeInsets.all(12),
-              color: Colors.white,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.pink.shade50, Colors.pink.shade100],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.pink.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Today's Notes",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.pink,
                     ),
@@ -170,17 +184,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Write your notes here...",
+                      filled: true,
+                      fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.pink.shade200),
                       ),
                       contentPadding: const EdgeInsets.all(8),
                     ),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 12),
-                  const Text("• Cramps and fatigue today"),
-                  const Text("• Drank 2.5L of water"),
-                  const Text("• Used new skincare product"),
+                  // Example notes with icons
+                  Row(
+                    children: const [
+                      Icon(Icons.favorite, color: Colors.red, size: 16),
+                      SizedBox(width: 6),
+                      Text("Cramps and fatigue today"),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Icon(Icons.local_drink, color: Colors.blue, size: 16),
+                      SizedBox(width: 6),
+                      Text("Drank 2.5L of water"),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Icon(Icons.spa, color: Colors.green, size: 16),
+                      SizedBox(width: 6),
+                      Text("Used new skincare product"),
+                    ],
+                  ),
                 ],
               ),
             ),
