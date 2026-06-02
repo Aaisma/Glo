@@ -1,0 +1,39 @@
+name: glo
+description: "A new Flutter project."
+publish_to: 'none' # Prevents accidental publishing to pub.dev
+
+version: 1.0.0+1 # App version (major.minor.patch+build)
+
+environment:
+  sdk: ^3.11.4 # Dart SDK version requirement
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8 # iOS-style icons
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0 # Recommended lint rules
+
+flutter:
+  uses-material-design: true # Ensures Material Icons are included
+
+  assets:
+    - assets/images/pill.png           # Pill icon
+    - assets/images/tablet.png         # Tablet icon
+    - assets/images/creamtube.png      # Cream tube icon
+    - assets/images/reminder.png       # Reminder icon
+    - assets/images/historylog.png     # History log icon
+    - assets/images/background.png     # Background image
+    - assets/images/background1.png    # Alternate background
+    - assets/images/flower.png         # Flower decoration
+    - assets/images/logo.png           # App logo
+    - assets/images/profilepicture.png # Profile picture
+    - assets/images/labresult.png      # Lab result icon
+    - assets/images/logdocvisit.png    # Doctor visit log
+    - assets/images/notes.png          # Notes icon
+    - assets/images/prescription.png   # Prescription icon
+    - assets/images/skintips.png       # Skin tips icon
+

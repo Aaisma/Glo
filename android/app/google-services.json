@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "945185357757",
+    "project_id": "gloo-ayusha",
+    "storage_bucket": "gloo-ayusha.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:945185357757:android:7215b236347e01ba339cd4",
+        "android_client_info": {
+          "package_name": "com.example.glo.glo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNFGnrhzay7Tu-hwEZFh6oOGcUnumrnvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
