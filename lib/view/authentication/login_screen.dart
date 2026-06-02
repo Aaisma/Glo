@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../repo/user_repo_impl.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/user_view_model.dart';
+import '../components/social_login_options.dart';
 import 'register.dart';
+import 'Glo_Otp.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: Colors.black54,
@@ -51,35 +54,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   "Login",
                   style: TextStyle(
                     color: primaryPink,
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Text(
-                  "Welcome Back, Lovely!",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
 
                 const SizedBox(height: 12),
 
-                Text(
-                  "°｡⋆⸜ 💕 We Missed You. Time To Step In! 💕 ⸝⋆｡°",
-                  textAlign: TextAlign.center,
+                const Text(
+                  "Welcome Back, Lovely!",
                   style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 12,
+                    color: Colors.black87,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 8),
+
+                Text(
+                  ":♡.･:* We Missed You. Time to Step In.! *:･.♡:",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: primaryPink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
 
                 // Email Field
                 TextField(
@@ -98,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 18),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -137,56 +140,80 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 18),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const OtpPage()),
+                      );
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: TextStyle(
                         color: primaryPink,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
                 // Login Button
-                SizedBox(
+                Container(
                   width: double.infinity,
                   height: 55,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primaryPink, primaryPink.withOpacity(0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryPink,
-                      elevation: 0,
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       String email = emailController.text.trim();
-                      String password =
-                      passwordController.text.trim();
+                      String password = passwordController.text.trim();
+                      
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Please fill all fields")),
+                        );
+                        return;
+                      }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Email: $email\nPassword: $password",
-                          ),
-                        ),
-                      );
+                      final viewModel = context.read<UserViewModel>();
+                      final success = await viewModel.login(email, password);
+                      
+                      if (success) {
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(context, '/dashboard');
+                        }
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(viewModel.error ?? "Login failed")),
+                          );
+                        }
+                      }
                     },
                     child: const Text(
                       "Login",
@@ -199,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -208,118 +235,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       "New Here, Darling? ",
                       style: TextStyle(
                         color: Colors.black87,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                     ),
-                    Text(
-                      "Join the 'Glow'",
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 25),
-
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
-                    Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 10),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                      },
                       child: Text(
-                        "Options, Darling!",
+                        "Join the 'Glo' (｡•̀ᴗ-)✧!",
                         style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12,
+                          color: primaryPink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 30),
 
-                Text(
-                  "°✧⋆ Because One Size Never Fits All ⋆✧°",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Google Button
-                socialButton(
-                  icon: Icons.g_mobiledata,
-                  text: "Login with Google",
-                  onTap: () {},
-                ),
-
-                const SizedBox(height: 14),
-
-                // Facebook Button
-                socialButton(
-                  icon: Icons.facebook,
-                  text: "Login with Facebook",
-                  onTap: () {},
-                ),
+                const SocialLoginOptions(),
 
                 const SizedBox(height: 30),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget socialButton({
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: BorderSide(
-            color: primaryPink.withOpacity(0.5),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        icon: Icon(
-          icon,
-          color: primaryPink,
-          size: 24,
-        ),
-        label: Text(
-          text,
-          style: TextStyle(
-            color: primaryPink,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

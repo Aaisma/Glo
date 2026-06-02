@@ -17,14 +17,72 @@ class _SurveyPageState extends State<SurveyPage> {
 
   // Survey Data
   final _actualAgeController = TextEditingController();
-  final _bmiController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _feetController = TextEditingController();
+  final _inchesController = TextEditingController();
   final _waterGoalController = TextEditingController();
   DateTime? _lastCycleDate;
+
+  String _heightUnit = 'cm'; // 'cm' or 'ft'
+  double? _calculatedBMI;
+  String? _bmiStatus;
+  String? _bmiTip;
 
   String? _selectedAgeGroup;
   String? _selectedSkinType;
   final List<String> _selectedGoals = [];
   final List<String> _selectedAcneTypes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _weightController.addListener(_calculateBMI);
+    _heightController.addListener(_calculateBMI);
+    _feetController.addListener(_calculateBMI);
+    _inchesController.addListener(_calculateBMI);
+  }
+
+  void _calculateBMI() {
+    double? weight = double.tryParse(_weightController.text);
+    double heightInMeters = 0;
+
+    if (_heightUnit == 'cm') {
+      double? cm = double.tryParse(_heightController.text);
+      if (cm != null) heightInMeters = cm / 100;
+    } else {
+      double? ft = double.tryParse(_feetController.text);
+      double? inch = double.tryParse(_inchesController.text) ?? 0;
+      if (ft != null) {
+        heightInMeters = ((ft * 12) + inch) * 0.0254;
+      }
+    }
+
+    if (weight != null && heightInMeters > 0) {
+      setState(() {
+        _calculatedBMI = weight / (heightInMeters * heightInMeters);
+        if (_calculatedBMI! < 18.5) {
+          _bmiStatus = "Underweight";
+          _bmiTip = "✨ Focus on nutrient-rich foods to fuel your glow!";
+        } else if (_calculatedBMI! < 25) {
+          _bmiStatus = "Normal";
+          _bmiTip = "💖 You're in a healthy range! Keep up the great work.";
+        } else if (_calculatedBMI! < 30) {
+          _bmiStatus = "Overweight";
+          _bmiTip = "🌸 Small steps in movement can lead to big changes!";
+        } else {
+          _bmiStatus = "Obese";
+          _bmiTip = "💕 Prioritize balanced meals and consistent activity.";
+        }
+      });
+    } else {
+      setState(() {
+        _calculatedBMI = null;
+        _bmiStatus = null;
+        _bmiTip = null;
+      });
+    }
+  }
 
   bool _usesMedication = false;
   String? _medicationType; // Oral, Topical, Both
@@ -79,7 +137,7 @@ class _SurveyPageState extends State<SurveyPage> {
           skinType: _selectedSkinType ?? "Not specified",
           goals: _selectedGoals,
           actualAge: int.tryParse(_actualAgeController.text),
-          bmi: double.tryParse(_bmiController.text),
+          bmi: _calculatedBMI,
           waterGoal: double.tryParse(_waterGoalController.text),
           lastCycleDate: _lastCycleDate,
           acneTypes: _selectedAcneTypes,
@@ -186,7 +244,7 @@ class _SurveyPageState extends State<SurveyPage> {
   bool _isStepValid() {
     switch (_currentStep) {
       case 0: return _selectedAgeGroup != null && _actualAgeController.text.isNotEmpty;
-      case 1: return _bmiController.text.isNotEmpty && _waterGoalController.text.isNotEmpty;
+      case 1: return _calculatedBMI != null && _waterGoalController.text.isNotEmpty;
       case 2: return _lastCycleDate != null;
       case 3: return _selectedSkinType != null && _selectedGoals.isNotEmpty;
       case 4: return _selectedAcneTypes.isNotEmpty;
@@ -238,17 +296,21 @@ class _SurveyPageState extends State<SurveyPage> {
           const SizedBox(height: 24),
           const Text("Select Your Age Group", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          ..._ageGroups.map((opt) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-            child: RadioListTile<String>(
-              title: Text(opt, style: const TextStyle(fontSize: 14)),
-              value: opt,
-              groupValue: _selectedAgeGroup,
-              onChanged: (val) => setState(() => _selectedAgeGroup = val),
-              activeColor: primaryPink,
+          RadioGroup<String>(
+            groupValue: _selectedAgeGroup,
+            onChanged: (val) => setState(() => _selectedAgeGroup = val),
+            child: Column(
+              children: _ageGroups.map((opt) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                child: RadioListTile<String>(
+                  title: Text(opt, style: const TextStyle(fontSize: 14)),
+                  value: opt,
+                  activeColor: primaryPink,
+                ),
+              )).toList(),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -261,11 +323,116 @@ class _SurveyPageState extends State<SurveyPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader("Body & Glow", "Your health metrics matter!"),
-          _buildTextField(controller: _bmiController, label: "Your BMI", icon: Icons.monitor_weight, keyboardType: TextInputType.number),
-          const SizedBox(height: 18),
-          _buildTextField(controller: _waterGoalController, label: "Daily Water Goal (Liters)", icon: Icons.water_drop, keyboardType: TextInputType.number),
+          
+          const Text("Weight (kg)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          _buildTextField(
+            controller: _weightController, 
+            label: "Weight in kg", 
+            icon: Icons.monitor_weight, 
+            keyboardType: TextInputType.number
+          ),
+          
+          const SizedBox(height: 20),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Height", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              ToggleButtons(
+                isSelected: [_heightUnit == 'cm', _heightUnit == 'ft'],
+                onPressed: (index) {
+                  setState(() {
+                    _heightUnit = index == 0 ? 'cm' : 'ft';
+                    _calculateBMI();
+                  });
+                },
+                borderRadius: BorderRadius.circular(10),
+                selectedColor: Colors.white,
+                fillColor: primaryPink,
+                constraints: const BoxConstraints(minHeight: 30, minWidth: 45),
+                children: const [
+                  Text("cm", style: TextStyle(fontSize: 12)),
+                  Text("ft", style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_heightUnit == 'cm')
+            _buildTextField(
+              controller: _heightController, 
+              label: "Height in cm", 
+              icon: Icons.height, 
+              keyboardType: TextInputType.number
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _feetController, 
+                    label: "Feet", 
+                    icon: Icons.height, 
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _inchesController, 
+                    label: "Inches", 
+                    icon: Icons.height, 
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+              ],
+            ),
+            
+          if (_calculatedBMI != null) ...[
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: primaryPink.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "Your BMI: ${_calculatedBMI!.toStringAsFixed(1)}",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Status: $_bmiStatus",
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _bmiTip!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+          const Text("Daily Water Goal (Liters)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          _buildTextField(
+            controller: _waterGoalController, 
+            label: "e.g. 2.5", 
+            icon: Icons.water_drop, 
+            keyboardType: TextInputType.number
+          ),
           const SizedBox(height: 12),
-          const Text("★ Tip: Staying hydrated keeps your skin glowing!", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.black54)),
+          const Text("★ Tip: Staying hydrated keeps your skin glowing!", style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.black54)),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -326,7 +493,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 label: Text(type),
                 selected: isSelected,
                 onSelected: (val) => setState(() => _selectedSkinType = type),
-                selectedColor: primaryPink.withOpacity(0.2),
+                selectedColor: primaryPink.withValues(alpha: 0.2),
                 labelStyle: TextStyle(color: isSelected ? primaryPink : Colors.black87),
               );
             }).toList(),
@@ -343,7 +510,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 label: Text(goal),
                 selected: isSelected,
                 onSelected: (val) => setState(() => val ? _selectedGoals.add(goal) : _selectedGoals.remove(goal)),
-                selectedColor: primaryPink.withOpacity(0.2),
+                selectedColor: primaryPink.withValues(alpha: 0.2),
                 labelStyle: TextStyle(color: isSelected ? primaryPink : Colors.black87),
               );
             }).toList(),
@@ -369,7 +536,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 label: Text(acne),
                 selected: isSelected,
                 onSelected: (val) => setState(() => val ? _selectedAcneTypes.add(acne) : _selectedAcneTypes.remove(acne)),
-                selectedColor: primaryPink.withOpacity(0.2),
+                selectedColor: primaryPink.withValues(alpha: 0.2),
                 labelStyle: TextStyle(color: isSelected ? primaryPink : Colors.black87),
               );
             }).toList(),
@@ -393,47 +560,51 @@ class _SurveyPageState extends State<SurveyPage> {
               title: const Text("Using Medication?", style: TextStyle(fontSize: 15)),
               value: _usesMedication,
               onChanged: (val) => setState(() => _usesMedication = val),
-              activeColor: primaryPink,
+              activeThumbColor: primaryPink,
             ),
           ),
           if (_usesMedication) ...[
             const SizedBox(height: 24),
             const Text("Type of Medication", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Row(
-              children: _medTypes.map((t) => Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                  child: RadioListTile<String>(
-                    title: Text(t, style: const TextStyle(fontSize: 11)),
-                    value: t,
-                    groupValue: _medicationType,
-                    onChanged: (val) => setState(() => _medicationType = val),
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: primaryPink,
+            RadioGroup<String>(
+              groupValue: _medicationType,
+              onChanged: (val) => setState(() => _medicationType = val),
+              child: Row(
+                children: _medTypes.map((t) => Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                    child: RadioListTile<String>(
+                      title: Text(t, style: const TextStyle(fontSize: 11)),
+                      value: t,
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: primaryPink,
+                    ),
                   ),
-                ),
-              )).toList(),
+                )).toList(),
+              ),
             ),
             const SizedBox(height: 20),
             const Text("When do you use it?", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Row(
-              children: _medTimes.map((t) => Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                  child: RadioListTile<String>(
-                    title: Text(t, style: const TextStyle(fontSize: 11)),
-                    value: t,
-                    groupValue: _medicationTime,
-                    onChanged: (val) => setState(() => _medicationTime = val),
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: primaryPink,
+            RadioGroup<String>(
+              groupValue: _medicationTime,
+              onChanged: (val) => setState(() => _medicationTime = val),
+              child: Row(
+                children: _medTimes.map((t) => Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                    child: RadioListTile<String>(
+                      title: Text(t, style: const TextStyle(fontSize: 11)),
+                      value: t,
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: primaryPink,
+                    ),
                   ),
-                ),
-              )).toList(),
+                )).toList(),
+              ),
             ),
           ]
         ],
@@ -455,7 +626,7 @@ class _SurveyPageState extends State<SurveyPage> {
               title: const Text("Do you visit a Dermatologist?", style: TextStyle(fontSize: 15)),
               value: _visitsDerma,
               onChanged: (val) => setState(() => _visitsDerma = val),
-              activeColor: primaryPink,
+              activeThumbColor: primaryPink,
             ),
           ),
           if (_visitsDerma) ...[
@@ -491,5 +662,47 @@ class _SurveyPageState extends State<SurveyPage> {
         ],
       ),
     );
+  }
+}
+
+class RadioGroup<T> extends StatelessWidget {
+  final T? groupValue;
+  final ValueChanged<T?> onChanged;
+  final Widget child;
+
+  const RadioGroup({
+    super.key,
+    required this.groupValue,
+    required this.onChanged,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _RadioGroupScope<T>(
+      groupValue: groupValue,
+      onChanged: onChanged,
+      child: child,
+    );
+  }
+
+  static _RadioGroupScope<T>? of<T>(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_RadioGroupScope<T>>();
+  }
+}
+
+class _RadioGroupScope<T> extends InheritedWidget {
+  final T? groupValue;
+  final ValueChanged<T?> onChanged;
+
+  const _RadioGroupScope({
+    required this.groupValue,
+    required this.onChanged,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(_RadioGroupScope<T> oldWidget) {
+    return groupValue != oldWidget.groupValue || onChanged != oldWidget.onChanged;
   }
 }

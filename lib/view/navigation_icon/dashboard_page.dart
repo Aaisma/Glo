@@ -5,7 +5,7 @@ import '../../../view/components/top_navigation.dart';
 import '../../../view/components/bottom_navigation.dart';
 
 // Navigation pages
-import 'glo_profile.dart';
+import 'profile_page.dart';
 import 'insight_page.dart';
 import 'history_page.dart';
 
@@ -35,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DashboardHome(),
     const InsightsPage(),
     const HistoryPage(),
-    const GloProfileScreen(),
+    const ProfilePage(),
   ];
 
   void _onNavTap(int index) {
@@ -69,7 +69,7 @@ class DashboardHome extends StatelessWidget {
       {"title": "Medications", "image": "assets/images/medication.png"},
       {"title": "Skin Tracker", "image": "assets/images/acnetracker.png"},
       {"title": "Skin Derma", "image": "assets/images/skinderma.png"},
-      {"title": "Sleep & Stress", "image": "assets/images/stressandsleep.png"},
+      {"title": "Mood and stress", "image": "assets/images/stressandsleep.png"},
     ];
 
     return Container(
@@ -209,7 +209,7 @@ class DashboardHome extends StatelessWidget {
                             case "Skin Derma":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
                               break;
-                            case "Sleep & Stress":
+                              case "Mood and Wellness":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SleepStressPage()));
                               break;
                           }
