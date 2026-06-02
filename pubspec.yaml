@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  image_picker: ^1.0.7
   flutter:
     sdk: flutter
 
@@ -66,7 +67,18 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # 👇 Assets section: list all your images here
+  assets:
+    - assets/images/background.png
+    - assets/images/whiteheads.png
+    - assets/images/blackheads.png
+    - assets/images/papules.png
+    - assets/images/pustules.png
+    - assets/images/nodules.png
+    - assets/images/cystic.png
+
   # To add assets to your application, add an assets section, like this:
+<<<<<<< HEAD
   assets:
     - assets/videos/
     - assets/animations/
@@ -81,6 +93,13 @@ flutter:
     - assets/images/skinderma.png
     - assets/images/stressandsleep.png
     - assets/images/watertracker.png
+=======
+  # assets:
+  #   - assets/
+  #   - assets/images
+  #   - assets/videos/
+  #   - assets/animations/
+>>>>>>> pranisha_branch
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
