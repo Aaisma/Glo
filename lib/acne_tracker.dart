@@ -29,7 +29,6 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
     "Stayed Hydrated": false,
   };
 
-  // 👇 Product tracker with ratings
   final List<Map<String, dynamic>> _products = [];
   final TextEditingController _productController = TextEditingController();
 

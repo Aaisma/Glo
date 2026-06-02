@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class CalendarScreen extends StatelessWidget {
-  // Example dates for May 2024 with Nepali equivalents + markers
+class CalendarScreen extends StatefulWidget {
+  const CalendarScreen({super.key});
+
+  @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+
   final List<List<Map<String, String>>> dates = [
     [
       {"en": "", "np": ""},
@@ -60,6 +67,18 @@ class CalendarScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          // Month name header
+          const SizedBox(height: 12),
+          const Text(
+            "May 2024 / जेठ २०८१",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.pink,
+            ),
+          ),
+          const SizedBox(height: 12),
+
           // Weekday row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -74,6 +93,7 @@ class CalendarScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
+
           // Calendar grid (half screen)
           Expanded(
             flex: 1,
@@ -98,14 +118,14 @@ class CalendarScreen extends StatelessWidget {
                               Text(
                                 day["en"]!,
                                 style: const TextStyle(
-                                  fontSize: 15, // smaller English date
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 day["np"]!,
                                 style: const TextStyle(
-                                  fontSize: 13, // smaller Nepali date
+                                  fontSize: 13,
                                   color: Colors.black54,
                                 ),
                               ),
@@ -113,7 +133,7 @@ class CalendarScreen extends StatelessWidget {
                                 Text(
                                   day["marker"]!,
                                   style: const TextStyle(
-                                    fontSize: 8, // smaller marker
+                                    fontSize: 8,
                                     color: Colors.red,
                                   ),
                                   textAlign: TextAlign.center,
@@ -128,6 +148,7 @@ class CalendarScreen extends StatelessWidget {
               }).toList(),
             ),
           ),
+
           // Notes section (half screen)
           Expanded(
             flex: 1,
@@ -146,7 +167,6 @@ class CalendarScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Editable text box
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Write your notes here...",
@@ -158,7 +178,6 @@ class CalendarScreen extends StatelessWidget {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 12),
-                  // Example notes
                   const Text("• Cramps and fatigue today"),
                   const Text("• Drank 2.5L of water"),
                   const Text("• Used new skincare product"),

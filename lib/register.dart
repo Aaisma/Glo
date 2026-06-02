@@ -15,7 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Baby pink gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFFE4E1), Color(0xFFFFB6C1)], // light pink shades
+            colors: [Color(0xFFFFE4E1), Color(0xFFFFB6C1)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
