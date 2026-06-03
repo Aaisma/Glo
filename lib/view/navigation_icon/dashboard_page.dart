@@ -15,7 +15,7 @@ import '../../../view/dashboard_card/ovulation_page.dart';
 
 // Card pages
 import '../../../view/cards/daily_journal_page.dart';
-import '../../../view/cards/water_tracker_page.dart';
+import '../../../view/cards/water_tracker.dart';
 import '../../../view/cards/medication_page.dart';
 import '../../../view/cards/skin_tracker_page.dart';
 import '../../../view/cards/skin_derma_page.dart';
@@ -198,7 +198,7 @@ class DashboardHome extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyJournalPage()));
                               break;
                             case "Water Tracker":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
                               break;
                             case "Medications":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationsPage()));

@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class CalendarScreen extends StatelessWidget {
-  // Example dates for May 2024 with Nepali equivalents + markers
+class CalendarScreen extends StatefulWidget {
+  const CalendarScreen({super.key});
+
+  @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+
   final List<List<Map<String, String>>> dates = [
     [
       {"en": "", "np": ""},
@@ -60,6 +67,18 @@ class CalendarScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          // Month name header
+          const SizedBox(height: 12),
+          const Text(
+            "May 2024 / जेठ २०८१",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.pink,
+            ),
+          ),
+          const SizedBox(height: 12),
+
           // Weekday row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -74,6 +93,7 @@ class CalendarScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
+
           // Calendar grid (half screen)
           Expanded(
             flex: 1,
@@ -98,14 +118,14 @@ class CalendarScreen extends StatelessWidget {
                               Text(
                                 day["en"]!,
                                 style: const TextStyle(
-                                  fontSize: 15, // smaller English date
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 day["np"]!,
                                 style: const TextStyle(
-                                  fontSize: 13, // smaller Nepali date
+                                  fontSize: 13,
                                   color: Colors.black54,
                                 ),
                               ),
@@ -113,7 +133,7 @@ class CalendarScreen extends StatelessWidget {
                                 Text(
                                   day["marker"]!,
                                   style: const TextStyle(
-                                    fontSize: 8, // smaller marker
+                                    fontSize: 8,
                                     color: Colors.red,
                                   ),
                                   textAlign: TextAlign.center,
@@ -128,40 +148,75 @@ class CalendarScreen extends StatelessWidget {
               }).toList(),
             ),
           ),
-          // Notes section (half screen)
+
+          // Notes section (half screen, redesigned)
           Expanded(
             flex: 1,
             child: Container(
               padding: const EdgeInsets.all(12),
-              color: Colors.white,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.pink.shade50, Colors.pink.shade100],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.pink.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Today's Notes",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.pink,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Editable text box
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Write your notes here...",
+                      filled: true,
+                      fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.pink.shade200),
                       ),
                       contentPadding: const EdgeInsets.all(8),
                     ),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 12),
-                  // Example notes
-                  const Text("• Cramps and fatigue today"),
-                  const Text("• Drank 2.5L of water"),
-                  const Text("• Used new skincare product"),
+                  // Example notes with icons
+                  Row(
+                    children: const [
+                      Icon(Icons.favorite, color: Colors.red, size: 16),
+                      SizedBox(width: 6),
+                      Text("Cramps and fatigue today"),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Icon(Icons.local_drink, color: Colors.blue, size: 16),
+                      SizedBox(width: 6),
+                      Text("Drank 2.5L of water"),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Icon(Icons.spa, color: Colors.green, size: 16),
+                      SizedBox(width: 6),
+                      Text("Used new skincare product"),
+                    ],
+                  ),
                 ],
               ),
             ),
