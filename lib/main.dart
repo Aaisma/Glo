@@ -10,13 +10,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Mood Tracker',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      home: const MoodTracker(),
+      home: MoodTracker(),
     );
   }
 }
