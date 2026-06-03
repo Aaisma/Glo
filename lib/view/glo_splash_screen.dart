@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/user_view_model.dart';
+import '../viewmodel/auth_view_model.dart';
 import 'authentication/login_screen.dart';
 import 'navigation_icon/dashboard_page.dart';
 
@@ -25,19 +26,11 @@ class _SplashScreenState extends State<SplashScreen> {
     
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final viewModel = context.read<UserViewModel>();
-      viewModel.setUserId(user.uid);
-      await viewModel.fetchCurrentUser();
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      }
+      final authVM = context.read<AuthViewModel>();
+      await authVM.checkUserProfile(context, user.uid);
     } else {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
+        Navigator.pushReplacementNamed(context, '/login');
       }
     }
   }

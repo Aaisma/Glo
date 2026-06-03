@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/auth_view_model.dart';
 import '../authentication/login_screen.dart';
 
 class LogoutDialog {
@@ -18,8 +18,8 @@ class LogoutDialog {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context); // close dialog
-              final viewModel = context.read<UserViewModel>();
-              await viewModel.logout();
+              final authViewModel = context.read<AuthViewModel>();
+              await authViewModel.signOut();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),

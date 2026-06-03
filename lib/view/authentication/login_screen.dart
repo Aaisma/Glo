@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../repo/user_repo_impl.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
+import '../components/social_login_options.dart';
 import 'register.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,8 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool obscurePassword = true;
-
-  // Main Theme Color
   final Color primaryPink = const Color(0xFFFF3E63);
 
   @override
@@ -30,83 +31,31 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-
-                // Back Button
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.black54,
-                      size: 20,
-                    ),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // Login Title
-                Text(
-                  "Login",
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Text(
-                  "Welcome Back, Lovely!",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
+                Text("Login", style: TextStyle(color: primaryPink, fontSize: 32, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-
-                Text(
-                  "°｡⋆⸜ 💕 We Missed You. Time To Step In! 💕 ⸝⋆｡°",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // Email Field
+                const Text("Welcome Back, Lovely!", style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                Text(":♡.･:* We Missed You. Time to Step In.! *:･.♡:", textAlign: TextAlign.center, style: TextStyle(color: primaryPink, fontSize: 14, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 32),
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
                     hintText: "Email",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.mail_outline,
-                      color: primaryPink,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
+                    prefixIcon: Icon(Icons.mail_outline, color: primaryPink),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   ),
                 ),
-
                 const SizedBox(height: 18),
-
-                // Password Field
                 TextField(
                   controller: passwordController,
                   obscureText: obscurePassword,
@@ -114,212 +63,53 @@ class _LoginScreenState extends State<LoginScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     hintText: "Password",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: primaryPink,
-                    ),
+                    prefixIcon: Icon(Icons.lock_outline, color: primaryPink),
                     suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          obscurePassword = !obscurePassword;
-                        });
-                      },
-                      icon: Icon(
-                        obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: Colors.grey,
-                      ),
+                      onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                      icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   ),
                 ),
-
-                const SizedBox(height: 10),
-
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // Login Button
+                const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   height: 55,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryPink,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    onPressed: () {
-                      String email = emailController.text.trim();
-                      String password =
-                      passwordController.text.trim();
+                  child: Consumer<AuthViewModel>(
+                    builder: (context, authVM, child) {
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: primaryPink, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                        onPressed: authVM.loading ? null : () async {
+                          String email = emailController.text.trim();
+                          String password = passwordController.text.trim();
+                          if (email.isEmpty || password.isEmpty) return;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Email: $email\nPassword: $password",
-                          ),
-                        ),
+                          try {
+                            await authVM.login(context, email, password);
+                          } catch (e) {
+                            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login Failed: $e")));
+                          }
+                        },
+                        child: authVM.loading ? const CircularProgressIndicator(color: Colors.white) : const Text("Login", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       );
                     },
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ),
-
-                const SizedBox(height: 22),
-
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "New Here, Darling? ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      "Join the 'Glow'",
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const Text("New Here, Darling? "),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/register'),
+                      child: Text("Join the 'Glo'!", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 25),
-
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
-                    Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        "Options, Darling!",
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                Text(
-                  "°✧⋆ Because One Size Never Fits All ⋆✧°",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Google Button
-                socialButton(
-                  icon: Icons.g_mobiledata,
-                  text: "Login with Google",
-                  onTap: () {},
-                ),
-
-                const SizedBox(height: 14),
-
-                // Facebook Button
-                socialButton(
-                  icon: Icons.facebook,
-                  text: "Login with Facebook",
-                  onTap: () {},
-                ),
-
                 const SizedBox(height: 30),
+                const SocialLoginOptions(),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget socialButton({
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: BorderSide(
-            color: primaryPink.withOpacity(0.5),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        icon: Icon(
-          icon,
-          color: primaryPink,
-          size: 24,
-        ),
-        label: Text(
-          text,
-          style: TextStyle(
-            color: primaryPink,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

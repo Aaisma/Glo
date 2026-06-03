@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../repo/user_repo_impl.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
+import '../../model/user_model.dart';
 import '../survey_page.dart';
 import '../components/social_login_options.dart';
 import 'login_screen.dart';
@@ -16,9 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
-  final _userRepo = UserRepoImpl();
   final Color primaryPink = const Color(0xFFFF3E63);
 
   Future<void> _handleRegister() async {
@@ -33,18 +34,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final authVM = Provider.of<AuthViewModel>(context, listen: false);
+    final userVM = Provider.of<UserViewModel>(context, listen: false);
 
     try {
-      final userId = await _userRepo.register(email, password);
-      
-      // Update the name in the user document
-      await _userRepo.editProfile((await _userRepo.getUserByID(userId)).copyWith(name: name));
+      final user = await authVM.signUp(email, password);
+      if (user != null) {
+        // Initialize basic profile with the provided name
+        userVM.setUserId(user.uid);
+        await userVM.addUser(UserModel(
+          id: user.uid,
+          email: email,
+          name: name,
+          surveyCompleted: false,
+        ));
 
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SurveyPage()),
-        );
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/survey');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -52,59 +59,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SnackBar(content: Text("Registration failed: $e")),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
-    try {
-      final userId = await _userRepo.signInWithGoogle();
-      final userModel = await _userRepo.getUserByID(userId);
-      if (mounted) {
-        if (userModel.surveyCompleted) {
-          Navigator.of(context).pushReplacementNamed('/dashboard');
-        } else {
-          Navigator.of(context).pushReplacementNamed('/survey');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Google Login failed: $e")),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _handleFacebookSignIn() async {
-    setState(() => _isLoading = true);
-    try {
-      final userId = await _userRepo.signInWithFacebook();
-      final userModel = await _userRepo.getUserByID(userId);
-      if (mounted) {
-        if (userModel.surveyCompleted) {
-          Navigator.of(context).pushReplacementNamed('/dashboard');
-        } else {
-          Navigator.of(context).pushReplacementNamed('/survey');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Facebook Login failed: $e")),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authVM = context.watch<AuthViewModel>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDECEF),
       body: SafeArea(
@@ -115,82 +76,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-
-                // Back Button
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.black54,
-                      size: 20,
-                    ),
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // Register Title
-                Text(
-                  "Register",
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
+                Text("Register", style: TextStyle(color: primaryPink, fontSize: 32, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-
-                const Text(
-                  "Hey, Lovely!",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
+                const Text("Hey, Lovely!", style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 8),
-
-                Text(
-                  ":♡.･:* Your 'Glo' Begins Here! *:･.♡:",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
+                Text(":♡.･:* Your 'Glo' Begins Here! *:･.♡:", textAlign: TextAlign.center, style: TextStyle(color: primaryPink, fontSize: 14, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 32),
-
-                // Full Name
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
                     hintText: "Full Name",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.person_outline,
-                      color: primaryPink,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
+                    prefixIcon: Icon(Icons.person_outline, color: primaryPink),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 18),
-
-                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -198,24 +108,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     hintText: "Email",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.mail_outline,
-                      color: primaryPink,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
+                    prefixIcon: Icon(Icons.mail_outline, color: primaryPink),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 18),
-
-                // Password
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -223,96 +120,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     hintText: "Password",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: primaryPink,
-                    ),
+                    prefixIcon: Icon(Icons.lock_outline, color: primaryPink),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: Colors.grey,
-                      ),
+                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 32),
-
-                // Register button
                 Container(
                   width: double.infinity,
                   height: 55,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [primaryPink, primaryPink.withOpacity(0.7)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: _isLoading ? null : _handleRegister,
-                    child: _isLoading
+                    style: ElevatedButton.styleFrom(backgroundColor: primaryPink, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                    onPressed: authVM.loading ? null : _handleRegister,
+                    child: authVM.loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Register",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        : const Text("Register", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Already with us line
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Already with Us, Darling? ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14,
-                      ),
-                    ),
+                    const Text("Already with Us, Darling? "),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                      },
-                      child: Text(
-                        "Shine Back In (｡>‿<)✩!",
-                        style: TextStyle(
-                          color: primaryPink,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      onTap: () => Navigator.pushNamed(context, '/login'),
+                      child: Text("Shine Back In!", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 30),
-
                 const SocialLoginOptions(),
-
-                const SizedBox(height: 30),
               ],
             ),
           ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
 
 class SocialLoginOptions extends StatelessWidget {
   const SocialLoginOptions({super.key});
@@ -17,8 +20,8 @@ class SocialLoginOptions extends StatelessWidget {
                 thickness: 1,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
               child: Text(
                 "Options, Darling!",
                 style: TextStyle(
@@ -46,16 +49,44 @@ class SocialLoginOptions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        _socialButton(
-          icon: Icons.g_mobiledata,
-          text: "Login with Google",
-          onTap: () {},
+        Consumer<AuthViewModel>(
+          builder: (context, authVM, child) {
+            return _socialButton(
+              icon: Icons.g_mobiledata,
+              text: "Login with Google",
+              onTap: authVM.loading ? () {} : () async {
+                try {
+                  await authVM.signInWithGoogle(context);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Google Sign-In Failed: $e")),
+                    );
+                  }
+                }
+              },
+            );
+          },
         ),
         const SizedBox(height: 14),
-        _socialButton(
-          icon: Icons.facebook,
-          text: "Login with Facebook",
-          onTap: () {},
+        Consumer<AuthViewModel>(
+          builder: (context, authVM, child) {
+            return _socialButton(
+              icon: Icons.facebook,
+              text: "Login with Facebook",
+              onTap: authVM.loading ? () {} : () async {
+                try {
+                  await authVM.signInWithFacebook(context);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Facebook Sign-In Failed: $e")),
+                    );
+                  }
+                }
+              },
+            );
+          },
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import '../model/user_model.dart';
 import '../repo/user_repo.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserRepo _userRepo;
@@ -50,44 +51,10 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> login(String email, String password) async {
-    setLoading(true);
-    setError(null);
-    try {
-      final uid = await _userRepo.login(email, password);
-      setUserId(uid);
-      await fetchCurrentUser();
-      return true;
-    } on Exception catch (e) {
-      setError(e.toString());
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Future<bool> register(String email, String password) async {
-    setLoading(true);
-    setError(null);
-    try {
-      final uid = await _userRepo.register(email, password);
-      setUserId(uid);
-      await fetchCurrentUser();
-      return true;
-    } on Exception catch (e) {
-      setError(e.toString());
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Future<void> logout() async {
+  Future<void> addUser(UserModel userModel) async {
     setLoading(true);
     try {
-      await _userRepo.logout();
-      _userId = null;
-      _user = null;
+      await _userRepo.addUser(userModel);
     } catch (e) {
       setError(e.toString());
     } finally {
@@ -95,24 +62,14 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> forgetPassword(String email) async {
-    setLoading(true);
-    setError(null);
-    try {
-      await _userRepo.forgetPassword(email);
-      return true;
-    } on Exception catch (e) {
-      setError(e.toString());
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Future<void> addUser(UserModel userModel) async {
+  Future<void> createDefaultProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
     setLoading(true);
     try {
-      await _userRepo.addUser(userModel);
+      await _userRepo.createDefaultProfile(user);
+      await fetchCurrentUser();
     } catch (e) {
       setError(e.toString());
     } finally {
@@ -172,6 +129,8 @@ class UserViewModel extends ChangeNotifier {
 
   Future<void> updateSurvey({
     required String userId,
+    required String email,
+    String? name,
     required String ageGroup,
     required String skinType,
     required List<String> goals,
@@ -190,6 +149,8 @@ class UserViewModel extends ChangeNotifier {
     try {
       await _userRepo.updateSurvey(
         userId: userId,
+        email: email,
+        name: name,
         ageGroup: ageGroup,
         skinType: skinType,
         goals: goals,

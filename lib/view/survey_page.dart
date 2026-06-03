@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../repo/user_repo_impl.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/user_view_model.dart';
 
 class SurveyPage extends StatefulWidget {
   const SurveyPage({super.key});
@@ -103,7 +104,6 @@ class _SurveyPageState extends State<SurveyPage> {
   final List<String> _medTypes = ['Oral', 'Topical', 'Both'];
   final List<String> _medTimes = ['AM', 'PM', 'Both'];
 
-  final _userRepo = UserRepoImpl();
 
   void _nextPage() {
     if (_currentStep < _totalSteps - 1) {
@@ -128,11 +128,13 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> _submitSurvey() async {
+    final userViewModel = Provider.of<UserViewModel>(context, listen: false);
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        await _userRepo.updateSurvey(
+        await userViewModel.updateSurvey(
           userId: user.uid,
+          email: user.email ?? "",
           ageGroup: _selectedAgeGroup ?? "Not specified",
           skinType: _selectedSkinType ?? "Not specified",
           goals: _selectedGoals,
@@ -218,21 +220,54 @@ class _SurveyPageState extends State<SurveyPage> {
             ),
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: _isStepValid() ? _nextPage : null,
+                      child: Text(
+                        _currentStep == _totalSteps - 1 ? "Finish" : "Next",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
                   ),
-                  onPressed: _isStepValid() ? _nextPage : null,
-                  child: Text(
-                    _currentStep == _totalSteps - 1 ? "Finish" : "Next",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: primaryPink.withOpacity(0.5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () async {
+                        try {
+                          await context.read<UserViewModel>().createDefaultProfile();
+                          if (context.mounted) {
+                            Navigator.pushReplacementNamed(context, '/dashboard');
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error skipping survey: $e")),
+                            );
+                          }
+                        }
+                      },
+                      child: Text(
+                        "Skip Survey",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryPink),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
