@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mood_tracker.dart';
+import 'mood_wellness.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,9 +10,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MoodTracker(),
+      title: 'Mood Wellness',
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xFFFFF8FA),
+      ),
+      home: const MoodWellnessScreen(),
     );
   }
 }
