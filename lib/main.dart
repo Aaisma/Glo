@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'view/glo_splash_screen.dart';
 import 'view/navigation_icon/dashboard_page.dart';
 import 'view/survey_page.dart';
+import 'view/dashboard_card/ovulation_period_page.dart';
 
 void main() async {
   await Firebase.initializeApp(
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: const SplashScreen(),
+      home: const OvulationPage(),
       routes: {
         '/dashboard': (context) => const DashboardScreen(),
         '/survey': (context) => const SurveyPage(),
