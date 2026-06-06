@@ -1,17 +1,7 @@
-import 'package:flutter/material.dart';
-
 class MoodModel {
-  final String name;
-  final String image;
-  final IconData icon;
-  final Color color;
-  bool selected;
+  final String label;
+  final String emoji;
+  bool isSelected;
 
-  MoodModel({
-    required this.name,
-    required this.image,
-    required this.icon,
-    required this.color,
-    this.selected = false,
-  });
+  MoodModel(this.label, this.emoji, {this.isSelected = false});
 }

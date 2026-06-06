@@ -1,13 +1,6 @@
-import 'package:flutter/material.dart';
-
 class SymptomModel {
-  final String title;
-  final IconData icon;
-  bool selected;
+  final String name;
+  bool isSelected;
 
-  SymptomModel({
-    required this.title,
-    required this.icon,
-    this.selected = false,
-  });
+  SymptomModel(this.name, {this.isSelected = false});
 }

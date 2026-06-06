@@ -1,61 +1,54 @@
 import 'package:flutter/material.dart';
-import '../app_colors.dart';
 
-class TalkCard extends StatelessWidget {
+class TalkCard extends StatefulWidget {
   const TalkCard({super.key});
 
   @override
+  State<TalkCard> createState() => _TalkCardState();
+}
+
+class _TalkCardState extends State<TalkCard> {
+  final TextEditingController _controller = TextEditingController();
+  String note = "";
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Talk about your day",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Talk about your day",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                hintText: "Write your thoughts, feelings or anything...",
+                border: OutlineInputBorder(),
               ),
-              Icon(
-                Icons.edit_note,
-                color: AppColors.pink,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 18),
-
-          TextField(
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText:
-              "Write your thoughts, feelings or anything you want...",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              maxLines: 3,
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.add),
-            label: const Text("Add Note"),
-          )
-        ],
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF3E63)),
+              onPressed: () {
+                setState(() {
+                  note = _controller.text;
+                });
+              },
+              child: const Text("Add Note"),
+            ),
+            if (note.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text("Your Note: $note"),
+              ),
+          ],
+        ),
       ),
     );
   }

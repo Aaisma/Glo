@@ -17,8 +17,11 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Poppins',
         scaffoldBackgroundColor: const Color(0xFFFFF8FA),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFF3E63), // pink accent
+        ),
       ),
-      home: const MoodWellnessScreen(),
+      home: const MoodWellnessScreen(), // ✅ launches your screen
     );
   }
 }
