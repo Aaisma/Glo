@@ -11,7 +11,7 @@ import 'history_page.dart';
 
 // Wellness pages
 import '../../../view/dashboard_card/log_symptom_page.dart';
-import '../../../view/dashboard_card/ovulation_page.dart';
+import '../dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import '../../../view/cards/daily_journal_page.dart';

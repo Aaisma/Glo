@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../repo/period_repo_impl.dart';
+import '../../repo/ovulation_repo_impl.dart';
+import '../../viewmodel/tracker_navigation_view_model.dart';
+import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';
-import 'tracker_components/tracker_toggle.dart';
-import 'tracker_components/tracker_calendar.dart';
-import 'tracker_components/tracker_symptoms.dart';
-import 'tracker_components/tracker_history.dart';
-import 'tracker_components/tracker_notes.dart';
+import 'period_tracker.dart';
+import 'ovulation_tracker.dart';
 
 class OvulationPage extends StatelessWidget {
   const OvulationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Provide the ViewModel to the view
-    return ChangeNotifierProvider(
-      create: (_) => OvulationViewModel(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
+        ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
+        ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
+      ],
       child: const OvulationView(),
     );
   }
@@ -26,55 +30,95 @@ class OvulationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to changes in the view model
-    final viewModel = context.watch<OvulationViewModel>();
-    final theme = viewModel.currentTheme;
+    final navViewModel = context.watch<TrackerNavigationViewModel>();
+    final theme = navViewModel.currentTheme;
 
     return Scaffold(
       backgroundColor: theme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: theme.headerText),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              TrackerToggle(viewModel: viewModel, theme: theme),
-              const SizedBox(height: 16),
-              Text(
-                viewModel.isPeriodTracker ? "Period Tracker" : "Ovulation Tracker",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: theme.headerText,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                viewModel.isPeriodTracker ? "Track your menstrual cycle" : "Track your fertile window",
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(height: 1, color: theme.border, width: double.infinity),
-              const SizedBox(height: 16),
-              TrackerCalendar(viewModel: viewModel, theme: theme),
-              const SizedBox(height: 12),
-              TrackerSymptoms(viewModel: viewModel, theme: theme),
-              const SizedBox(height: 12),
-              TrackerHistory(viewModel: viewModel, theme: theme),
-              const SizedBox(height: 12),
-              TrackerNotes(theme: theme),
-              const SizedBox(height: 32),
-            ],
-          ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTopNavigation(context, navViewModel),
+            Expanded(
+              child: navViewModel.isPeriodTracker
+                  ? const PeriodTrackerView()
+                  : const OvulationTrackerView(),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTopNavigation(BuildContext context, TrackerNavigationViewModel navViewModel) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Back Button
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: navViewModel.currentTheme.headerText),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          
+          // Toggle Switch
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: navViewModel.currentTheme.border, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => navViewModel.toggleTracker(true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: navViewModel.isPeriodTracker ? const Color(0xFFFD8CA1) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      "Period",
+                      style: TextStyle(
+                        color: navViewModel.isPeriodTracker ? Colors.white : const Color(0xFF333333),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => navViewModel.toggleTracker(false),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: !navViewModel.isPeriodTracker ? const Color(0xFFA8E6A1) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      "Ovulation",
+                      style: TextStyle(
+                        color: !navViewModel.isPeriodTracker ? Colors.white : const Color(0xFF333333),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Cycle History Shortcut
+          IconButton(
+            icon: Icon(Icons.history, color: navViewModel.currentTheme.headerText),
+            onPressed: () {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cycle History coming soon!')));
+            },
+          ),
+        ],
       ),
     );
   }
