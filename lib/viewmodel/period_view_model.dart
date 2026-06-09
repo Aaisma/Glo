@@ -19,6 +19,75 @@ class PeriodViewModel extends ChangeNotifier {
   DateTime get selectedDate => _selectedDate;
   List<PeriodLogModel> get logs => _logs;
 
+  DateTime? get lastPeriodStart {
+    if (_logs.isEmpty) return null;
+    
+    final periodDays = _logs.where((l) => l.isPeriodDay).toList();
+    if (periodDays.isEmpty) return null;
+
+    periodDays.sort((a, b) => b.date.compareTo(a.date));
+
+    DateTime currentStart = periodDays.first.date;
+    
+    for (int i = 0; i < periodDays.length - 1; i++) {
+       final curr = periodDays[i].date;
+       final prev = periodDays[i+1].date; 
+       
+       if (curr.difference(prev).inDays <= 1) {
+          currentStart = prev;
+       } else {
+          break;
+       }
+    }
+    
+    return currentStart;
+  }
+
+  int? get cycleDay {
+    final start = lastPeriodStart;
+    if (start == null) return null;
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    return today.difference(start).inDays + 1;
+  }
+
+  String get predictionText {
+    final start = lastPeriodStart;
+    if (start == null) return "Log period to predict cycle";
+    
+    final nextPeriod = start.add(const Duration(days: 28));
+    final nextOvulation = nextPeriod.subtract(const Duration(days: 14));
+    
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    
+    if (today.isBefore(nextOvulation)) {
+      final days = nextOvulation.difference(today).inDays;
+      if (days == 0) return "Ovulation is today";
+      return "Ovulation in $days Days";
+    } else if (today.isBefore(nextPeriod)) {
+      final days = nextPeriod.difference(today).inDays;
+      if (days == 0) return "Period starts today";
+      return "Period in $days Days";
+    } else {
+      final days = today.difference(nextPeriod).inDays;
+      return "Period is $days Days late";
+    }
+  }
+
+  DateTime? get predictionDate {
+    final start = lastPeriodStart;
+    if (start == null) return null;
+    
+    final nextPeriod = start.add(const Duration(days: 28));
+    final nextOvulation = nextPeriod.subtract(const Duration(days: 14));
+    
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    
+    if (today.isBefore(nextOvulation) || today.isAtSameMomentAs(nextOvulation)) {
+       return nextOvulation;
+    }
+    return nextPeriod;
+  }
+
   PeriodLogModel? get logForSelectedDate {
     try {
       return _logs.firstWhere((log) => 

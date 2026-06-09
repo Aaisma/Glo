@@ -130,12 +130,12 @@ class PeriodTrackerView extends StatelessWidget {
               final currentDate = DateTime(now.year, now.month, dayNumber);
               
               // Find log for this date
-              final log = viewModel.logs.firstWhere((l) => 
+              final logList = viewModel.logs.where((l) => 
                 l.date.year == currentDate.year && 
                 l.date.month == currentDate.month && 
-                l.date.day == currentDate.day, 
-                orElse: () => throw Exception() // Handled below
+                l.date.day == currentDate.day
               );
+              final log = logList.isNotEmpty ? logList.first : null;
               final isPeriodDay = log != null ? log.isPeriodDay : false;
 
               final isSelected = viewModel.selectedDate.year == currentDate.year &&
@@ -198,7 +198,7 @@ class PeriodTrackerView extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            "Other Symptoms >",
+            "More Symptoms >",
             style: TextStyle(
               color: theme.headerText,
               fontWeight: FontWeight.bold,

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../view/components/dashboard_card.dart';
 import '../../../view/components/top_navigation.dart';
 import '../../../view/components/bottom_navigation.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../viewmodel/period_view_model.dart';
 
 // Navigation pages
 import 'profile_page.dart';
@@ -10,7 +13,7 @@ import 'insight_page.dart';
 import 'history_page.dart';
 
 // Wellness pages
-import '../../../view/dashboard_card/log_symptom_page.dart';
+import '../../../view/dashboard_card/log_symptoms_page.dart';
 import '../dashboard_card/ovulation_period_page.dart';
 
 // Card pages
@@ -62,6 +65,7 @@ class DashboardHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final periodViewModel = context.watch<PeriodViewModel>();
 
     final dashboardItems = [
       {"title": "Daily Journal", "image": "assets/images/journal.png"},
@@ -138,10 +142,10 @@ class DashboardHome extends StatelessWidget {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            "DAY 23",
-                            style: TextStyle(
+                            periodViewModel.cycleDay != null ? "DAY ${periodViewModel.cycleDay}" : "DAY --",
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFFFD8CA1),
@@ -152,16 +156,19 @@ class DashboardHome extends StatelessWidget {
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("Ovulation in 2 Days",
-                              style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 6),
+                        children: [
+                          Text(periodViewModel.predictionText,
+                              style: const TextStyle(fontSize: 16, color: Colors.white)),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.show_chart, color: Colors.white, size: 16),
-                              SizedBox(width: 6),
-                              Text("April 03, 2026",
-                                  style: TextStyle(fontSize: 14, color: Colors.white70)),
+                              const Icon(Icons.show_chart, color: Colors.white, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                  periodViewModel.predictionDate != null 
+                                      ? DateFormat('MMMM dd, yyyy').format(periodViewModel.predictionDate!)
+                                      : DateFormat('MMMM dd, yyyy').format(DateTime.now()),
+                                  style: const TextStyle(fontSize: 14, color: Colors.white70)),
                             ],
                           ),
                         ],
@@ -252,7 +259,7 @@ class DashboardHome extends StatelessWidget {
                       ),
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const LogSymptomsPage()),
+                        MaterialPageRoute(builder: (_) => const LogSymptomsPage(isPeriod: false)),
                       ),
                       child: const Text(
                         "Log Symptoms +",
