@@ -36,6 +36,15 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  shared_preferences: ^2.5.5
+  firebase_core: ^4.9.0
+  fluttertoast: ^9.1.0
+  cloud_firestore: ^6.4.1
+
+  nepali_utils: ^3.0.8
+  nepali_date_picker: ^7.0.1
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -69,11 +78,28 @@ flutter:
     - assets/images/cystic.png
 
   # To add assets to your application, add an assets section, like this:
+<<<<<<< HEAD
+  assets:
+    - assets/videos/
+    - assets/animations/
+
+    - assets/images/acnetracker.png
+    - assets/images/background.png
+    - assets/images/flower.png
+    - assets/images/journal.png
+    - assets/images/logo.png
+    - assets/images/medication.png
+    - assets/images/profile picture.png
+    - assets/images/skinderma.png
+    - assets/images/stressandsleep.png
+    - assets/images/watertracker.png
+=======
   # assets:
   #   - assets/
   #   - assets/images
   #   - assets/videos/
   #   - assets/animations/
+>>>>>>> pranisha_branch
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
