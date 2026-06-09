@@ -17,3 +17,15 @@ class WaterIntake {
       'date': date.toIso8601String(),
     };
   }
+
+  WaterIntake copyWith({
+    String? id,
+    double? amount,
+    DateTime? date,
+  }) {
+    return WaterIntake(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+    );
+  }
