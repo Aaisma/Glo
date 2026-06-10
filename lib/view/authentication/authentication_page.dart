@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../components/top_navigation.dart';
 import 'login_screen.dart';
 import 'register.dart';
-import '../profile_pages/help_support_page.dart';
-import '../profile_pages/about_us_page.dart';
+import 'package:glo/view/navigation_icon/profile_pages/help_support_page.dart';
+import 'package:glo/view/navigation_icon/profile_pages/about_us_page.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});

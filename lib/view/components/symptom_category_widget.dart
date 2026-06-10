@@ -40,6 +40,7 @@ class SymptomCategoryWidget extends StatelessWidget {
               return SymptomItemWidget(
                 name: item['name'],
                 icon: item['icon'],
+                imagePath: item['imagePath'],
                 isSelected: isSelected,
                 onTap: () => onSymptomToggled(item['name']),
               );
@@ -55,56 +56,79 @@ class SymptomCategoryWidget extends StatelessWidget {
 class SymptomItemWidget extends StatelessWidget {
   final String name;
   final IconData icon;
+  final String? imagePath;
   final bool isSelected;
   final VoidCallback onTap;
+  final double itemWidth;
 
   const SymptomItemWidget({
     super.key,
     required this.name,
     required this.icon,
+    this.imagePath,
     required this.isSelected,
     required this.onTap,
+    this.itemWidth = 85.0,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 65,
-            height: 65,
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(color: Colors.pinkAccent, width: 2)
-                  : Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1),
-            ),
-            child: Center(
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.pinkAccent : Colors.white,
-                size: 32,
+      child: SizedBox(
+        width: itemWidth,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: itemWidth - 10,
+              height: itemWidth - 10,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFFFFFFFF), Color(0xFFF6ECE4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                color: isSelected ? Colors.pinkAccent.withValues(alpha: 0.1) : null,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? Colors.pinkAccent : Colors.transparent,
+                  width: 2,
+                ),
+                boxShadow: [
+                  if (!isSelected)
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    )
+                ],
               ),
+              child: imagePath != null
+                  ? Image.asset(imagePath!, fit: BoxFit.contain)
+                  : Icon(
+                      icon,
+                      color: isSelected ? Colors.pinkAccent : const Color(0xFF8C7D73),
+                      size: (itemWidth - 10) / 2,
+                    ),
             ),
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: 75,
-            child: Text(
+            const SizedBox(height: 8),
+            Text(
               name,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.pinkAccent : const Color(0xFF8C7D73),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
