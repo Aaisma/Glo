@@ -16,6 +16,9 @@ dependencies:
   fl_chart: ^0.70.0
   flutter_svg: ^2.0.9
   shared_preferences: ^2.2.2
+  table_calendar: ^3.0.9   # or latest version
+
+
 
 dev_dependencies:
   flutter_test:
