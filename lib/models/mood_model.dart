@@ -1,7 +1,5 @@
-class MoodModel {
+class Mood {
   final String label;
-  final String emoji;
-  bool isSelected;
-
-  MoodModel(this.label, this.emoji, {this.isSelected = false});
+  final String image;
+  Mood({required this.label, required this.image});
 }

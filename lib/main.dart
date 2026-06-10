@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
-import 'mood_wellness.dart';
-
+import 'mood_calendar.dart'; // make sure this matches your file name
 
 void main() {
-  runApp(const GlowApp());
+  runApp(const MoodCalendarApp());
 }
 
-class GlowApp extends StatelessWidget {
-  const GlowApp({super.key});
+class MoodCalendarApp extends StatelessWidget {
+  const MoodCalendarApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Glow',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFFFF6F8),
-        fontFamily: 'Roboto',
-      ),
-      home: const MoodWellnessScreen(),
+      title: 'Mood Calendar',
+      theme: ThemeData(primarySwatch: Colors.pink),
+      home: const MoodCalendarScreen(),
     );
   }
 }
