@@ -21,7 +21,7 @@ class ThemeColors {
 }
 
 final periodTheme = ThemeColors(
-  background: const Color(0xFFFDF0F3),
+  background: Colors.white,
   headerText: const Color(0xFFD64A62),
   toggleActiveBg: const Color(0xFFDC4158),
   border: const Color(0xFFE5B4BE),
@@ -31,7 +31,7 @@ final periodTheme = ThemeColors(
 );
 
 final ovulationTheme = ThemeColors(
-  background: const Color(0xFFEBF6EA),
+  background: Colors.white,
   headerText: const Color(0xFF5A8E4C),
   toggleActiveBg: const Color(0xFF549A46),
   border: const Color(0xFFBEDEB8),

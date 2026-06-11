@@ -49,6 +49,7 @@ dependencies:
   nepali_utils: ^3.0.8
   nepali_date_picker: ^7.0.1
   provider: ^6.1.5+1
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:

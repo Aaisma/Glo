@@ -1,92 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../model/period_log_model.dart';
+import '../model/ovulation_log_model.dart';
+import '../model/cycle_analytics_engine.dart';
 import '../repo/period_repo.dart';
+import '../repo/ovulation_repo.dart';
+import '../repo/ovulation_repo_impl.dart';
 
 class PeriodViewModel extends ChangeNotifier {
   final PeriodRepo _repo;
+  final OvulationRepo _ovulationRepo;
   final String _userId;
 
-  PeriodViewModel(this._repo) : _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest' {
+  PeriodViewModel(this._repo, {OvulationRepo? ovulationRepo})
+      : _ovulationRepo = ovulationRepo ?? OvulationRepoImpl(),
+        _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest' {
     fetchLogs();
   }
 
   DateTime _currentMonth = DateTime.now();
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   List<PeriodLogModel> _logs = [];
+  List<OvulationLogModel> _ovulationLogs = [];
+  CycleAnalyticsResult? _analyticsResult;
 
   DateTime get currentMonth => _currentMonth;
   DateTime get selectedDate => _selectedDate;
   List<PeriodLogModel> get logs => _logs;
+  List<OvulationLogModel> get ovulationLogs => _ovulationLogs;
+  CycleAnalyticsResult? get analyticsResult => _analyticsResult;
 
-  DateTime? get lastPeriodStart {
-    if (_logs.isEmpty) return null;
-    
-    final periodDays = _logs.where((l) => l.isPeriodDay).toList();
-    if (periodDays.isEmpty) return null;
-
-    periodDays.sort((a, b) => b.date.compareTo(a.date));
-
-    DateTime currentStart = periodDays.first.date;
-    
-    for (int i = 0; i < periodDays.length - 1; i++) {
-       final curr = periodDays[i].date;
-       final prev = periodDays[i+1].date; 
-       
-       if (curr.difference(prev).inDays <= 1) {
-          currentStart = prev;
-       } else {
-          break;
-       }
-    }
-    
-    return currentStart;
-  }
-
-  int? get cycleDay {
-    final start = lastPeriodStart;
-    if (start == null) return null;
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    return today.difference(start).inDays + 1;
-  }
-
-  String get predictionText {
-    final start = lastPeriodStart;
-    if (start == null) return "Log period to predict cycle";
-    
-    final nextPeriod = start.add(const Duration(days: 28));
-    final nextOvulation = nextPeriod.subtract(const Duration(days: 14));
-    
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    
-    if (today.isBefore(nextOvulation)) {
-      final days = nextOvulation.difference(today).inDays;
-      if (days == 0) return "Ovulation is today";
-      return "Ovulation in $days Days";
-    } else if (today.isBefore(nextPeriod)) {
-      final days = nextPeriod.difference(today).inDays;
-      if (days == 0) return "Period starts today";
-      return "Period in $days Days";
-    } else {
-      final days = today.difference(nextPeriod).inDays;
-      return "Period is $days Days late";
-    }
-  }
-
-  DateTime? get predictionDate {
-    final start = lastPeriodStart;
-    if (start == null) return null;
-    
-    final nextPeriod = start.add(const Duration(days: 28));
-    final nextOvulation = nextPeriod.subtract(const Duration(days: 14));
-    
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    
-    if (today.isBefore(nextOvulation) || today.isAtSameMomentAs(nextOvulation)) {
-       return nextOvulation;
-    }
-    return nextPeriod;
-  }
+  // Compatibility helpers
+  DateTime? get lastPeriodStart => _analyticsResult?.lastPeriodStartDate;
+  int? get cycleDay => _analyticsResult?.lastPeriodStartDate == null ? null : _analyticsResult?.currentCycleDay;
+  String get predictionText => _analyticsResult?.nextPredictedEventText ?? "Log period to predict cycle";
+  DateTime? get predictionDate => _analyticsResult?.nextPredictedEventDate;
 
   PeriodLogModel? get logForSelectedDate {
     try {
@@ -102,11 +51,21 @@ class PeriodViewModel extends ChangeNotifier {
 
   Future<void> fetchLogs() async {
     _logs = await _repo.getLogsForUser(_userId);
+    _ovulationLogs = await _ovulationRepo.getLogsForUser(_userId);
+    _analyticsResult = CycleAnalyticsEngine.calculate(
+      periodLogs: _logs,
+      ovulationLogs: _ovulationLogs,
+    );
     notifyListeners();
   }
 
   void changeMonth(int increment) {
     _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + increment);
+    notifyListeners();
+  }
+
+  void setCurrentMonth(DateTime date) {
+    _currentMonth = DateTime(date.year, date.month, date.day);
     notifyListeners();
   }
 
@@ -117,6 +76,41 @@ class PeriodViewModel extends ChangeNotifier {
 
   Future<void> togglePeriodDay() async {
     await _updateOrAddLog((log) => log.copyWith(isPeriodDay: !log.isPeriodDay));
+  }
+
+  Future<void> logPeriodRange(DateTime startDate, int length) async {
+    final now = DateTime.now();
+    for (int i = 0; i < length; i++) {
+      final date = startDate.add(Duration(days: i));
+      PeriodLogModel? existingLog;
+      try {
+        existingLog = _logs.firstWhere((l) =>
+          l.date.year == date.year &&
+          l.date.month == date.month &&
+          l.date.day == date.day
+        );
+      } catch (e) {
+        existingLog = null;
+      }
+
+      if (existingLog != null) {
+        if (!existingLog.isPeriodDay) {
+          final updatedLog = existingLog.copyWith(isPeriodDay: true, updatedAt: now);
+          await _repo.updateLog(updatedLog);
+        }
+      } else {
+        final newLog = PeriodLogModel(
+          id: '',
+          userId: _userId,
+          date: date,
+          isPeriodDay: true,
+          createdAt: now,
+          updatedAt: now,
+        );
+        await _repo.addLog(newLog);
+      }
+    }
+    await fetchLogs();
   }
 
   Future<void> updateBBT(double bbt) async {
@@ -147,14 +141,13 @@ class PeriodViewModel extends ChangeNotifier {
       final updatedLog = updateFn(existingLog).copyWith(updatedAt: now);
       await _repo.updateLog(updatedLog);
       
-      // Update local state
       final index = _logs.indexWhere((l) => l.id == updatedLog.id);
       if (index != -1) {
         _logs[index] = updatedLog;
       }
     } else {
       final newLog = updateFn(PeriodLogModel(
-        id: '', // Repo will set this
+        id: '',
         userId: _userId,
         date: _selectedDate,
         createdAt: now,
@@ -162,9 +155,7 @@ class PeriodViewModel extends ChangeNotifier {
       ));
       
       await _repo.addLog(newLog);
-      // Re-fetch to get the new log with ID from DB
-      await fetchLogs();
     }
-    notifyListeners();
+    await fetchLogs();
   }
 }

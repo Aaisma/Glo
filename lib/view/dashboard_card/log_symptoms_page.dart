@@ -9,6 +9,81 @@ import '../../viewmodel/log_symptoms_view_model.dart';
 import 'tracker_components/symptom_card.dart';
 import '../navigation_icon/dashboard_page.dart';
 
+const List<SymptomOption> sexualActivityOptions = [
+  SymptomOption("No Sex", Icons.block),
+  SymptomOption("Protected", Icons.health_and_safety),
+  SymptomOption("Unprotected", Icons.warning_amber),
+  SymptomOption("Oral Sex", Icons.face),
+  SymptomOption("Anal Sex", Icons.lens_blur),
+  SymptomOption("Masturbation", Icons.back_hand),
+  SymptomOption("Sensual Touch", Icons.touch_app),
+  SymptomOption("Sex Toy", Icons.vibration),
+  SymptomOption("Orgasm", Icons.star),
+];
+
+const List<SymptomOption> sexDriveOptions = [
+  SymptomOption("High", Icons.keyboard_double_arrow_up),
+  SymptomOption("Neutral", Icons.remove),
+  SymptomOption("Low", Icons.keyboard_double_arrow_down),
+];
+
+const List<SymptomOption> periodSymptomsOptions = [
+  SymptomOption("No Symptoms", Icons.sentiment_satisfied),
+  SymptomOption("Cramps", Icons.sick),
+  SymptomOption("Tender Breast", Icons.favorite),
+  SymptomOption("Headache", Icons.face_retouching_off),
+  SymptomOption("Acne", Icons.face),
+  SymptomOption("Backache", Icons.airline_seat_flat),
+  SymptomOption("Fatigue", Icons.battery_alert),
+  SymptomOption("Cravings", Icons.restaurant),
+  SymptomOption("Insomnia", Icons.bedtime),
+  SymptomOption("Constipation", Icons.bathroom),
+  SymptomOption("Lower Back", Icons.accessibility_new),
+  SymptomOption("Abdominal", Icons.healing),
+  SymptomOption("Pelvic Pain", Icons.personal_injury),
+  SymptomOption("Itching", Icons.waves),
+  SymptomOption("Dryness", Icons.water_drop),
+  SymptomOption("Hot Flashes", Icons.local_fire_department),
+  SymptomOption("Sweats", Icons.water),
+  SymptomOption("Bloating", Icons.air),
+  SymptomOption("Mood Swings", Icons.compare_arrows),
+  SymptomOption("Nausea", Icons.sick),
+];
+
+const List<SymptomOption> ovulationSymptomsOptions = [
+  SymptomOption("No Symptoms", Icons.sentiment_satisfied),
+  SymptomOption("Cervical Mucus", Icons.water_drop),
+  SymptomOption("Ovulation Pain", Icons.health_and_safety),
+  SymptomOption("Libido", Icons.favorite),
+  SymptomOption("Breast Tenderness", Icons.face),
+  SymptomOption("Bloating", Icons.air),
+];
+
+const List<SymptomOption> vaginalDischargeOptions = [
+  SymptomOption("None", Icons.not_interested),
+  SymptomOption("Creamy", Icons.opacity),
+  SymptomOption("Watery", Icons.water_drop),
+  SymptomOption("Sticky", Icons.hive),
+  SymptomOption("Egg white", Icons.egg),
+  SymptomOption("Spotting", Icons.fiber_manual_record),
+  SymptomOption("Unusual", Icons.warning),
+  SymptomOption("Clumpy", Icons.cloud),
+  SymptomOption("Grey", Icons.lens),
+];
+
+const List<SymptomOption> ovulationTestOptions = [
+  SymptomOption("Not Taken", Icons.cancel_outlined),
+  SymptomOption("Negative", Icons.remove_circle_outline),
+  SymptomOption("Positive", Icons.add_circle_outline),
+];
+
+const List<SymptomOption> pregnancyTestOptions = [
+  SymptomOption("Not Taken", Icons.cancel_outlined),
+  SymptomOption("Negative", Icons.remove_circle_outline),
+  SymptomOption("Positive", Icons.add_circle_outline),
+  SymptomOption("Faint line", Icons.linear_scale),
+];
+
 class LogSymptomsPage extends StatefulWidget {
   final bool isPeriod;
 
@@ -49,71 +124,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
     );
   }
 
-  final List<SymptomOption> sexualActivityOptions = const [
-    SymptomOption("No Sex", Icons.block),
-    SymptomOption("Protected", Icons.health_and_safety),
-    SymptomOption("Unprotected", Icons.warning_amber),
-    SymptomOption("Oral Sex", Icons.face),
-    SymptomOption("Anal Sex", Icons.lens_blur),
-    SymptomOption("Masturbation", Icons.back_hand),
-    SymptomOption("Sensual Touch", Icons.touch_app),
-    SymptomOption("Sex Toy", Icons.vibration),
-    SymptomOption("Orgasm", Icons.star),
-  ];
 
-  final List<SymptomOption> sexDriveOptions = const [
-    SymptomOption("High", Icons.keyboard_double_arrow_up),
-    SymptomOption("Neutral", Icons.remove),
-    SymptomOption("Low", Icons.keyboard_double_arrow_down),
-  ];
-
-  final List<SymptomOption> periodSymptomsOptions = const [
-    SymptomOption("No Symptoms", Icons.sentiment_satisfied),
-    SymptomOption("Cramps", Icons.sick),
-    SymptomOption("Tender Breast", Icons.favorite),
-    SymptomOption("Headache", Icons.face_retouching_off),
-    SymptomOption("Acne", Icons.face),
-    SymptomOption("Backache", Icons.airline_seat_flat),
-    SymptomOption("Fatigue", Icons.battery_alert),
-    SymptomOption("Cravings", Icons.restaurant),
-    SymptomOption("Insomnia", Icons.bedtime),
-    SymptomOption("Constipation", Icons.bathroom),
-    SymptomOption("Lower Back", Icons.accessibility_new),
-    SymptomOption("Abdominal", Icons.healing),
-    SymptomOption("Pelvic Pain", Icons.personal_injury),
-    SymptomOption("Itching", Icons.waves),
-    SymptomOption("Dryness", Icons.water_drop),
-    SymptomOption("Hot Flashes", Icons.local_fire_department),
-    SymptomOption("Sweats", Icons.water),
-    SymptomOption("Bloating", Icons.air),
-    SymptomOption("Mood Swings", Icons.compare_arrows),
-    SymptomOption("Nausea", Icons.sick),
-  ];
-
-  final List<SymptomOption> vaginalDischargeOptions = const [
-    SymptomOption("None", Icons.not_interested),
-    SymptomOption("Creamy", Icons.opacity),
-    SymptomOption("Watery", Icons.water_drop),
-    SymptomOption("Sticky", Icons.hive),
-    SymptomOption("Egg white", Icons.egg),
-    SymptomOption("Spotting", Icons.fiber_manual_record),
-    SymptomOption("Unusual", Icons.warning),
-    SymptomOption("Clumpy", Icons.cloud),
-    SymptomOption("Grey", Icons.lens),
-  ];
-
-  final List<SymptomOption> ovulationTestOptions = const [
-    SymptomOption("Not Taken", Icons.cancel_outlined),
-    SymptomOption("Negative", Icons.remove_circle_outline),
-    SymptomOption("Positive", Icons.add_circle_outline),
-  ];
-
-  final List<SymptomOption> pregnancyTestOptions = const [
-    SymptomOption("Not Taken", Icons.cancel_outlined),
-    SymptomOption("Negative", Icons.remove_circle_outline),
-    SymptomOption("Positive", Icons.add_circle_outline),
-    SymptomOption("Faint line", Icons.linear_scale),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -259,71 +270,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SymptomCard(
-                      title: "Period Symptoms",
-                      categoryIcon: Icons.water_drop,
-                      categoryColor: Colors.pinkAccent,
-                      options: periodSymptomsOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Period Symptoms"),
-                      isSingleChoice: false,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Period Symptoms", periodSymptomsOptions, false),
-                    ),
-                    SymptomCard(
-                      title: "Ovulation Symptoms",
-                      categoryIcon: Icons.filter_vintage,
-                      categoryColor: Colors.deepPurpleAccent,
-                      options: periodSymptomsOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Ovulation Symptoms"),
-                      isSingleChoice: false,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Ovulation Symptoms", periodSymptomsOptions, false),
-                    ),
-                    SymptomCard(
-                      title: "Sex & Intimacy",
-                      categoryIcon: Icons.favorite,
-                      categoryColor: Colors.pink,
-                      options: sexualActivityOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Sex & Intimacy"),
-                      isSingleChoice: true,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Sex & Intimacy", sexualActivityOptions, true),
-                    ),
-                    SymptomCard(
-                      title: "Sex Drive",
-                      categoryIcon: Icons.trending_up,
-                      categoryColor: Colors.orangeAccent,
-                      options: sexDriveOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Sex Drive"),
-                      isSingleChoice: true,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Sex Drive", sexDriveOptions, true),
-                    ),
-                    SymptomCard(
-                      title: "Vaginal Discharge",
-                      categoryIcon: Icons.opacity,
-                      categoryColor: Colors.teal,
-                      options: vaginalDischargeOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Vaginal Discharge"),
-                      isSingleChoice: true,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Vaginal Discharge", vaginalDischargeOptions, true),
-                    ),
-                    SymptomCard(
-                      title: "Pregnancy Test",
-                      categoryIcon: Icons.medication,
-                      categoryColor: Colors.blueAccent,
-                      options: pregnancyTestOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Pregnancy Test"),
-                      isSingleChoice: true,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Pregnancy Test", pregnancyTestOptions, true),
-                    ),
-                    SymptomCard(
-                      title: "Ovulation Test",
-                      categoryIcon: Icons.science,
-                      categoryColor: Colors.deepPurple,
-                      options: ovulationTestOptions,
-                      selectedOptions: _viewModel.getSelectedOptionsForCategory("Ovulation Test"),
-                      isSingleChoice: true,
-                      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Ovulation Test", ovulationTestOptions, true),
-                    ),
-                    _buildNotesCard(),
-                    const SizedBox(height: 20),
+                    ..._buildSymptomCards(),
                   ],
                 ),
               ),
@@ -352,6 +299,133 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
         );
       }
     );
+  }
+
+  List<Widget> _buildSymptomCards() {
+    final periodSymptomsCard = SymptomCard(
+      title: "Period Symptoms",
+      categoryIcon: Icons.water_drop,
+      categoryColor: Colors.pinkAccent,
+      options: periodSymptomsOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Period Symptoms"),
+      isSingleChoice: false,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Period Symptoms", periodSymptomsOptions, false),
+      initiallyExpanded: widget.isPeriod,
+    );
+
+    final ovulationSymptomsCard = SymptomCard(
+      title: "Ovulation Symptoms",
+      categoryIcon: Icons.filter_vintage,
+      categoryColor: Colors.deepPurpleAccent,
+      options: ovulationSymptomsOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Ovulation Symptoms"),
+      isSingleChoice: false,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Ovulation Symptoms", ovulationSymptomsOptions, false),
+      initiallyExpanded: !widget.isPeriod,
+    );
+
+    final sexIntimacyCard = SymptomCard(
+      title: "Sex & Intimacy",
+      categoryIcon: Icons.favorite,
+      categoryColor: Colors.pink,
+      options: sexualActivityOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Sex & Intimacy"),
+      isSingleChoice: true,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Sex & Intimacy", sexualActivityOptions, true),
+    );
+
+    final sexDriveCard = SymptomCard(
+      title: "Sex Drive",
+      categoryIcon: Icons.trending_up,
+      categoryColor: Colors.orangeAccent,
+      options: sexDriveOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Sex Drive"),
+      isSingleChoice: true,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Sex Drive", sexDriveOptions, true),
+    );
+
+    final vaginalDischargeCard = SymptomCard(
+      title: "Vaginal Discharge",
+      categoryIcon: Icons.opacity,
+      categoryColor: Colors.teal,
+      options: vaginalDischargeOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Vaginal Discharge"),
+      isSingleChoice: true,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Vaginal Discharge", vaginalDischargeOptions, true),
+    );
+
+    final pregnancyTestCard = SymptomCard(
+      title: "Pregnancy Test",
+      categoryIcon: Icons.medication,
+      categoryColor: Colors.blueAccent,
+      options: pregnancyTestOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Pregnancy Test"),
+      isSingleChoice: true,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Pregnancy Test", pregnancyTestOptions, true),
+    );
+
+    final ovulationTestCard = SymptomCard(
+      title: "Ovulation Test",
+      categoryIcon: Icons.science,
+      categoryColor: Colors.deepPurple,
+      options: ovulationTestOptions,
+      selectedOptions: _viewModel.getSelectedOptionsForCategory("Ovulation Test"),
+      isSingleChoice: true,
+      onOptionSelected: (opt) => _viewModel.handleOptionSelected(opt, "Ovulation Test", ovulationTestOptions, true),
+    );
+
+    final notesCard = _buildNotesCard();
+
+    final otherLogsDivider = const Padding(
+      padding: EdgeInsets.only(top: 8.0, bottom: 12.0),
+      child: Center(
+        child: Row(
+          children: [
+            Expanded(child: Divider(color: SymptomColours.border)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                "Other Logs",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: SymptomColours.textSecondary,
+                ),
+              ),
+            ),
+            Expanded(child: Divider(color: SymptomColours.border)),
+          ],
+        ),
+      ),
+    );
+
+    if (widget.isPeriod) {
+      return [
+        periodSymptomsCard,
+        sexIntimacyCard,
+        sexDriveCard,
+        vaginalDischargeCard,
+        notesCard,
+        otherLogsDivider,
+        ovulationSymptomsCard,
+        pregnancyTestCard,
+        ovulationTestCard,
+        const SizedBox(height: 20),
+      ];
+    } else {
+      return [
+        ovulationSymptomsCard,
+        vaginalDischargeCard,
+        sexIntimacyCard,
+        sexDriveCard,
+        notesCard,
+        otherLogsDivider,
+        periodSymptomsCard,
+        pregnancyTestCard,
+        ovulationTestCard,
+        const SizedBox(height: 20),
+      ];
+    }
   }
 
   Widget _buildNotesCard() {

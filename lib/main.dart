@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.pink,
         ),
-        home: const LogSymptomsPage(isPeriod: false),
+        home: const OvulationPage(),
       ),
     );
   }

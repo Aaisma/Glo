@@ -1,23 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/ovulation_log_model.dart';
+import '../model/period_log_model.dart';
+import '../model/cycle_analytics_engine.dart';
 import '../repo/ovulation_repo.dart';
+import '../repo/period_repo.dart';
+import '../repo/period_repo_impl.dart';
 
 class OvulationViewModel extends ChangeNotifier {
   final OvulationRepo _repo;
+  final PeriodRepo _periodRepo;
   final String _userId;
 
-  OvulationViewModel(this._repo) : _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest' {
+  OvulationViewModel(this._repo, {PeriodRepo? periodRepo})
+      : _periodRepo = periodRepo ?? PeriodRepoImpl(),
+        _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest' {
     fetchLogs();
   }
 
   DateTime _currentMonth = DateTime.now();
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   List<OvulationLogModel> _logs = [];
+  List<PeriodLogModel> _periodLogs = [];
+  CycleAnalyticsResult? _analyticsResult;
 
   DateTime get currentMonth => _currentMonth;
   DateTime get selectedDate => _selectedDate;
   List<OvulationLogModel> get logs => _logs;
+  List<PeriodLogModel> get periodLogs => _periodLogs;
+  CycleAnalyticsResult? get analyticsResult => _analyticsResult;
+
+  // Compatibility helper
+  bool get isPeriodTracker => false;
 
   OvulationLogModel? get logForSelectedDate {
     try {
@@ -33,11 +47,21 @@ class OvulationViewModel extends ChangeNotifier {
 
   Future<void> fetchLogs() async {
     _logs = await _repo.getLogsForUser(_userId);
+    _periodLogs = await _periodRepo.getLogsForUser(_userId);
+    _analyticsResult = CycleAnalyticsEngine.calculate(
+      periodLogs: _periodLogs,
+      ovulationLogs: _logs,
+    );
     notifyListeners();
   }
 
   void changeMonth(int increment) {
     _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + increment);
+    notifyListeners();
+  }
+
+  void setCurrentMonth(DateTime date) {
+    _currentMonth = DateTime(date.year, date.month, date.day);
     notifyListeners();
   }
 
@@ -52,6 +76,58 @@ class OvulationViewModel extends ChangeNotifier {
 
   Future<void> toggleFertileWindow() async {
     await _updateOrAddLog((log) => log.copyWith(isFertileWindow: !log.isFertileWindow));
+  }
+
+  Future<void> logOvulationRange(DateTime ovulationDate) async {
+    final now = DateTime.now();
+    
+    // Log ovulation day
+    await _updateOrAddLogForDate(ovulationDate, (l) => l.copyWith(isOvulationDay: true, isFertileWindow: true));
+
+    // Log 3 days before
+    for (int i = 1; i <= 3; i++) {
+      final date = ovulationDate.subtract(Duration(days: i));
+      await _updateOrAddLogForDate(date, (l) => l.copyWith(isFertileWindow: true));
+    }
+
+    // Log 2 days after
+    for (int i = 1; i <= 2; i++) {
+      final date = ovulationDate.add(Duration(days: i));
+      await _updateOrAddLogForDate(date, (l) => l.copyWith(isFertileWindow: true));
+    }
+
+    await fetchLogs();
+  }
+
+  Future<void> _updateOrAddLogForDate(DateTime date, OvulationLogModel Function(OvulationLogModel) updateFn) async {
+    final existingLog = _getLogForDate(date);
+    final now = DateTime.now();
+
+    if (existingLog != null) {
+      final updatedLog = updateFn(existingLog).copyWith(updatedAt: now);
+      await _repo.updateLog(updatedLog);
+    } else {
+      final newLog = updateFn(OvulationLogModel(
+        id: '',
+        userId: _userId,
+        date: date,
+        createdAt: now,
+        updatedAt: now,
+      ));
+      await _repo.addLog(newLog);
+    }
+  }
+
+  OvulationLogModel? _getLogForDate(DateTime date) {
+    try {
+      return _logs.firstWhere((l) =>
+        l.date.year == date.year &&
+        l.date.month == date.month &&
+        l.date.day == date.day
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> updateBBT(double bbt) async {
@@ -96,8 +172,7 @@ class OvulationViewModel extends ChangeNotifier {
       ));
       
       await _repo.addLog(newLog);
-      await fetchLogs();
     }
-    notifyListeners();
+    await fetchLogs();
   }
 }

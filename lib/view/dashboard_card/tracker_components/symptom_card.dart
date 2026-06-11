@@ -18,6 +18,8 @@ class SymptomCard extends StatefulWidget {
   final bool isSingleChoice;
   final Function(String) onOptionSelected;
 
+  final bool initiallyExpanded;
+
   const SymptomCard({
     super.key,
     required this.title,
@@ -27,6 +29,7 @@ class SymptomCard extends StatefulWidget {
     required this.selectedOptions,
     required this.isSingleChoice,
     required this.onOptionSelected,
+    this.initiallyExpanded = false,
   });
 
   @override
@@ -34,7 +37,13 @@ class SymptomCard extends StatefulWidget {
 }
 
 class _SymptomCardState extends State<SymptomCard> {
-  bool _isExpanded = false;
+  late bool _isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpanded = widget.initiallyExpanded;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +69,7 @@ class _SymptomCardState extends State<SymptomCard> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          initiallyExpanded: widget.initiallyExpanded,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           onExpansionChanged: (expanded) {
             setState(() {
