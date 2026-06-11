@@ -264,11 +264,14 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       child: _buildNavigationRow(
                         context,
                         Icons.book_outlined,
-                        'Mood Journal',
-                        'Write your mood, thoughts & notes',
+                        'Mood Details', // Changed title to match your intent
+                        'See your detailed mood analysis',
                         Colors.teal,
-                        // 🛠️ FIXED HERE: Removed invalid const keyword from constructor instantiation!
-                            () => Navigator.push(context, MaterialPageRoute(builder: (context) => MoodDetailsScreen())),
+                        // Ensure this class name matches exactly what is in mood_details.dart
+                            () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MoodDetailsScreen())
+                        ),
                       ),
                     ),
                   ],
