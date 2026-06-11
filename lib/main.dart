@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import '/mood_calendar_screen.dart';
-
+import 'mood_calendar_screen.dart';
 void main() {
-  runApp(const MoodApp());
+  runApp(const MyApp());
 }
 
-class MoodApp extends StatelessWidget {
-  const MoodApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Mood Tracker',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.pink,
+        scaffoldBackgroundColor: const Color(0xFFFFF5F5), // Matches your UI background
+        useMaterial3: true,
       ),
-      home: MoodCalendarScreen(),
+      home: const MoodCalendarScreen(),
     );
   }
 }
