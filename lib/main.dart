@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'mood_calendar_screen.dart';
+import 'mood_tracker_screen.dart'; // Imports your custom screen file
+
 void main() {
   runApp(const MyApp());
 }
@@ -9,14 +10,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mood Tracker',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFFFF5F5), // Matches your UI background
-        useMaterial3: true,
-      ),
-      home: const MoodCalendarScreen(),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false, // Hides the red debug banner on the top right
+      title: 'Mood Tracker App',
+      home: MoodTrackerScreen(), // Launches your exact mood tracker layout as home
     );
   }
 }
