@@ -9,11 +9,34 @@ class MoodCalendarScreen extends StatefulWidget {
 }
 
 class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  // FIXED: Changed to 'final' to solve the private field lint warning
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime(2026, 1, 1);
   DateTime? _selectedDay;
 
-  // Author-free inspiring quotes
+  // Moods explicitly defined by their name and emoji
+  final List<Map<String, String>> _moodDefinitions = [
+    {'name': 'Amazing', 'emoji': '😍'},
+    {'name': 'Happy', 'emoji': '😀'},
+    {'name': 'Calm', 'emoji': '😌'},
+    {'name': 'Neutral', 'emoji': '😐'},
+    {'name': 'Sad', 'emoji': '😢'},
+    {'name': 'Angry', 'emoji': '😡'},
+  ];
+
+  // Map tracking user logged moods
+  final Map<DateTime, String> _userLoggedMoods = {
+    DateTime(2026, 1, 1): '😍',
+    DateTime(2026, 1, 2): '😢',
+    DateTime(2026, 1, 3): '😡',
+    DateTime(2026, 1, 4): '😐',
+    DateTime(2026, 1, 5): '😐',
+    DateTime(2026, 1, 6): '😀',
+    DateTime(2026, 1, 7): '😍',
+    DateTime(2026, 1, 8): '😢',
+    DateTime(2026, 1, 9): '😀',
+  };
+
   final Map<String, String> _moodQuotes = {
     '😍': '"Enjoy the little things, for one day you may look back and realize they were the big things."',
     '😀': '"Joy is not in things; it is in us."',
@@ -28,32 +51,95 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
     return DateTime(date.year, date.month, date.day);
   }
 
-  // Generates dynamic mood emojis to populate the calendar grid
-  String _getMoodForDate(DateTime date) {
-    final normalized = _normalizeDate(date);
-    final List<String> moods = ['😀', '😌', '😍', '😢', '😡', '😐', '😌', '😀', '😍', '😢'];
-    int index = (normalized.day + normalized.month) % moods.length;
-    return moods[index];
-  }
-
-  // EXACT MATCH PASTEL COLORS: Gives that signature "soft glow circle" behind the emoji
   Color _getMoodColor(String emoji) {
     switch (emoji) {
       case '😍':
-        return const Color(0xFFFFEAEA); // Soft glow red/pink
+        return const Color(0xFFFFEAEA);
       case '😀':
-        return const Color(0xFFFFF4D4); // Soft glow yellow/orange
+        return const Color(0xFFFFF4D4);
       case '😌':
-        return const Color(0xE3D1F0FF); // Soft glow sky blue
+        return const Color(0xE3D1F0FF);
       case '😐':
-        return const Color(0xFFECECEC); // Soft glow neutral grey
+        return const Color(0xFFECECEC);
       case '😢':
-        return const Color(0xFFEADBFF); // Soft glow purple
+        return const Color(0xFFEADBFF);
       case '😡':
-        return const Color(0xFFFFD6D6); // Deep soft red
+        return const Color(0xFFFFD6D6);
       default:
         return Colors.transparent;
     }
+  }
+
+  void _openMoodLoggingSheet(DateTime date) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'How are you feeling on ${date.day}/${date.month}?',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+              const SizedBox(height: 20),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount: _moodDefinitions.length,
+                itemBuilder: (context, index) {
+                  final mood = _moodDefinitions[index];
+                  final emoji = mood['emoji']!;
+                  final name = mood['name']!;
+
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _userLoggedMoods[_normalizeDate(date)] = emoji;
+                      });
+                      Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        // FIXED: Using updated modern Flutter .withValues() method to avoid deprecation warnings
+                        color: _getMoodColor(emoji).withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.pink.shade50, width: 1),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(emoji, style: const TextStyle(fontSize: 26)),
+                          const SizedBox(height: 6),
+                          Text(
+                            name,
+                            // FIXED: Removed the undefined 'black70' parameter and invalid constant error
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -64,7 +150,8 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedEmoji = _selectedDay != null ? _getMoodForDate(_selectedDay!) : '✨';
+    final normalizedSelected = _selectedDay != null ? _normalizeDate(_selectedDay!) : null;
+    final selectedEmoji = _userLoggedMoods[normalizedSelected] ?? '✨';
     final dailyQuote = _moodQuotes[selectedEmoji] ?? _moodQuotes['✨']!;
 
     return Scaffold(
@@ -92,7 +179,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // --- Calendar Card View ---
+              // --- Calendar View ---
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -123,16 +210,17 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
                     });
+                    _openMoodLoggingSheet(selectedDay);
                   },
                   onPageChanged: (focusedDay) {
                     _focusedDay = focusedDay;
                   },
-                  rowHeight: 76, // Generous row space to fit everything beautifully without overlap
+                  rowHeight: 76,
                   calendarBuilders: CalendarBuilders(
+                    // FIXED: Removed the invalid parameter 'weekendBuilder' completely
                     defaultBuilder: (context, day, focusedDay) => _buildCell(day, Colors.black),
                     outsideBuilder: (context, day, focusedDay) => _buildCell(day, Colors.grey.shade400),
                     selectedBuilder: (context, day, focusedDay) {
-                      // Hot-pink selection circle tracking line around your current day
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
@@ -147,7 +235,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
               ),
               const SizedBox(height: 24),
 
-              // --- Beautiful Author-Free Quotes Card ---
+              // --- Dynamic Insight Quote Card ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -193,13 +281,11 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
     );
   }
 
-  // Exact reproduction of your target design grid cell
   Widget _buildCell(DateTime day, Color textColor) {
-    String emoji = _getMoodForDate(day);
-    Color glowColor = _getMoodColor(emoji);
+    String? emoji = _userLoggedMoods[_normalizeDate(day)];
+    Color glowColor = emoji != null ? _getMoodColor(emoji) : Colors.transparent;
 
     return Container(
-      // Adds thin divider grid lines separating cell blocks like your image
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade100, width: 0.5),
@@ -211,14 +297,9 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
         children: [
           Text(
             '${day.day}',
-            style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: textColor
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 4),
-          // Colored round background capsule wrapping around the target emoji
           Container(
             width: 38,
             height: 38,
@@ -226,17 +307,17 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
             decoration: BoxDecoration(
               color: glowColor,
               shape: BoxShape.circle,
-              // Drop shadow to replicate that premium depth effect
-              boxShadow: [
+              boxShadow: emoji != null ? [
                 BoxShadow(
-                  color: glowColor.withOpacity(0.4),
+                  // FIXED: Changed .withOpacity to modern .withValues() method
+                  color: glowColor.withValues(alpha: 0.4),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
-              ],
+              ] : null,
             ),
             child: Text(
-              emoji,
+              emoji ?? '',
               style: const TextStyle(fontSize: 20),
             ),
           ),
