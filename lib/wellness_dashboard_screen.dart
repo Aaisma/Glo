@@ -10,19 +10,27 @@ class WellnessDashboardScreen extends StatefulWidget {
 }
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
-  // Updated: Changed 'Love' to 'Amazing'
+  /// 📊 CURRENT MOOD DATABASE (Simulating how many times the user logged each mood)
+  /// Change these numbers to test the growth stages!
+  /// 0 = Brand new sprout, 1-3 = Growing plant, 4+ = Fully matured beautiful flower.
   final Map<String, int> _moodLogCounts = {
-    'Amazing': 4,
-    'Happy': 3,
-    'Calm': 2,
-    'Energy': 1,
-    'Sad': 5,
+    'Amazing': 5, // Fully grown rose!
+    'Happy': 3,   // Mid-growth potted plant
+    'Calm': 0,    // Fresh new sprout
+    'Energy': 1,  // Mid-growth potted plant
+    'Sad': 4,     // Fully grown hyacinth!
   };
 
+  /// 🪴 DYNAMIC GROWTH ENGINE
+  /// Determines what emoji to show based on how many times the user logged it.
   String _getGardenPlant(String moodType, int logCount) {
-    if (logCount == 0) return '🌱';
-    if (logCount <= 2) return '🪴';
+    if (logCount == 0) {
+      return '🌱'; // Stage 1: Brand new sprout for everyone
+    } else if (logCount > 0 && logCount <= 3) {
+      return '🪴'; // Stage 2: Growing in a small pot
+    }
 
+    // Stage 3: Fully Matured Flower Unique to Each Emotion!
     switch (moodType) {
       case 'Amazing': return '🌹';
       case 'Happy': return '🌻';
@@ -33,12 +41,19 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
     }
   }
 
+  /// 📏 DYNAMIC SIZE ENGINE
+  /// Makes the plant physically bigger on screen as the user logs it more!
+  double _getPlantSize(int logCount) {
+    if (logCount == 0) return 20.0; // Small sprout
+    if (logCount <= 3) return 26.0; // Medium pot
+    return 34.0;                    // Fully grown massive flower!
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9F9),
       body: SafeArea(
-        // Enforces single-screen mode (No scrolling, no overflow!)
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
           child: Column(
@@ -63,7 +78,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 6), // Tightened spacing
+              const SizedBox(height: 6),
 
               // 2. Greeting
               const Text(
@@ -75,7 +90,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                 'How are you feeling today?',
                 style: TextStyle(fontSize: 13, color: Colors.black54),
               ),
-              const SizedBox(height: 12), // Tightened spacing
+              const SizedBox(height: 12),
 
               // 3. Pink Action Banner
               GestureDetector(
@@ -111,9 +126,9 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12), // Tightened spacing
+              const SizedBox(height: 12),
 
-              // 4. My Mood Garden Section
+              // 4. Real Organic Mood Garden Patch Section (Staggered Layout)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
@@ -129,7 +144,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       children: [
                         const Row(
                           children: [
-                            Text('🌸 ', style: TextStyle(fontSize: 14)),
+                            Text('🏡 ', style: TextStyle(fontSize: 14)),
                             Text('My Mood Garden', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A))),
                           ],
                         ),
@@ -141,26 +156,57 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: _moodLogCounts.entries.map((entry) {
-                        return Column(
-                          children: [
-                            Stack(
-                              alignment: Alignment.bottomCenter,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 18.0),
-                                  child: Text(_getGardenPlant(entry.key, entry.value), style: const TextStyle(fontSize: 28)),
-                                ),
-                                const Text('🪵', style: TextStyle(fontSize: 18)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(entry.key, style: const TextStyle(fontSize: 11, color: Colors.black54)),
-                          ],
-                        );
-                      }).toList(),
+
+                    // 🌲 THE LIVING GARDEN FLOOR
+                    Container(
+                      height: 115,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)], // Soft grass field green
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Stack(
+                        children: [
+                          // 🌸 Amazing Flower (Back Left Position)
+                          Positioned(
+                            top: 10,
+                            left: 30,
+                            child: _buildGardenSprout('Amazing'),
+                          ),
+
+                          // 💠 Calm Flower (Back Right Position)
+                          Positioned(
+                            top: 12,
+                            right: 35,
+                            child: _buildGardenSprout('Calm'),
+                          ),
+
+                          // 🌵 Energy Cactus (Dead Center Position)
+                          Positioned(
+                            top: 32,
+                            left: MediaQuery.of(context).size.width * 0.38,
+                            child: _buildGardenSprout('Energy'),
+                          ),
+
+                          // 🌻 Happy Sunflower (Front Left Position)
+                          Positioned(
+                            bottom: 6,
+                            left: 65,
+                            child: _buildGardenSprout('Happy'),
+                          ),
+
+                          // 🪻 Sad Flower (Front Right Position)
+                          Positioned(
+                            bottom: 6,
+                            right: 65,
+                            child: _buildGardenSprout('Sad'),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -170,7 +216,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12), // Tightened spacing
+              const SizedBox(height: 12),
 
               // 5. Streaks Row
               Row(
@@ -180,12 +226,12 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                   Expanded(child: _buildStreakCard('Longest Streak', '24', 'days', '🏆', const Color(0xFFEBF3FF))),
                 ],
               ),
-              const SizedBox(height: 12), // Tightened spacing
+              const SizedBox(height: 12),
 
-              // 6. EXACT ORIGINAL Vertical List Menu (Optimized to occupy remaining space perfectly)
+              // 6. Navigation List Menu (Strictly unscrollable to protect layout sizing)
               Expanded(
                 child: ListView(
-                  physics: const NeverScrollableScrollPhysics(), // Disables list scrolling container entirely
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   children: [
                     _buildListTile(
@@ -230,16 +276,51 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
     );
   }
 
+  /// 🌸 INDIVIDUAL SEEDLING INTERACTIVE BUILDER
+  Widget _buildGardenSprout(String moodKey) {
+    final int logCount = _moodLogCounts[moodKey] ?? 0;
+    final String plantEmoji = _getGardenPlant(moodKey, logCount);
+    final double plantSize = _getPlantSize(logCount);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // The Plant structure itself
+        AnimatedScale(
+          scale: 1.0,
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            plantEmoji,
+            style: TextStyle(fontSize: plantSize),
+          ),
+        ),
+        const SizedBox(height: 2),
+        // Mood Label Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            moodKey,
+            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A)),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildListTile(BuildContext context, IconData icon, String title, String subtitle, Color iconColor, VoidCallback onTap) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8), // Clean spacing between tiles
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: ListTile(
-        dense: true, // Decreases vertical density slightly to fit single screen effortlessly
+        dense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         leading: Icon(icon, color: iconColor, size: 20),
         title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A))),
