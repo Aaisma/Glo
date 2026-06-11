@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class MoodTrackerScreen extends StatefulWidget {
-  const MoodTrackerScreen({super.key});
+class MoodLogScreen extends StatefulWidget {
+  const MoodLogScreen({super.key});
 
   @override
-  State<MoodTrackerScreen> createState() => _MoodTrackerScreenState();
+  State<MoodLogScreen> createState() => _MoodLogScreenState();
 }
 
-class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
+class _MoodLogScreenState extends State<MoodLogScreen> {
   String _selectedMood = 'Amazing';
   final TextEditingController _noteController = TextEditingController();
   final List<String> _selectedFactors = [];
@@ -61,7 +61,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Prevents keyboard from pushing layouts out of alignment bounds
       resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(
@@ -78,7 +77,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // 1. App Header Layout (Compact)
+                // 1. App Header Layout
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -114,16 +113,15 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 3. Mood Selection Header
+                // 3. Mood Selection
                 const Text('1. How do you feel?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 8),
 
-                // Grid layout condensed into a single balanced grid view
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, // Changed to 3 columns to natively fit 6 emojis in 2 clean rows
+                    crossAxisCount: 3,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                     childAspectRatio: 1.2,
@@ -141,7 +139,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                     TextField(
                       controller: _noteController,
                       maxLength: 200,
-                      maxLines: 2, // Dropped to 2 lines to save valuable screenspace
+                      maxLines: 2,
                       decoration: InputDecoration(
                         hintText: 'Write your thoughts...',
                         hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
@@ -177,7 +175,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                 const Text('3. What affected your mood today?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 8),
 
-                // Wrap widget auto-manages layouts tightly without wasting extra grid spacing bounds
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 8.0,
@@ -206,7 +203,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                           ),
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min, // Essential for tight Wrap tags
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(factor['icon'], color: factor['color'], size: 15),
                             const SizedBox(width: 6),
@@ -221,7 +218,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                   }).toList(),
                 ),
 
-                // Spacer pushes the save button seamlessly to the very bottom edge of the screen layout container
                 const Spacer(),
 
                 // 6. Sticky Bottom Action Button

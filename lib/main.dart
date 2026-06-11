@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mood_tracker_screen.dart'; // Imports your custom screen file
+import 'mood_log_screen.dart'; // ✨ Universal local path import to fix line 2 errors
 
 void main() {
   runApp(const MyApp());
@@ -11,9 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      debugShowCheckedModeBanner: false, // Hides the red debug banner on the top right
+      debugShowCheckedModeBanner: false,
       title: 'Mood Tracker App',
-      home: MoodTrackerScreen(), // Launches your exact mood tracker layout as home
+      home: MoodLogScreen(), // ✨ Connects smoothly with your screen class
     );
   }
 }
