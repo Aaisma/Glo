@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'mood_log_screen.dart';
 import 'mood_calendar_screen.dart';
 
 class WellnessDashboardScreen extends StatefulWidget {
@@ -10,225 +9,224 @@ class WellnessDashboardScreen extends StatefulWidget {
 }
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
-  /// 📊 MOOD DATABASE & LOG COUNTER
-  /// Adjust these numbers to test the organic plant growth stages!
-  /// 0 = Fresh sprout, 1 to 3 = Mid-growth pot, 4+ = Fully matured flower
-  final Map<String, int> _moodLogCounts = {
-    'Amazing': 5, // Fully grown rose 🌹
-    'Happy': 3,   // Mid-growth potted plant 🪴
-    'Calm': 0,    // Fresh new sprout 🌱
-    'Energy': 4,  // Fully grown cactus 🌵
-    'Sad': 6,     // Fully grown drooping flower 🪻
-  };
-
-  /// 🪴 DYNAMIC GROWTH ENGINE
-  /// Generates the plant stage asset seamlessly based on actual usage logs
-  String _getGardenPlant(String moodType, int logCount) {
-    if (logCount == 0) {
-      return '🌱'; // Stage 1: Brand new seedling sprout
-    } else if (logCount > 0 && logCount <= 3) {
-      return '🪴'; // Stage 2: Growing juvenile plant
-    }
-
-    // Stage 3: Fully Matured Flower Unique to Each Emotion!
-    switch (moodType) {
-      case 'Amazing': return '🌹';
-      case 'Happy': return '🌻';
-      case 'Calm': return '💠';
-      case 'Energy': return '🌵';
-      case 'Sad': return '🪻'; // Drooping purple hyacinth flower
-      default: return '🌸';
-    }
-  }
-
-  /// 📏 VISUAL SCALING ENGINE
-  /// Scales the plant size up dynamically as logs accumulate
-  double _getPlantSize(int logCount) {
-    if (logCount == 0) return 20.0;
-    if (logCount <= 3) return 24.0;
-    return 32.0; // Fully matured plant sizing
-  }
+  /// 📊 Mock Growth Data mapped with plants inside pots to match UI mockup
+  final List<Map<String, String>> _gardenPlants = [
+    {'name': 'Amazing', 'flower': '🌹\n🪴'},
+    {'name': 'Happy', 'flower': '🌻\n🪴'},
+    {'name': 'Calm', 'flower': '💠\n🪴'},
+    {'name': 'Energy', 'flower': '🌵\n🪴'},
+    {'name': 'Sad', 'flower': '🪻\n🪴'},
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F9),
+      backgroundColor: const Color(0xFFFFFDFB), // Soft warm background
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // 1. App Header Layout
+              // 1. Top Navigation Bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black54),
-                    onPressed: () {},
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, size: 20, color: Colors.black45),
+                      onPressed: () {},
+                    ),
                   ),
-                  const Text(
-                    'My Wellness 🌷',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A)),
+                  const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('✨ ', style: TextStyle(fontSize: 14)),
+                      Text(
+                        'My Wellness',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFF4081),
+                        ),
+                      ),
+                      Text(' ✨', style: TextStyle(fontSize: 14)),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none_outlined, size: 22, color: Colors.black54),
-                    onPressed: () {},
+                  const SizedBox(width: 40),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 2. Header Greetings
+              const Row(
+                children: [
+                  Text(
+                    'Good Morning, Shiny',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                   ),
+                  SizedBox(width: 6),
+                  Text('🌸', style: TextStyle(fontSize: 22)),
+                  SizedBox(width: 4),
+                  Text('✨', style: TextStyle(fontSize: 14, color: Colors.amber)),
                 ],
               ),
               const SizedBox(height: 4),
-
-              // 2. Greeting
-              const Text(
-                'Good Morning, Shiny 🌸',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A)),
-              ),
-              const SizedBox(height: 2),
               const Text(
                 'How are you feeling today?',
-                style: TextStyle(fontSize: 13, color: Colors.black54),
+                style: TextStyle(fontSize: 14, color: Colors.black45),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              // 3. Pink Action Banner
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MoodLogScreen()),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF6B8B), Color(0xFFFF8E7A)],
+              // 3. Pill-Shaped Log Mood Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF527B),
+                    shadowColor: const Color(0xFFFF527B).withOpacity(0.2),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.add_circle, color: Colors.white, size: 34),
-                      SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Log Your Mood', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
-                          Text('Track how you\'re feeling today', style: TextStyle(fontSize: 11, color: Colors.white70)),
-                        ],
-                      ),
-                      Spacer(),
-                      Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
-                    ],
+                  icon: const Icon(Icons.add, color: Colors.white, size: 20),
+                  label: const Text(
+                    'Log Your Mood',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              // 4. Mood Garden Card Widget with Wood Shelf Display Layer
+              // 4. Premium Mood Garden Shelf Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade100),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFFFF0F3), Color(0xFFFFE4E9)],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
-                          children: [
-                            Text('🪴 ', style: TextStyle(fontSize: 14)),
-                            Text('Mood Garden', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A))),
-                          ],
+                        const Text(
+                          'Your Mood Garden',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                          child: const Text('View Garden >', style: TextStyle(fontSize: 11, color: Colors.redAccent)),
-                        ),
+                        Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black54),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
 
-                    // The Interactive Plant & Shelf Column Grid Layout
+                    // The Potted Plant Shelf Assembly
                     Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: Alignment.bottom,
-                          children: _moodLogCounts.entries.map((entry) {
-                            final int logCount = entry.value;
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: _gardenPlants.map((plant) {
                             return Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _getGardenPlant(entry.key, logCount),
-                                  style: TextStyle(fontSize: _getPlantSize(logCount)),
+                                  plant['flower']!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 26, height: 1.1),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 6),
                                 Text(
-                                  entry.key,
-                                  style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w500),
+                                  plant['name']!,
+                                  style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w500),
                                 ),
                               ],
                             );
                           }).toList(),
                         ),
-                        // 🪵 The Styled Linear Wooden Stand Element
+
+                        // 🪵 Wooden Stand Board
                         Container(
                           width: double.infinity,
-                          height: 8,
-                          margin: const EdgeInsets.only(top: 4, bottom: 8),
+                          height: 10,
+                          margin: const EdgeInsets.only(top: 4, bottom: 14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD7CCC8), // Cozy wood tan color
-                            borderRadius: BorderRadius.circular(4),
+                            color: const Color(0xFFCDA184),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ],
                     ),
-                    const Text(
-                      'Nurture your emotions and watch your garden grow 🌱',
-                      style: TextStyle(fontSize: 10, color: Colors.black38, fontStyle: FontStyle.italic),
+
+                    const Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Keep logging your moods',
+                            style: TextStyle(fontSize: 12, color: Colors.black45, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('and watch your garden grow ', style: TextStyle(fontSize: 12, color: Colors.black45, fontWeight: FontWeight.w500)),
+                              Text('🌱', style: TextStyle(fontSize: 13)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              // 5. Streaks Panel Row
+              // 5. Symmetric Performance Metrics Dashboard Rows
               Row(
                 children: [
-                  Expanded(child: _buildStreakCard('Current Streak', '9', 'days', '🔥', const Color(0xFFFFF2E6))),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildStreakCard('Longest Streak', '24', 'days', '🏆', const Color(0xFFEBF3FF))),
+                  Expanded(child: _buildMetricCard('Current Streak', '7', 'days', '🔥')),
+                  const SizedBox(width: 14),
+                  Expanded(child: _buildMetricCard('Longest Streak', '21', 'days', '🏆')),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              // 6. Navigation List Tiles Menu (Fixed height block prevents overflow scrolling)
+              // 6. Non-Scrolling Layout Core List (Using Expanded & Column to completely disable scroll physics)
               Expanded(
-                child: ListView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
+                child: Column(
                   children: [
-                    _buildListTile(
-                      context,
-                      Icons.calendar_month_outlined,
-                      'Mood Calendar',
-                      'Track your mood trends',
-                      Colors.pinkAccent,
-                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MoodCalendarScreen())),
+                    Expanded(
+                      child: _buildNavigationRow(
+                        context,
+                        Icons.calendar_month_outlined,
+                        'Mood Calendar',
+                        'Track your mood trends',
+                        const Color(0xFFFF527B),
+                            () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MoodCalendarScreen())),
+                      ),
                     ),
-                    _buildListTile(context, Icons.local_florist_outlined, 'Mood Garden', 'See your emotional growth', Colors.orangeAccent, () {}),
-                    _buildListTile(context, Icons.bar_chart_outlined, 'Insights & Analytics', 'Understand your mood patterns', Colors.deepPurpleAccent, () {}),
-                    _buildListTile(context, Icons.assignment_outlined, 'Mood Details', 'View your mood history & notes', Colors.green, () {}),
+                    Expanded(
+                      child: _buildNavigationRow(context, Icons.local_florist_outlined, 'Mood Garden', 'See your emotional growth', Colors.orangeAccent, () {}),
+                    ),
+                    Expanded(
+                      child: _buildNavigationRow(context, Icons.bar_chart_outlined, 'Insights & Analytics', 'Understand your mood patterns', Colors.indigoAccent, () {}),
+                    ),
+                    Expanded(
+                      child: _buildNavigationRow(context, Icons.book_outlined, 'Mood Journal', 'Write your mood, thoughts & notes', Colors.teal, () {}),
+                    ),
                   ],
                 ),
               ),
@@ -239,43 +237,69 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
     );
   }
 
-  Widget _buildStreakCard(String title, String count, String unit, String icon, Color bgColor) {
+  Widget _buildMetricCard(String title, String statusCount, String labelUnit, String emojiIcon) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(16)),
-      child: Row(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDFDFD),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF5F5F5), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Text(title, style: const TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(title, style: const TextStyle(fontSize: 10, color: Colors.black54)),
-              Text(count, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A))),
-              Text(unit, style: const TextStyle(fontSize: 10, color: Colors.black38)),
+              Text(emojiIcon, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Text(
+                statusCount,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF263238)),
+              ),
+              const SizedBox(width: 4),
+              Text(labelUnit, style: const TextStyle(fontSize: 11, color: Colors.black38)),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildListTile(BuildContext context, IconData icon, String title, String subtitle, Color iconColor, VoidCallback onTap) {
+  Widget _buildNavigationRow(BuildContext context, IconData icon, String title, String subtitle, Color colorTone, VoidCallback action) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFF8F8F8), width: 1),
       ),
-      child: ListTile(
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-        leading: Icon(icon, color: iconColor, size: 20),
-        title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A))),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.black38)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.black26),
-        onTap: onTap,
+      child: Center(
+        child: ListTile(
+          onTap: action,
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          leading: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: colorTone.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: colorTone, size: 20),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11, color: Colors.black38),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 11, color: Colors.black26),
+        ),
       ),
     );
   }
