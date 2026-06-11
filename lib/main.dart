@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mood_log_screen.dart'; // ✨ Universal local path import to fix line 2 errors
+import 'wellness_dashboard_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,8 +12,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Mood Tracker App',
-      home: MoodLogScreen(), // ✨ Connects smoothly with your screen class
+      title: 'My Wellness',
+      home: WellnessDashboardScreen(),
     );
   }
 }
