@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
+import 'mood_calendar_screen.dart';
 import 'mood_log_screen.dart';
+import 'mood_details.dart'; // ✅ This import is now perfectly valid!
 
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
@@ -9,19 +12,31 @@ class WellnessDashboardScreen extends StatefulWidget {
 }
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
-  /// 📊 Mock Growth Data mapped with plants inside pots to match UI mockup
-  final List<Map<String, String>> _gardenPlants = [
-    {'name': 'Amazing', 'flower': '🌹\n🪴'},
-    {'name': 'Happy', 'flower': '🌻\n🪴'},
-    {'name': 'Calm', 'flower': '💠\n🪴'},
-    {'name': 'Energy', 'flower': '🌵\n🪴'},
-    {'name': 'Sad', 'flower': '🪻\n🪴'},
-  ];
+  /// 📊 Mood Tracker Database Mock values to simulate plant growth logic
+  final Map<String, int> _moodLogCounts = {
+    'Amazing': 1,
+    'Happy': 3,
+    'Calm': 2,
+    'Energy': 4,
+    'Sad': 5,
+  };
+
+  /// Helper to render the correct asset stage based on entry count
+  String _getGardenPlant(String moodKey, int count) {
+    switch (moodKey) {
+      case 'Amazing': return '🌹\n🪴';
+      case 'Happy': return '🌻\n🪴';
+      case 'Calm': return '💠\n🪴';
+      case 'Energy': return '🌵\n🪴';
+      case 'Sad': return '🪻\n🪴';
+      default: return '🌱\n🪴';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDFB), // Soft warm background
+      backgroundColor: const Color(0xFFFFFDFB),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
@@ -29,7 +44,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // 1. Top Navigation Bar
+              // 1. Top Bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -63,7 +78,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 2. Header Greetings
+              // 2. Greeting Header Text Elements
               const Row(
                 children: [
                   Text(
@@ -83,15 +98,20 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 3. Pill-Shaped Log Mood Button
+              // 3. Main Action Mood Logging Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MoodLogScreen()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF527B),
-                    shadowColor: const Color(0xFFFF527B).withOpacity(0.2),
+                    shadowColor: const Color(0xFFFF527B).withValues(alpha: 0.2),
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -106,7 +126,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 4. Premium Mood Garden Shelf Card
+              // 4. Premium Potted Mood Garden Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -121,10 +141,10 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Your Mood Garden',
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                         ),
@@ -133,24 +153,26 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // The Potted Plant Shelf Assembly
+                    // The Potted Plant Shelf Row Layout Assembly
                     Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.end,
-                          children: _gardenPlants.map((plant) {
+                          children: _moodLogCounts.entries.map((entry) {
+                            final int logCount = entry.value;
                             return Column(
                               mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Text(
-                                  plant['flower']!,
+                                  _getGardenPlant(entry.key, logCount),
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(fontSize: 26, height: 1.1),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  plant['name']!,
+                                  entry.key,
                                   style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w500),
                                 ),
                               ],
@@ -158,7 +180,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                           }).toList(),
                         ),
 
-                        // 🪵 Wooden Stand Board
+                        // 🪵 Wooden Planter Board
                         Container(
                           width: double.infinity,
                           height: 10,
@@ -194,7 +216,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 5. Symmetric Performance Metrics Dashboard Rows
+              // 5. Symmetric Achievement Streak Layout Cards
               Row(
                 children: [
                   Expanded(child: _buildMetricCard('Current Streak', '7', 'days', '🔥')),
@@ -204,7 +226,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 6. Non-Scrolling Layout Core List (Using Expanded & Column to completely disable scroll physics)
+              // 6. Hard-Locked Screen Navigation Rows (Non-Scroll View Engine)
               Expanded(
                 child: Column(
                   children: [
@@ -219,13 +241,35 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       ),
                     ),
                     Expanded(
-                      child: _buildNavigationRow(context, Icons.local_florist_outlined, 'Mood Garden', 'See your emotional growth', Colors.orangeAccent, () {}),
+                      child: _buildNavigationRow(
+                        context,
+                        Icons.local_florist_outlined,
+                        'Mood Garden',
+                        'See your emotional growth',
+                        Colors.orangeAccent,
+                            () {},
+                      ),
                     ),
                     Expanded(
-                      child: _buildNavigationRow(context, Icons.bar_chart_outlined, 'Insights & Analytics', 'Understand your mood patterns', Colors.indigoAccent, () {}),
+                      child: _buildNavigationRow(
+                        context,
+                        Icons.bar_chart_outlined,
+                        'Insights & Analytics',
+                        'Understand your mood patterns',
+                        Colors.indigoAccent,
+                            () {},
+                      ),
                     ),
                     Expanded(
-                      child: _buildNavigationRow(context, Icons.book_outlined, 'Mood Details', 'Write your mood, thoughts & notes', Colors.teal, () {}),
+                      child: _buildNavigationRow(
+                        context,
+                        Icons.book_outlined,
+                        'Mood Journal',
+                        'Write your mood, thoughts & notes',
+                        Colors.teal,
+                        // 🛠️ FIXED HERE: Removed invalid const keyword from constructor instantiation!
+                            () => Navigator.push(context, MaterialPageRoute(builder: (context) => MoodDetailsScreen())),
+                      ),
                     ),
                   ],
                 ),
@@ -285,7 +329,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
           leading: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: colorTone.withOpacity(0.08),
+              color: colorTone.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: colorTone, size: 20),
