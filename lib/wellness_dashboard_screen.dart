@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mood_calendar_screen.dart';
+import 'mood_log_screen.dart';
 
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
@@ -225,7 +225,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       child: _buildNavigationRow(context, Icons.bar_chart_outlined, 'Insights & Analytics', 'Understand your mood patterns', Colors.indigoAccent, () {}),
                     ),
                     Expanded(
-                      child: _buildNavigationRow(context, Icons.book_outlined, 'Mood Journal', 'Write your mood, thoughts & notes', Colors.teal, () {}),
+                      child: _buildNavigationRow(context, Icons.book_outlined, 'Mood Details', 'Write your mood, thoughts & notes', Colors.teal, () {}),
                     ),
                   ],
                 ),
