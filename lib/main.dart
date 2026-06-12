@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'mood_summary_screen.dart';
 import 'wellness_dashboard_screen.dart';
 
 void main() {
@@ -10,10 +11,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'My Wellness',
-      home: WellnessDashboardScreen(),
+      title: ' Your Mood Summary',
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xFFFFF8FA),
+      ),
+      home: MoodSummaryScreen(), // entry screen
     );
   }
 }

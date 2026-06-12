@@ -179,7 +179,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                             );
                           }).toList(),
                         ),
-
+ 
                         // 🪵 Wooden Planter Board
                         Container(
                           width: double.infinity,
@@ -254,7 +254,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       child: _buildNavigationRow(
                         context,
                         Icons.bar_chart_outlined,
-                        'Insights & Analytics',
+                        'Mood Summary',
                         'Understand your mood patterns',
                         Colors.indigoAccent,
                             () {},
