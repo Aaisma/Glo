@@ -1,80 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class MoodSummaryScreen extends StatefulWidget {
-  const MoodSummaryScreen({super.key});
-
-  @override
-  State<MoodSummaryScreen> createState() => _MoodSummaryScreenState();
-}
-
-class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
-  // You can update these values from your database/provider using setState()
-  double amazing = 2;
-  double happy = 5;
-  double calm = 3;
-  double neutral = 2;
-  double sad = 1;
-  double angry = 1;
-
+class MoodSummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFCF8),
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar: AppBar(
         title: const Text("Mood Summary", style: TextStyle(color: Colors.black)),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Donut Chart Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("This Week", style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      SizedBox(
-                        height: 140, width: 140,
-                        child: PieChart(PieChartData(
-                          centerSpaceRadius: 45,
-                          sections: [
-                            PieChartSectionData(value: amazing, color: Colors.pink, radius: 25, showTitle: false),
-                            PieChartSectionData(value: happy, color: Colors.amber, radius: 25, showTitle: false),
-                            PieChartSectionData(value: calm, color: Colors.blue, radius: 25, showTitle: false),
-                            PieChartSectionData(value: neutral, color: Colors.grey, radius: 25, showTitle: false),
-                          ],
-                        )),
-                      ),
-                      const SizedBox(width: 20),
-                      // Legend List
-                      Expanded(
-                        child: Column(
-                          children: [
-                            _buildLegendItem("Amazing", amazing, Colors.pink),
-                            _buildLegendItem("Happy", happy, Colors.amber),
-                            _buildLegendItem("Calm", calm, Colors.blue),
-                            _buildLegendItem("Neutral", neutral, Colors.grey),
-                            _buildLegendItem("Sad", sad, Colors.purple),
-                            _buildLegendItem("Angry", angry, Colors.red),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
+            _buildDonutChartCard(),
+            const SizedBox(height: 16),
+            _buildLineChartCard(),
+            const SizedBox(height: 16),
+            _buildStatsGrid(),
+            const SizedBox(height: 16),
+            _buildQuoteCard(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Widget Components ---
+
+  Widget _buildDonutChartCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          const Align(alignment: Alignment.topLeft, child: Text("Your Mood Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
+          SizedBox(
+            height: 200,
+            child: PieChart(
+              PieChartData(
+                sections: [
+                  PieChartSectionData(value: 36, color: Colors.amber, title: ''),
+                  PieChartSectionData(value: 21, color: Colors.blue, title: ''),
+                  // Add remaining sections...
                 ],
+                centerSpaceRadius: 60,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLineChartCard() {
+    return Container(
+      height: 250,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(show: false),
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (val, meta) => Text(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][val.toInt()]))),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: const [FlSpot(0, 3), FlSpot(1, 1), FlSpot(2, 3), FlSpot(3, 2), FlSpot(4, 4), FlSpot(5, 5), FlSpot(6, 2)],
+              isCurved: true,
+              gradient: const LinearGradient(colors: [Colors.purple, Colors.blue]),
+              barWidth: 4,
             ),
           ],
         ),
@@ -82,18 +80,30 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
     );
   }
 
-  Widget _buildLegendItem(String label, double count, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(Icons.circle, size: 10, color: color),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 13)),
-          const Spacer(),
-          Text("${count.toInt()}", style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
-      ),
+  Widget _buildStatsGrid() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _statItem("14", "Total Logs", Colors.pink),
+        _statItem("8", "Positive Days", Colors.amber),
+        // Add other two...
+      ],
+    );
+  }
+
+  Widget _statItem(String val, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      child: Column(children: [Text(val, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)), Text(label)]),
+    );
+  }
+
+  Widget _buildQuoteCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(20)),
+      child: const Text("“You're allowed to be both a masterpiece and a work in progress.”", textAlign: TextAlign.center, style: TextStyle(fontStyle: FontStyle.italic)),
     );
   }
 }
