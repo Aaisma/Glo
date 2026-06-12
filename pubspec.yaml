@@ -1,8 +1,6 @@
 name: glo
 description: "A new Flutter project."
 
-publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -13,7 +11,6 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -25,21 +22,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/images/background.jpeg
     - assets/images/background.png
-    - assets/images/background1.jpeg
-    - assets/images/background1.png
-    - assets/images/creamtube.png
     - assets/images/flower.png
-    - assets/images/historylog.png
-    - assets/images/labresult.png
-    - assets/images/logdocvisit.png
     - assets/images/logo.png
-    - assets/images/notes.png
-    - assets/images/Pill.png
-    - assets/images/prescription.png
     - assets/images/profile picture.png
-    - assets/images/profilepicture.png
-    - assets/images/reminder.png
-    - assets/images/skintips.png
