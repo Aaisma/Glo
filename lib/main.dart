@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// Make sure this import path matches the exact location of your file!
-import 'mood_garden_screen.dart';
+
+import 'mood_summary_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,19 +12,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mood Tracker App',
+      title: 'Mood Summary',
       debugShowCheckedModeBanner: false,
 
-      // Setting up a clean, modern theme matching your design profile
+
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.pink,
-        scaffoldBackgroundColor: const Color(0xFFFBF9F6), // Matches the warm off-white background
-        fontFamily: 'Roboto', // Custom font fallback
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: const Color(0xFFFAF9FC), // Perfect matching canvas white background
+        fontFamily: 'Roboto', // Custom design fallback
       ),
 
-      // Automatically launches your Mood Garden screen on start
-      home: const MoodGardenScreen(),
+      // Launces your beautiful new analytics and curves breakdown screen on boot
+      home: const MoodSummaryScreen(),
     );
   }
 }
