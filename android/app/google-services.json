@@ -12,6 +12,7 @@
           "package_name": "com.example.glo.glo"
         }
       },
+<<<<<<< HEAD
       "oauth_client": [
         {
           "client_id": "714010295460-4go5mujqm70fm2joqis5o0pund5h5ikc.apps.googleusercontent.com",
@@ -26,6 +27,9 @@
           "client_type": 3
         }
       ],
+=======
+      "oauth_client": [],
+>>>>>>> origin/master
       "api_key": [
         {
           "current_key": "AIzaSyBPKmFVcIDd2I5LkZND-qclgN8jLTziicc"
@@ -33,6 +37,7 @@
       ],
       "services": {
         "appinvite_service": {
+<<<<<<< HEAD
           "other_platform_oauth_client": [
             {
               "client_id": "714010295460-brtm8b47nffm381uje37pkkbr7bvuenj.apps.googleusercontent.com",
@@ -46,6 +51,9 @@
               }
             }
           ]
+=======
+          "other_platform_oauth_client": []
+>>>>>>> origin/master
         }
       }
     }

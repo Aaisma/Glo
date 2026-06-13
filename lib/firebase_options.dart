@@ -63,8 +63,11 @@ class DefaultFirebaseOptions {
     messagingSenderId: '714010295460',
     projectId: 'gloo-5dd46',
     storageBucket: 'gloo-5dd46.firebasestorage.app',
+<<<<<<< HEAD
     androidClientId: '714010295460-4go5mujqm70fm2joqis5o0pund5h5ikc.apps.googleusercontent.com',
     iosClientId: '714010295460-o6f6uhqb21i031jaa5e8appoc3cujocd.apps.googleusercontent.com',
+=======
+>>>>>>> origin/master
     iosBundleId: 'com.example.glo.glo',
   );
 }
