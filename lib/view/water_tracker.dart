@@ -23,4 +23,22 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
       viewModel.addWater(amount);
     });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Water Tracker"),
+        backgroundColor: Colors.lightBlueAccent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
