@@ -18,4 +18,12 @@ class WaterTrackerViewModel {
       currentIntake = goal;
     }
   }
+
+  void resetWater() {
+    currentIntake = 0;
+  }
+
+  void updateGoal(double newGoal) {
+    goal = newGoal;
+  }
 }

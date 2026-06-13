@@ -7,7 +7,7 @@ class WaterTrackerModel {
     required this.goal,
   });
 
-  // Optional: helps when saving/loading later from Firebase
+
   Map<String, dynamic> toMap() {
     return {
       'currentIntake': currentIntake,
@@ -15,7 +15,7 @@ class WaterTrackerModel {
     };
   }
 
-  // Optional: helps when reading from Firebase later
+
   factory WaterTrackerModel.fromMap(Map<String, dynamic> map) {
     return WaterTrackerModel(
       currentIntake: (map['currentIntake'] ?? 0).toDouble(),
