@@ -11,7 +11,6 @@ class MoodSummaryScreen extends StatefulWidget {
 class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
   String selectedTimeframe = "This Week";
 
-  // Data map matching your precise reference counts & distributions
   final List<Map<String, dynamic>> moodSummaryData = [
     {'name': 'Amazing', 'emoji': '🤩', 'count': 2, 'percent': 14, 'color': const Color(0xFFFF6584)},
     {'name': 'Happy', 'emoji': '😀', 'count': 5, 'percent': 36, 'color': const Color(0xFFFFCE56)},
@@ -21,29 +20,20 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
     {'name': 'Angry', 'emoji': '😡', 'count': 1, 'percent': 7, 'color': const Color(0xFFFF9F40)},
   ];
 
-  // Daily points mapping for the Mood Journey curve chart
   final List<Map<String, dynamic>> dailyJourney = [
-    {'day': 'Mon', 'val': 0.60, 'emoji': '😀', 'color': const Color(0xFFFFCE56)},
-    {'day': 'Tue', 'val': 0.30, 'emoji': '😢', 'color': const Color(0xFF9966FF)},
-    {'day': 'Wed', 'val': 0.60, 'emoji': '😀', 'color': const Color(0xFFFFCE56)},
-    {'day': 'Thu', 'val': 0.40, 'emoji': '😐', 'color': const Color(0xFFA0A0A0)},
-    {'day': 'Fri', 'val': 0.70, 'emoji': '🤩', 'color': const Color(0xFFFF6584)},
-    {'day': 'Sat', 'val': 0.85, 'emoji': '🤩', 'color': const Color(0xFFFF6584)},
-    {'day': 'Sun', 'val': 0.45, 'emoji': '😌', 'color': const Color(0xFF36A2EB)},
+    {'day': 'Mon', 'val': 0.60, 'emoji': '😀'},
+    {'day': 'Tue', 'val': 0.30, 'emoji': '😢'},
+    {'day': 'Wed', 'val': 0.60, 'emoji': '😀'},
+    {'day': 'Thu', 'val': 0.40, 'emoji': '😐'},
+    {'day': 'Fri', 'val': 0.70, 'emoji': '🤩'},
+    {'day': 'Sat', 'val': 0.85, 'emoji': '🤩'},
+    {'day': 'Sun', 'val': 0.45, 'emoji': '😌'},
   ];
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double appBarHeight = AppBar().preferredSize.height;
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
-    final double bottomPadding = MediaQuery.of(context).padding.bottom;
-
-    // Strict mathematical available space definition to completely stop scrolling
-    final double availableHeight = screenHeight - appBarHeight - statusBarHeight - bottomPadding;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF9FC), // Exact soft background tone
+      backgroundColor: const Color(0xFFFAF9FC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -53,145 +43,151 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
         ),
         title: const Text(
           'Mood Summary',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- 1. TIMEFRAME SELECTOR CHIP (Allocated 5% height) ---
-              SizedBox(
-                height: availableHeight * 0.05,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1EBF9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.calendar_month, color: Color(0xFF6A4BBD), size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          selectedTimeframe,
-                          style: const TextStyle(color: Color(0xFF6A4BBD), fontWeight: FontWeight.bold, fontSize: 12),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6A4BBD), size: 14),
-                      ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double maxHeight = constraints.maxHeight;
+            final double internalPadding = maxHeight * 0.015;
+            final double headerFontSize = maxHeight * 0.021;
+            final double textFontSize = maxHeight * 0.015;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- 1. TIMEFRAME SELECTOR ---
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1EBF9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.calendar_month, color: Color(0xFF6A4BBD), size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            selectedTimeframe,
+                            style: const TextStyle(color: Color(0xFF6A4BBD), fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6A4BBD), size: 14),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              SizedBox(height: availableHeight * 0.015),
+                  SizedBox(height: internalPadding),
 
-              // --- 2. CARD 1: YOUR MOOD SUMMARY (Allocated 32% height) ---
-              Container(
-                height: availableHeight * 0.32,
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFF2EFF6), width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Mood Summary',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    const Text(
-                      'Overview of your emotions this week.',
-                      style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
-                    ),
-                    const Expanded(child: SizedBox(height: 4)),
-                    Row(
-                      children: [
-                        // Dynamic Donut Chart Area
-                        SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Stack(
-                            alignment: Alignment.center,
+                  // --- 2. CARD 1: YOUR MOOD SUMMARY ---
+                  Expanded(
+                    flex: 35,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFF2EFF6), width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Mood Summary',
+                            style: TextStyle(fontSize: headerFontSize, fontWeight: FontWeight.bold, color: Colors.black87),
+                          ),
+                          const Text(
+                            'Overview of your emotions this week.',
+                            style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                          ),
+                          const Spacer(),
+                          Row(
                             children: [
-                              CustomPaint(
-                                size: const Size(100, 100),
-                                painter: DonutChartPainter(data: moodSummaryData),
-                              ),
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFF2EAFF),
-                                  shape: BoxShape.circle,
+                              Expanded(
+                                flex: 40,
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      CustomPaint(
+                                        size: Size.infinite,
+                                        painter: DonutChartPainter(data: moodSummaryData),
+                                      ),
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Color(0xFFF2EAFF),
+                                        ),
+                                        padding: const EdgeInsets.all(10),
+                                        child: const Text('💜', style: TextStyle(fontSize: 20)),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                alignment: Alignment.center,
-                                child: const Text('💜', style: TextStyle(fontSize: 20)),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 60,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: moodSummaryData.map((item) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                      child: Row(
+                                        children: [
+                                          Text(item['emoji'], style: const TextStyle(fontSize: 13)),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              item['name'],
+                                              style: TextStyle(fontSize: textFontSize, fontWeight: FontWeight.w600, color: Colors.black87),
+                                            ),
+                                          ),
+                                          Text(
+                                            "${item['count']} (${item['percent']}%)",
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Right Side Metrics Grid
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: moodSummaryData.map((item) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                child: Row(
-                                  children: [
-                                    Text(item['emoji'], style: const TextStyle(fontSize: 12)),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        item['name'],
-                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7F2FE),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                const Text('✨', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Text(
+                                        'You felt happy most of the time this week!',
+                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
                                       ),
-                                    ),
-                                    Text(
-                                      "${item['count']} (${item['percent']}%)",
-                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Expanded(child: SizedBox(height: 4)),
-                    // Insight message footer bar
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7F2FE),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('✨', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'You felt happy most of the time this week!',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
-                                ),
-                                Text(
-                                  'Keep doing what makes you feel good.',
-                                  style: TextStyle(fontSize: 10, color: Colors.black54),
+                                      Text(
+                                        'Keep doing what makes you feel good.',
+                                        style: TextStyle(fontSize: 10, color: Colors.black54),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -199,93 +195,94 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: availableHeight * 0.02),
+                  ),
+                  SizedBox(height: internalPadding),
 
-              // --- 3. CARD 2: YOUR MOOD JOURNEY GRAPH (Allocated 25% height) ---
-              Container(
-                height: availableHeight * 0.25,
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFF2EFF6), width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Mood Journey',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    const Text(
-                      'A look at your day',
-                      style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
-                    ),
-                    const Expanded(child: SizedBox(height: 4)),
-                    Expanded(
-                      flex: 6,
-                      child: Stack(
+                  // --- 3. CARD 2: YOUR MOOD JOURNEY GRAPH ---
+                  Expanded(
+                    flex: 26,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFF2EFF6), width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: JourneyCurvePainter(journeyData: dailyJourney),
-                            ),
+                          Text(
+                            'Your Mood Journey',
+                            style: TextStyle(fontSize: headerFontSize, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
-                          Positioned.fill(
+                          const Text(
+                            'A look at your day',
+                            style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                          ),
+                          const Spacer(),
+                          Expanded(
+                            flex: 80,
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 final double w = constraints.maxWidth;
                                 final double h = constraints.maxHeight;
+                                final double paddingBottom = 16.0;
+                                final double chartHeight = h - 36.0;
                                 final double stepX = w / (dailyJourney.length - 1);
+
                                 return Stack(
-                                  children: List.generate(dailyJourney.length, (index) {
-                                    final item = dailyJourney[index];
-                                    final double leftPos = index * stepX;
-                                    final double topPos = h - (item['val'] * (h - 45)) - 32;
-                                    return Positioned(
-                                      left: leftPos - 10,
-                                      top: topPos.clamp(0.0, h - 40),
-                                      child: Container(
-                                        width: 20,
-                                        height: 20,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text(item['emoji'], style: const TextStyle(fontSize: 12)),
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                        painter: JourneyCurvePainter(journeyData: dailyJourney),
                                       ),
-                                    );
-                                  }),
-                                );
-                              },
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final double stepX = constraints.maxWidth / (dailyJourney.length - 1);
-                                return Stack(
-                                  children: List.generate(dailyJourney.length, (index) {
-                                    return Positioned(
-                                      left: index * stepX - 10,
-                                      child: SizedBox(
-                                        width: 20,
-                                        child: Text(
-                                          dailyJourney[index]['day'],
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 10, color: Colors.black38, fontWeight: FontWeight.bold),
+                                    ),
+                                    ...List.generate(dailyJourney.length, (index) {
+                                      final item = dailyJourney[index];
+                                      final double leftPos = index * stepX;
+                                      final double topPos = h - paddingBottom - (item['val'] * chartHeight) - 10;
+                                      return Positioned(
+                                        left: leftPos - 11,
+                                        top: topPos,
+                                        child: Container(
+                                          width: 22,
+                                          height: 22,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withAlpha(15),
+                                                blurRadius: 3,
+                                              )
+                                            ],
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text(item['emoji'], style: const TextStyle(fontSize: 12)),
                                         ),
+                                      );
+                                    }),
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: dailyJourney.map((item) {
+                                          return SizedBox(
+                                            width: w / dailyJourney.length,
+                                            child: Text(
+                                              item['day'],
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(fontSize: 10, color: Colors.black38, fontWeight: FontWeight.bold),
+                                            ),
+                                          );
+                                        }).toList(),
                                       ),
-                                    );
-                                  }),
+                                    ),
+                                  ],
                                 );
                               },
                             ),
@@ -293,65 +290,66 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: availableHeight * 0.02),
-
-              // --- 4. THIS WEEK IN A NUTSHELL AREA (Allocated 16% height) ---
-              const Text(
-                'This Week in a Nutshell',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
-              SizedBox(height: availableHeight * 0.008),
-              SizedBox(
-                height: availableHeight * 0.11,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildFixedNutshellCard('😊', '14', 'Total Logs'),
-                    _buildFixedNutshellCard('⭐', '8', 'Positive Days'),
-                    _buildFixedNutshellCard('🌿', '3', 'Calm Days'),
-                    _buildFixedNutshellCard('💜', '2', 'Self-care Days'),
-                  ],
-                ),
-              ),
-              SizedBox(height: availableHeight * 0.02),
-
-              // --- 5. BOTTOM INSIGHT QUOTE CARD (Allocated 13% height) ---
-              Container(
-                height: availableHeight * 0.13,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFEFE8FC), Color(0xFFE4DAFA)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('“', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF6A4BBD), height: 0.5)),
-                    Text(
-                      'You\'re allowed to be both\na masterpiece and a work in progress.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4A3485),
-                        height: 1.3,
+                  SizedBox(height: internalPadding),
+
+                  // --- 4. THIS WEEK IN A NUTSHELL ---
+                  Text(
+                    'This Week in a Nutshell',
+                    style: TextStyle(fontSize: headerFontSize, fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    flex: 12,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildFixedNutshellCard('😊', '14', 'Total Logs'),
+                        _buildFixedNutshellCard('⭐', '8', 'Positive'),
+                        _buildFixedNutshellCard('🌿', '3', 'Calm Days'),
+                        _buildFixedNutshellCard('💜', '2', 'Self-care'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: internalPadding),
+
+                  // --- 5. BOTTOM INSIGHT BANNER ---
+                  Expanded(
+                    flex: 12,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEFE8FC), Color(0xFFE4DAFA)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text('“', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF6A4BBD), height: 0.5)),
+                          Text(
+                            'You\'re allowed to be both a masterpiece and a work in progress.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4A3485),
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text('💜', style: TextStyle(fontSize: 10)),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Text('💜', style: TextStyle(fontSize: 11)),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -361,7 +359,6 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 3),
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -370,9 +367,9 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 16)),
+            Text(icon, style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
             Text(
               label,
               textAlign: TextAlign.center,
@@ -385,7 +382,6 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
   }
 }
 
-// --- VECTOR DONUT CANVAS GENERATOR ---
 class DonutChartPainter extends CustomPainter {
   final List<Map<String, dynamic>> data;
   DonutChartPainter({required this.data});
@@ -394,14 +390,17 @@ class DonutChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 16.0
+      ..strokeWidth = 14.0
       ..isAntiAlias = true;
 
-    final Rect rect = Rect.fromLTWH(10, 10, size.width - 20, size.height - 20);
+    final double radius = (math.min(size.width, size.height) / 2) - 10;
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final Rect rect = Rect.fromCircle(center: center, radius: radius);
+
     double startAngle = -math.pi / 2;
 
     for (var item in data) {
-      final double sweepAngle = (item['percent'] / 100) * (2 * math.pi);
+      final double sweepAngle = ((item['percent'] ?? 0) / 100) * (2 * math.pi);
       paint.color = item['color'];
       canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
       startAngle += sweepAngle;
@@ -412,7 +411,6 @@ class DonutChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// --- JOURNEY SMOOTH VECTOR GRAPH WAVE PAINTER ---
 class JourneyCurvePainter extends CustomPainter {
   final List<Map<String, dynamic>> journeyData;
   JourneyCurvePainter({required this.journeyData});
@@ -423,8 +421,8 @@ class JourneyCurvePainter extends CustomPainter {
 
     final double w = size.width;
     final double h = size.height;
-    final double paddingBottom = 20.0;
-    final double chartHeight = h - 45.0;
+    final double paddingBottom = 16.0;
+    final double chartHeight = h - 40.0;
     final double stepX = w / (journeyData.length - 1);
 
     List<Offset> points = [];
@@ -434,7 +432,6 @@ class JourneyCurvePainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
-    // Gradient Wave Background Shading
     Path fillPath = Path();
     fillPath.moveTo(points.first.dx, h - paddingBottom);
     fillPath.lineTo(points.first.dx, points.first.dy);
@@ -454,16 +451,15 @@ class JourneyCurvePainter extends CustomPainter {
     Paint fillPaint = Paint()..style = PaintingStyle.fill;
     fillPaint.shader = LinearGradient(
       colors: [
-        const Color(0xFFFF6584).withValues(alpha: 0.2),
-        const Color(0xFFFFCE56).withValues(alpha: 0.1),
-        const Color(0xFF36A2EB).withValues(alpha: 0.01),
+        const Color(0xFFFF6584).withAlpha(51),
+        const Color(0xFFFFCE56).withAlpha(25),
+        const Color(0xFF36A2EB).withAlpha(2),
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ).createShader(Rect.fromLTRB(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
 
-    // Primary Colored Flow Line Stroke
     Path strokePath = Path();
     strokePath.moveTo(points.first.dx, points.first.dy);
     for (int i = 0; i < points.length - 1; i++) {
@@ -496,7 +492,6 @@ class JourneyCurvePainter extends CustomPainter {
 
     canvas.drawPath(strokePath, strokePaint);
 
-    // Clean Dashed drop guidelines
     Paint linePaint = Paint()
       ..color = const Color(0xFFE2DFE8)
       ..strokeWidth = 0.8;
