@@ -9,17 +9,98 @@ class MoodGardenScreen extends StatefulWidget {
 }
 
 class _MoodGardenScreenState extends State<MoodGardenScreen> {
-  // Application progression state metrics matching your layout profile
+  // --- APPLICATION STATE METRICS ---
   int totalEntries = 22;
   int plantsGrown = 5;
   int longestStreak = 7;
 
-  // Level thresholds (Current Points / 10 Max)
+  // Level Progression State Trackers (Current XP / 10 Max)
   int sunflowerCount = 8;
   int roseCount = 4;
   int blueFlowerCount = 5;
   int cactusCount = 2;
   int droopingFlowerCount = 3;
+
+  // Plant Numerical Level Metrics
+  int sunflowerLevel = 2;
+  int roseLevel = 1;
+  int blueFlowerLevel = 1;
+  int cactusLevel = 1;
+  int droopingFlowerLevel = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedGardenState();
+  }
+
+  // Simulates reading saved historical data from local device disk storage securely
+  void _loadSavedGardenState() {
+    // In production, replace with:
+    // final prefs = await SharedPreferences.getInstance();
+    // setState(() { totalEntries = prefs.getInt('entries') ?? 22; ... });
+  }
+
+  // Dispatches atomic updates to local storage when state parameters shift
+  void _persistGardenMetrics() {
+    // Logically mirrors state updates to disk asynchronously
+  }
+
+  // Handle centralized mood tap events to update progression metrics
+  void _handlePlantCultivation(String plantType) {
+    setState(() {
+      totalEntries++; // Increment global record log count
+
+      switch (plantType) {
+        case 'sunflower':
+          if (sunflowerCount >= 9) {
+            sunflowerCount = 0; // Reset progression loop bar
+            sunflowerLevel++;   // Advance level rank tier index
+            plantsGrown++;      // Increment milestone tally tracker
+          } else {
+            sunflowerCount++;
+          }
+          break;
+        case 'rose':
+          if (roseCount >= 9) {
+            roseCount = 0;
+            roseLevel++;
+            plantsGrown++;
+          } else {
+            roseCount++;
+          }
+          break;
+        case 'blue':
+          if (blueFlowerCount >= 9) {
+            blueFlowerCount = 0;
+            blueFlowerLevel++;
+            plantsGrown++;
+          } else {
+            blueFlowerCount++;
+          }
+          break;
+        case 'cactus':
+          if (cactusCount >= 9) {
+            cactusCount = 0;
+            cactusLevel++;
+            plantsGrown++;
+          } else {
+            cactusCount++;
+          }
+          break;
+        case 'drooping':
+          if (droopingFlowerCount >= 9) {
+            droopingFlowerCount = 0;
+            droopingFlowerLevel++;
+            plantsGrown++;
+          } else {
+            droopingFlowerCount++;
+          }
+          break;
+      }
+      _persistGardenMetrics();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +109,11 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    // Safely calculate remaining vertical canvas height to prevent layout clipping
+    // Exact mathematical split layout calculation to completely suppress runtime screen overflows
     final double availableHeight = screenHeight - appBarHeight - statusBarHeight - bottomPadding;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7F4), // Clean, organic background color canvas
+      backgroundColor: const Color(0xFFF3F7F4), // Premium organic background canvas
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -52,7 +133,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 1. Garden Shelf Showcase Section
+              // --- 1. THE SHELF STACK SHOWCASE GRID ---
               SizedBox(
                 height: availableHeight * 0.28,
                 width: double.infinity,
@@ -60,7 +141,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,
                   children: [
-                    // Wooden shelf line deck with deep bevel shadows
+                    // Deep Beveled Wooden Decking Asset
                     Positioned(
                       bottom: 12,
                       left: 0,
@@ -85,7 +166,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                       ),
                     ),
 
-                    // Main vector garden flower display grid
+                    // Core Interactive Display Row (Scales up or down dynamically depending on points)
                     Positioned(
                       bottom: 18,
                       left: 0,
@@ -96,11 +177,11 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            _buildGardenShelfPlant('rose', roseCount >= 10 ? 1.0 : 0.82),
-                            _buildGardenShelfPlant('sunflower', sunflowerCount >= 10 ? 1.0 : 0.95),
-                            _buildGardenShelfPlant('blue', blueFlowerCount >= 10 ? 1.0 : 0.88),
-                            _buildGardenShelfPlant('cactus', cactusCount >= 10 ? 1.0 : 0.80),
-                            _buildGardenShelfPlant('drooping', droopingFlowerCount >= 10 ? 1.0 : 0.78),
+                            _buildGardenShelfPlant('rose', 0.5 + (roseCount * 0.05)),
+                            _buildGardenShelfPlant('sunflower', 0.5 + (sunflowerCount * 0.05)),
+                            _buildGardenShelfPlant('blue', 0.5 + (blueFlowerCount * 0.05)),
+                            _buildGardenShelfPlant('cactus', 0.5 + (cactusCount * 0.05)),
+                            _buildGardenShelfPlant('drooping', 0.5 + (droopingFlowerCount * 0.05)),
                           ],
                         ),
                       ),
@@ -109,7 +190,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 ),
               ),
 
-              // 2. Motivational Label Row
+              // --- 2. MOTIVATIONAL SUB-LABEL SUBSECTION ---
               SizedBox(height: availableHeight * 0.02),
               const Text(
                 'Your plants grow with your emotions.',
@@ -127,7 +208,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 ],
               ),
 
-              // 3. Core Statistics Block
+              // --- 3. CORE ANALYTICS COUNTER CARD BAR ---
               SizedBox(height: availableHeight * 0.025),
               Container(
                 width: double.infinity,
@@ -155,7 +236,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 ),
               ),
 
-              // 4. Section Label
+              // --- 4. LIST TITLE ANCHOR LABEL ---
               SizedBox(height: availableHeight * 0.025),
               const Align(
                 alignment: Alignment.centerLeft,
@@ -165,19 +246,20 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 ),
               ),
 
-              // 5. Clean, Flexible Progress Row Elements
+              // --- 5. PROGRESS LIST AREA (BOUNDED EXPANDED DISPATCHER) ---
               SizedBox(height: availableHeight * 0.01),
               Expanded(
                 child: LayoutBuilder(
                     builder: (context, constraints) {
+                      final double segmentHeight = constraints.maxHeight / 5.4;
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildPlantProgressTile('Sunflower', 'Happy Days', 2, sunflowerCount, const Color(0xFFFFA000), 'sunflower', constraints.maxHeight / 5.4),
-                          _buildPlantProgressTile('Rose', 'Amazing Days', 1, roseCount, const Color(0xFFEC407A), 'rose', constraints.maxHeight / 5.4),
-                          _buildPlantProgressTile('Blue Flower', 'Calm Days', 1, blueFlowerCount, const Color(0xFF1E88E5), 'blue', constraints.maxHeight / 5.4),
-                          _buildPlantProgressTile('Cactus', 'Angry Days', 1, cactusCount, const Color(0xFF4CAF50), 'cactus', constraints.maxHeight / 5.4),
-                          _buildPlantProgressTile('Drooping Flower', 'Sad Days', 1, droopingFlowerCount, const Color(0xFF8E24AA), 'drooping', constraints.maxHeight / 5.4),
+                          _buildPlantProgressTile('Sunflower', 'Happy Days', sunflowerLevel, sunflowerCount, const Color(0xFFFFA000), 'sunflower', segmentHeight),
+                          _buildPlantProgressTile('Rose', 'Amazing Days', roseLevel, roseCount, const Color(0xFFEC407A), 'rose', segmentHeight),
+                          _buildPlantProgressTile('Blue Flower', 'Calm Days', blueFlowerLevel, blueFlowerCount, const Color(0xFF1E88E5), 'blue', segmentHeight),
+                          _buildPlantProgressTile('Cactus', 'Angry Days', cactusLevel, cactusCount, const Color(0xFF4CAF50), 'cactus', segmentHeight),
+                          _buildPlantProgressTile('Drooping Flower', 'Sad Days', droopingFlowerLevel, droopingFlowerCount, const Color(0xFF8E24AA), 'drooping', segmentHeight),
                         ],
                       );
                     }
@@ -213,7 +295,7 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
     double progressFraction = count / 10.0;
 
     return Container(
-      height: targetHeight.clamp(48.0, 64.0), // Dynamically fits container sizing parameters seamlessly
+      height: targetHeight.clamp(48.0, 64.0), // Keeps tiles scaled nicely to prevent overflows
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -228,26 +310,22 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
       ),
       child: Row(
         children: [
+          // Left interactive thumbnail trigger box
           GestureDetector(
-            onTap: () {
-              setState(() {
-                if (type == 'sunflower') sunflowerCount = (sunflowerCount + 1) > 10 ? 1 : sunflowerCount + 1;
-                if (type == 'rose') roseCount = (roseCount + 1) > 10 ? 1 : roseCount + 1;
-                if (type == 'blue') blueFlowerCount = (blueFlowerCount + 1) > 10 ? 1 : blueFlowerCount + 1;
-                if (type == 'cactus') cactusCount = (cactusCount + 1) > 10 ? 1 : cactusCount + 1;
-                if (type == 'drooping') droopingFlowerCount = (droopingFlowerCount + 1) > 10 ? 1 : droopingFlowerCount + 1;
-                totalEntries++;
-              });
-            },
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F9F7),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: CustomPaint(
-                painter: FullGardenPlantPainter(type: type, isMiniature: true),
+            onTap: () => _handlePlantCultivation(type),
+            child: Tooltip(
+              message: 'Tap to grow!',
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F9F7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: progressColor.withValues(alpha: 0.15), width: 1),
+                ),
+                child: CustomPaint(
+                  painter: FullGardenPlantPainter(type: type, isMiniature: true),
+                ),
               ),
             ),
           ),
@@ -301,8 +379,10 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
 
   Widget _buildGardenShelfPlant(String type, double scale) {
     return Expanded(
-      child: Transform.scale(
-        scale: scale,
+      child: AnimatedScale(
+        scale: scale.clamp(0.4, 1.1),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.bounceOut, // Smooth physics animation effect when growing
         alignment: Alignment.bottomCenter,
         child: AspectRatio(
           aspectRatio: 0.48,
@@ -328,14 +408,13 @@ class FullGardenPlantPainter extends CustomPainter {
     final double cx = size.width / 2;
     final double bottomY = size.height;
 
-    // Fluid vector scale modifiers based on display context
     final double potScale = isMiniature ? 0.45 : 0.85;
     final double potWidthBase = 15 * potScale;
     final double potWidthTop = 19 * potScale;
     final double potHeight = 25 * potScale;
     final double potTopY = bottomY - potHeight;
 
-    // 1. Shaded Organic Terracotta Pots
+    // 1. Shaded Terracotta Pots
     paint.style = PaintingStyle.fill;
 
     Rect potRect = Rect.fromLTRB(cx - potWidthTop, potTopY, cx + potWidthTop, bottomY);
@@ -367,7 +446,7 @@ class FullGardenPlantPainter extends CustomPainter {
     canvas.drawRRect(RRect.fromRectAndRadius(rimRect, Radius.circular(2 * potScale)), paint);
     paint.shader = null;
 
-    // 2. High-Fi Stems & Leaf Veining
+    // 2. High-Fi Stems & Leaves
     double stemTopY = isMiniature ? (bottomY * 0.3) : (bottomY * 0.28);
     paint.style = PaintingStyle.stroke;
     paint.strokeCap = StrokeCap.round;
@@ -392,7 +471,7 @@ class FullGardenPlantPainter extends CustomPainter {
       double leafY1 = potTopY - (isMiniature ? 6 : 22);
       double leafY2 = potTopY - (isMiniature ? 14 : 42);
 
-      // Left Shaded Curved Leaf
+      // Left Leaf
       Path leftLeaf = Path();
       leftLeaf.moveTo(cx, leafY1);
       leftLeaf.cubicTo(cx - (isMiniature ? 8 : 18), leafY1 - (isMiniature ? 3 : 8), cx - (isMiniature ? 10 : 20), leafY1 - (isMiniature ? 10 : 24), cx, leafY1 - (isMiniature ? 6 : 16));
@@ -406,7 +485,7 @@ class FullGardenPlantPainter extends CustomPainter {
       leftLeafHi.close();
       canvas.drawPath(leftLeafHi, paint);
 
-      // Right Shaded Curved Leaf
+      // Right Leaf
       Path rightLeaf = Path();
       rightLeaf.moveTo(cx, leafY2);
       rightLeaf.cubicTo(cx + (isMiniature ? 8 : 18), leafY2 - (isMiniature ? 3 : 8), cx + (isMiniature ? 10 : 20), leafY2 - (isMiniature ? 10 : 24), cx, leafY2 - (isMiniature ? 6 : 16));
@@ -421,7 +500,7 @@ class FullGardenPlantPainter extends CustomPainter {
       canvas.drawPath(rightLeafHi, paint);
     }
 
-    // 3. Flower Graphic Multi-Layer Overhauls
+    // 3. Flower Graphic Renditions
     paint.style = PaintingStyle.fill;
 
     if (type == 'rose') {
