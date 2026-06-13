@@ -9,12 +9,12 @@ class MoodGardenScreen extends StatefulWidget {
 }
 
 class _MoodGardenScreenState extends State<MoodGardenScreen> {
-  // Production App State metrics matching your design
+  // Application progression state metrics matching your layout profile
   int totalEntries = 22;
   int plantsGrown = 5;
   int longestStreak = 7;
 
-  // Level progression counters (Current Points / 10 Max)
+  // Level thresholds (Current Points / 10 Max)
   int sunflowerCount = 8;
   int roseCount = 4;
   int blueFlowerCount = 5;
@@ -23,8 +23,16 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double appBarHeight = AppBar().preferredSize.height;
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    // Safely calculate remaining vertical canvas height to prevent layout clipping
+    final double availableHeight = screenHeight - appBarHeight - statusBarHeight - bottomPadding;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7F4), // Soft, organic off-white background
+      backgroundColor: const Color(0xFFF3F7F4), // Clean, organic background color canvas
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -34,62 +42,62 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
         ),
         title: const Text(
           'Mood Garden',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 19),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 10),
-
-              // --- SECTION 1: THE FLOATING SHELF & REALISTIC FLOWER POTS ---
+              // 1. Garden Shelf Showcase Section
               SizedBox(
-                height: 220,
+                height: availableHeight * 0.28,
                 width: double.infinity,
                 child: Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,
                   children: [
-                    // Elegant Wooden Shelf Base
+                    // Wooden shelf line deck with deep bevel shadows
                     Positioned(
-                      bottom: 20,
+                      bottom: 12,
                       left: 0,
                       right: 0,
                       child: Container(
-                        height: 14,
+                        height: 12,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFCD8D53), // Authentic wooden shelf tone
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFDCA36D), Color(0xFFB97940)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                           borderRadius: BorderRadius.circular(6),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 8,
-                              offset: const Offset(0, 5),
+                              offset: const Offset(0, 4),
                             )
                           ],
                         ),
                       ),
                     ),
 
-                    // Displaying the 5 beautiful vector flower pots side by side across the shelf line
+                    // Main vector garden flower display grid
                     Positioned(
-                      bottom: 28,
+                      bottom: 18,
                       left: 0,
                       right: 0,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          // FIXED: Changed CrossAxisAlignment.bottom to CrossAxisAlignment.end to resolve the build error
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             _buildGardenShelfPlant('rose', roseCount >= 10 ? 1.0 : 0.82),
-                            _buildGardenShelfPlant('sunflower', sunflowerCount >= 10 ? 1.0 : 0.98),
+                            _buildGardenShelfPlant('sunflower', sunflowerCount >= 10 ? 1.0 : 0.95),
                             _buildGardenShelfPlant('blue', blueFlowerCount >= 10 ? 1.0 : 0.88),
                             _buildGardenShelfPlant('cactus', cactusCount >= 10 ? 1.0 : 0.80),
                             _buildGardenShelfPlant('drooping', droopingFlowerCount >= 10 ? 1.0 : 0.78),
@@ -101,37 +109,37 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 ),
               ),
 
-              // --- SECTION 2: MOTIVATIONAL MOTTO & EMBEDDED LEAF ---
-              const SizedBox(height: 20),
+              // 2. Motivational Label Row
+              SizedBox(height: availableHeight * 0.02),
               const Text(
                 'Your plants grow with your emotions.',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF2E3E33)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2E3E33)),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
                   Text(
                     'Keep going! You\'re doing great ',
-                    style: TextStyle(fontSize: 14, color: Colors.black45, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 12, color: Colors.black45, fontWeight: FontWeight.w500),
                   ),
-                  Text('🌱', style: TextStyle(fontSize: 14)),
+                  Text('🌱', style: TextStyle(fontSize: 12)),
                 ],
               ),
-              const SizedBox(height: 24),
 
-              // --- SECTION 3: GARDEN METRIC STATS PANEL ---
+              // 3. Core Statistics Block
+              SizedBox(height: availableHeight * 0.025),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF1A1A1A).withValues(alpha: 0.02),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     )
                   ],
                 ),
@@ -139,33 +147,43 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildStatColumn('🌿', '$totalEntries', 'Total Entries'),
-                    Container(width: 1, height: 35, color: const Color(0xFFEFECE6)),
+                    Container(width: 1, height: 28, color: const Color(0xFFEFECE6)),
                     _buildStatColumn('🌱', '$plantsGrown', 'Plants Grown'),
-                    Container(width: 1, height: 35, color: const Color(0xFFEFECE6)),
+                    Container(width: 1, height: 28, color: const Color(0xFFEFECE6)),
                     _buildStatColumn('💧', '$longestStreak', 'Longest Streak'),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
 
-              // --- SECTION 4: PLANT COLLECTION LEVEL LIST ---
+              // 4. Section Label
+              SizedBox(height: availableHeight * 0.025),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Plant Collection',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
                 ),
               ),
-              const SizedBox(height: 12),
 
-              // Interactive level progression tiles
-              _buildPlantProgressTile('Sunflower', 'Happy Days', 2, sunflowerCount, const Color(0xFFF9A825), 'sunflower'),
-              _buildPlantProgressTile('Rose', 'Amazing Days', 1, roseCount, const Color(0xFFF06292), 'rose'),
-              _buildPlantProgressTile('Blue Flower', 'Calm Days', 1, blueFlowerCount, const Color(0xFF42A5F5), 'blue'),
-              _buildPlantProgressTile('Cactus', 'Angry Days', 1, cactusCount, const Color(0xFF66BB6A), 'cactus'),
-              _buildPlantProgressTile('Drooping Flower', 'Sad Days', 1, droopingFlowerCount, const Color(0xFFAB47BC), 'drooping'),
-
-              const SizedBox(height: 24),
+              // 5. Clean, Flexible Progress Row Elements
+              SizedBox(height: availableHeight * 0.01),
+              Expanded(
+                child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildPlantProgressTile('Sunflower', 'Happy Days', 2, sunflowerCount, const Color(0xFFFFA000), 'sunflower', constraints.maxHeight / 5.4),
+                          _buildPlantProgressTile('Rose', 'Amazing Days', 1, roseCount, const Color(0xFFEC407A), 'rose', constraints.maxHeight / 5.4),
+                          _buildPlantProgressTile('Blue Flower', 'Calm Days', 1, blueFlowerCount, const Color(0xFF1E88E5), 'blue', constraints.maxHeight / 5.4),
+                          _buildPlantProgressTile('Cactus', 'Angry Days', 1, cactusCount, const Color(0xFF4CAF50), 'cactus', constraints.maxHeight / 5.4),
+                          _buildPlantProgressTile('Drooping Flower', 'Sad Days', 1, droopingFlowerCount, const Color(0xFF8E24AA), 'drooping', constraints.maxHeight / 5.4),
+                        ],
+                      );
+                    }
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -175,41 +193,41 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
 
   Widget _buildStatColumn(String emoji, String count, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 22)),
-        const SizedBox(height: 4),
+        Text(emoji, style: const TextStyle(fontSize: 18)),
+        const SizedBox(height: 2),
         Text(
           count,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.black38, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 11, color: Colors.black38, fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
-  Widget _buildPlantProgressTile(String title, String subtitle, int level, int count, Color progressColor, String type) {
+  Widget _buildPlantProgressTile(String title, String subtitle, int level, int count, Color progressColor, String type, double targetHeight) {
     double progressFraction = count / 10.0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
+      height: targetHeight.clamp(48.0, 64.0), // Dynamically fits container sizing parameters seamlessly
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.01),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           )
         ],
       ),
       child: Row(
         children: [
-          // Left side interactive flower preview asset
           GestureDetector(
             onTap: () {
               setState(() {
@@ -222,48 +240,47 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
               });
             },
             child: Container(
-              width: 46,
-              height: 46,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: const Color(0xFFF7F9F7),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: CustomPaint(
-                painter: MiniFlowerPainter(type: type),
+                painter: FullGardenPlantPainter(type: type, isMiniature: true),
               ),
             ),
           ),
           const SizedBox(width: 12),
-
-          // Center descriptive details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2E3E33)),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 11, color: Colors.black38, fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontSize: 10, color: Colors.black38, fontWeight: FontWeight.w400),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 3),
                 Row(
                   children: [
                     Text(
                       'Lv. $level',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: progressColor),
+                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: progressColor),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: BorderRadius.circular(2),
                         child: LinearProgressIndicator(
                           value: progressFraction,
                           backgroundColor: const Color(0xFFF0EFEA),
                           valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                          minHeight: 5,
+                          minHeight: 4,
                         ),
                       ),
                     ),
@@ -273,11 +290,9 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
             ),
           ),
           const SizedBox(width: 12),
-
-          // Right progress fraction labels
           Text(
             '$count/10',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black38),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black38),
           ),
         ],
       ),
@@ -285,24 +300,27 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
   }
 
   Widget _buildGardenShelfPlant(String type, double scale) {
-    return Transform.scale(
-      scale: scale,
-      alignment: Alignment.bottomCenter,
-      child: SizedBox(
-        width: 65,
-        height: 160,
-        child: CustomPaint(
-          painter: FullGardenPlantPainter(type: type),
+    return Expanded(
+      child: Transform.scale(
+        scale: scale,
+        alignment: Alignment.bottomCenter,
+        child: AspectRatio(
+          aspectRatio: 0.48,
+          child: CustomPaint(
+            painter: FullGardenPlantPainter(type: type, isMiniature: false),
+          ),
         ),
       ),
     );
   }
 }
 
-// --- HIGHLY DETAILED VECTOR CANVAS GRAPHICS PAINTER ENGINE ---
+// --- HIGH-FIDELITY ORGANIC GRADIENT VECTOR DRAW ENGINE ---
 class FullGardenPlantPainter extends CustomPainter {
   final String type;
-  FullGardenPlantPainter({required this.type});
+  final bool isMiniature;
+
+  FullGardenPlantPainter({required this.type, required this.isMiniature});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -310,187 +328,242 @@ class FullGardenPlantPainter extends CustomPainter {
     final double cx = size.width / 2;
     final double bottomY = size.height;
 
-    // 1. Draw Styled Organic Terracotta Clay Pots
+    // Fluid vector scale modifiers based on display context
+    final double potScale = isMiniature ? 0.45 : 0.85;
+    final double potWidthBase = 15 * potScale;
+    final double potWidthTop = 19 * potScale;
+    final double potHeight = 25 * potScale;
+    final double potTopY = bottomY - potHeight;
+
+    // 1. Shaded Organic Terracotta Pots
     paint.style = PaintingStyle.fill;
-    paint.color = const Color(0xFFE59364); // Warm earthy terracotta baseline
+
+    Rect potRect = Rect.fromLTRB(cx - potWidthTop, potTopY, cx + potWidthTop, bottomY);
+    paint.shader = const LinearGradient(
+      colors: [Color(0xFFE99B6E), Color(0xFFD37B47), Color(0xFFB85E2A)],
+      stops: [0.0, 0.6, 1.0],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ).createShader(potRect);
 
     Path potPath = Path();
-    potPath.moveTo(cx - 15, bottomY - 2);
-    potPath.lineTo(cx + 15, bottomY - 2);
-    potPath.lineTo(cx + 19, bottomY - 28);
-    potPath.lineTo(cx - 19, bottomY - 28);
+    potPath.moveTo(cx - potWidthBase, bottomY - 1);
+    potPath.lineTo(cx + potWidthBase, bottomY - 1);
+    potPath.lineTo(cx + potWidthTop, potTopY);
+    potPath.lineTo(cx - potWidthTop, potTopY);
     potPath.close();
     canvas.drawPath(potPath, paint);
 
-    // Overhanging smooth rounded rim lip
-    paint.color = const Color(0xFFDE8350);
-    RRect potRim = RRect.fromRectAndRadius(
-      Rect.fromLTRB(cx - 21, bottomY - 35, cx + 21, bottomY - 28),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(potRim, paint);
+    // Rim Lip
+    final double rimWidth = 22 * potScale;
+    final double rimHeight = 6 * potScale;
+    Rect rimRect = Rect.fromLTRB(cx - rimWidth, potTopY - rimHeight, cx + rimWidth, potTopY);
+    paint.shader = const LinearGradient(
+      colors: [Color(0xFFEEA67B), Color(0xFFC76D38)],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(rimRect);
 
-    // 2. Structural Plant Stem Management
-    double stemTopY = bottomY - 105;
+    canvas.drawRRect(RRect.fromRectAndRadius(rimRect, Radius.circular(2 * potScale)), paint);
+    paint.shader = null;
+
+    // 2. High-Fi Stems & Leaf Veining
+    double stemTopY = isMiniature ? (bottomY * 0.3) : (bottomY * 0.28);
     paint.style = PaintingStyle.stroke;
     paint.strokeCap = StrokeCap.round;
 
     if (type == 'drooping') {
-      paint.color = const Color(0xFF90C165);
-      paint.strokeWidth = 3.5;
+      paint.color = const Color(0xFF7CB342);
+      paint.strokeWidth = isMiniature ? 1.8 : 3.4;
       Path droopingStem = Path();
-      droopingStem.moveTo(cx, bottomY - 35);
-      droopingStem.cubicTo(cx, bottomY - 85, cx + 28, bottomY - 135, cx + 22, bottomY - 95);
+      droopingStem.moveTo(cx, potTopY - rimHeight);
+      droopingStem.cubicTo(
+        cx - 2, potTopY - (isMiniature ? 12 : 35),
+        cx + (isMiniature ? 12 : 26), potTopY - (isMiniature ? 24 : 65),
+        cx + (isMiniature ? 10 : 20), stemTopY + (isMiniature ? 6 : 14),
+      );
       canvas.drawPath(droopingStem, paint);
     } else if (type != 'cactus') {
-      paint.color = const Color(0xFF9CCC65); // Vibrant plant green
-      paint.strokeWidth = 3.0;
-      canvas.drawLine(Offset(cx, bottomY - 35), Offset(cx, stemTopY), paint);
+      paint.color = const Color(0xFF8BC34A);
+      paint.strokeWidth = isMiniature ? 1.5 : 2.8;
+      canvas.drawLine(Offset(cx, potTopY - rimHeight), Offset(cx, stemTopY), paint);
 
-      // Add detailed structural leaves along sides
       paint.style = PaintingStyle.fill;
-      Path leftLeaf = Path();
-      leftLeaf.moveTo(cx, bottomY - 58);
-      leftLeaf.quadraticBezierTo(cx - 16, bottomY - 72, cx - 5, bottomY - 80);
-      leftLeaf.quadraticBezierTo(cx, bottomY - 68, cx, bottomY - 58);
-      canvas.drawPath(leftLeaf, paint);
+      double leafY1 = potTopY - (isMiniature ? 6 : 22);
+      double leafY2 = potTopY - (isMiniature ? 14 : 42);
 
+      // Left Shaded Curved Leaf
+      Path leftLeaf = Path();
+      leftLeaf.moveTo(cx, leafY1);
+      leftLeaf.cubicTo(cx - (isMiniature ? 8 : 18), leafY1 - (isMiniature ? 3 : 8), cx - (isMiniature ? 10 : 20), leafY1 - (isMiniature ? 10 : 24), cx, leafY1 - (isMiniature ? 6 : 16));
+      leftLeaf.close();
+      paint.color = const Color(0xFF7CB342);
+      canvas.drawPath(leftLeaf, paint);
+      paint.color = const Color(0xFF9CCC65);
+      Path leftLeafHi = Path();
+      leftLeafHi.moveTo(cx, leafY1);
+      leftLeafHi.cubicTo(cx - (isMiniature ? 4 : 9), leafY1 - (isMiniature ? 2 : 4), cx - (isMiniature ? 10 : 20), leafY1 - (isMiniature ? 10 : 24), cx, leafY1 - (isMiniature ? 6 : 16));
+      leftLeafHi.close();
+      canvas.drawPath(leftLeafHi, paint);
+
+      // Right Shaded Curved Leaf
       Path rightLeaf = Path();
-      rightLeaf.moveTo(cx, bottomY - 72);
-      rightLeaf.quadraticBezierTo(cx + 16, bottomY - 86, cx + 5, bottomY - 94);
-      rightLeaf.quadraticBezierTo(cx, bottomY - 82, cx, bottomY - 72);
+      rightLeaf.moveTo(cx, leafY2);
+      rightLeaf.cubicTo(cx + (isMiniature ? 8 : 18), leafY2 - (isMiniature ? 3 : 8), cx + (isMiniature ? 10 : 20), leafY2 - (isMiniature ? 10 : 24), cx, leafY2 - (isMiniature ? 6 : 16));
+      rightLeaf.close();
+      paint.color = const Color(0xFF689F38);
       canvas.drawPath(rightLeaf, paint);
+      paint.color = const Color(0xFF8BC34A);
+      Path rightLeafHi = Path();
+      rightLeafHi.moveTo(cx, leafY2);
+      rightLeafHi.cubicTo(cx + (isMiniature ? 4 : 9), leafY2 - (isMiniature ? 2 : 4), cx + (isMiniature ? 10 : 20), leafY2 - (isMiniature ? 10 : 24), cx, leafY2 - (isMiniature ? 6 : 16));
+      rightLeafHi.close();
+      canvas.drawPath(rightLeafHi, paint);
     }
 
-    // 3. Render Botanical Flower Elements
+    // 3. Flower Graphic Multi-Layer Overhauls
     paint.style = PaintingStyle.fill;
 
     if (type == 'rose') {
-      // Rose petal geometry
       double rx = cx;
       double ry = stemTopY;
-      paint.color = const Color(0xFFF06292);
-      canvas.drawCircle(Offset(rx, ry), 15, paint);
+      double radius = isMiniature ? 8 : 17;
 
-      paint.color = const Color(0xFFE91E63);
-      Path innerPetal1 = Path()
-        ..addOval(Rect.fromCircle(center: Offset(rx - 3, ry - 1), radius: 9));
-      canvas.drawPath(innerPetal1, paint);
+      Rect roseBounds = Rect.fromCircle(center: Offset(rx, ry), radius: radius);
+      paint.shader = RadialGradient(
+        colors: const [Color(0xFFFA8072), Color(0xFFE91E63), Color(0xFF880E4F)],
+        stops: const [0.2, 0.75, 1.0],
+      ).createShader(roseBounds);
+      canvas.drawCircle(Offset(rx, ry), radius, paint);
+      paint.shader = null;
 
-      paint.color = const Color(0xFFC2185B);
-      canvas.drawCircle(Offset(rx + 2, ry + 2), 5, paint);
+      paint.color = const Color(0xFFC2185B).withValues(alpha: 0.4);
+      canvas.drawArc(roseBounds.deflate(radius * 0.3), 0, math.pi, true, paint);
+      canvas.drawArc(roseBounds.deflate(radius * 0.5), math.pi, math.pi, true, paint);
+      paint.color = const Color(0xFFFF80AB).withValues(alpha: 0.6);
+      canvas.drawCircle(Offset(rx, ry - (radius * 0.15)), radius * 0.25, paint);
     }
     else if (type == 'sunflower') {
-      // Golden Radiance Sunflower Petals
       double sx = cx;
-      double sy = stemTopY - 5;
-      paint.color = const Color(0xFFFFD54F);
+      double sy = stemTopY;
+      double coreRadius = isMiniature ? 5 : 10;
+      double petalLength = isMiniature ? 6 : 14;
 
-      for (int i = 0; i < 12; i++) {
-        double angle = (i * 30) * math.pi / 180;
-        double px = sx + 14 * math.cos(angle);
-        double py = sy + 14 * math.sin(angle);
-        canvas.drawCircle(Offset(px, py), 6, paint);
+      paint.color = const Color(0xFFFFCA28);
+      int petalCount = isMiniature ? 10 : 16;
+      for (int i = 0; i < petalCount; i++) {
+        double angle = (i * (360 / petalCount)) * math.pi / 180;
+        Path petalPath = Path();
+        double tipX = sx + (coreRadius + petalLength) * math.cos(angle);
+        double tipY = sy + (coreRadius + petalLength) * math.sin(angle);
+        double sideX1 = sx + coreRadius * math.cos(angle - 0.2);
+        double sideY1 = sy + coreRadius * math.sin(angle - 0.2);
+        double sideX2 = sx + coreRadius * math.cos(angle + 0.2);
+        double sideY2 = sy + coreRadius * math.sin(angle + 0.2);
+
+        petalPath.moveTo(sideX1, sideY1);
+        petalPath.quadraticBezierTo(
+            sx + (coreRadius + petalLength * 0.5) * math.cos(angle + 0.1),
+            sy + (coreRadius + petalLength * 0.5) * math.sin(angle + 0.1),
+            tipX, tipY
+        );
+        petalPath.quadraticBezierTo(
+            sx + (coreRadius + petalLength * 0.5) * math.cos(angle - 0.1),
+            sy + (coreRadius + petalLength * 0.5) * math.sin(angle - 0.1),
+            sideX2, sideY2
+        );
+        petalPath.close();
+
+        paint.color = i % 2 == 0 ? const Color(0xFFFFB300) : const Color(0xFFFDD835);
+        canvas.drawPath(petalPath, paint);
       }
 
-      canvas.drawCircle(Offset(sx, sy), 15, paint);
-      paint.color = const Color(0xFF6D4C41); // Earthy central seed disk
-      canvas.drawCircle(Offset(sx, sy), 10, paint);
+      Rect coreBounds = Rect.fromCircle(center: Offset(sx, sy), radius: coreRadius);
+      paint.shader = const RadialGradient(
+        colors: [Color(0xFF3E2723), Color(0xFF5D4037), Color(0xFF8D6E63)],
+        stops: [0.0, 0.7, 1.0],
+      ).createShader(coreBounds);
+      canvas.drawCircle(Offset(sx, sy), coreRadius, paint);
+      paint.shader = null;
     }
     else if (type == 'blue') {
-      // 5-Petal Blue Calming Flower
       double bx = cx;
       double by = stemTopY;
-      paint.color = const Color(0xFF42A5F5);
+      double petalRadius = isMiniature ? 5 : 9.5;
 
-      for (int i = 0; i < 5; i++) {
-        double angle = (i * 72) * math.pi / 180;
-        double px = bx + 11 * math.cos(angle);
-        double py = by + 11 * math.sin(angle);
-        canvas.drawCircle(Offset(px, py), 8, paint);
+      int bluePetals = 5;
+      for (int i = 0; i < bluePetals; i++) {
+        double angle = (i * (360 / bluePetals)) * math.pi / 180;
+        double px = bx + (petalRadius * 0.85) * math.cos(angle);
+        double py = by + (petalRadius * 0.85) * math.sin(angle);
+
+        Rect blueBounds = Rect.fromCircle(center: Offset(px, py), radius: petalRadius);
+        paint.shader = const LinearGradient(
+          colors: [Color(0xFF64B5F6), Color(0xFF1E88E5)],
+          begin: Alignment.center,
+          end: Alignment.bottomRight,
+        ).createShader(blueBounds);
+
+        canvas.drawCircle(Offset(px, py), petalRadius, paint);
       }
-      // Golden central core
-      paint.color = const Color(0xFFFFEE58);
-      canvas.drawCircle(Offset(bx, by), 6, paint);
+      paint.shader = null;
+
+      paint.color = const Color(0xFFFFF176);
+      canvas.drawCircle(Offset(bx, by), petalRadius * 0.5, paint);
+      paint.color = const Color(0xFFFBC02D);
+      canvas.drawCircle(Offset(bx, by), petalRadius * 0.25, paint);
     }
     else if (type == 'cactus') {
-      // Textured Oval Desert Cactus
-      paint.color = const Color(0xFF66BB6A);
-      Rect cactusRect = Rect.fromLTRB(cx - 13, bottomY - 92, cx + 13, bottomY - 35);
-      canvas.drawRRect(RRect.fromRectAndRadius(cactusRect, const Radius.circular(12)), paint);
+      double cW = isMiniature ? 8 : 15;
+      double cH = isMiniature ? 20 : 44;
+      Rect cacRect = Rect.fromLTRB(cx - cW, potTopY - rimHeight - cH, cx + cW, potTopY - rimHeight);
 
-      // Top golden accent crown flower
-      paint.color = const Color(0xFFFFB74D);
-      canvas.drawCircle(Offset(cx, bottomY - 94), 5, paint);
+      paint.shader = const LinearGradient(
+        colors: [Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32)],
+        stops: [0.0, 0.5, 1.0],
+      ).createShader(cacRect);
+      canvas.drawRRect(RRect.fromRectAndRadius(cacRect, Radius.circular(cW)), paint);
+      paint.shader = null;
+
+      paint.style = PaintingStyle.stroke;
+      paint.strokeWidth = 0.8;
+      paint.color = const Color(0xFF388E3C).withValues(alpha: 0.4);
+      canvas.drawLine(Offset(cx - (cW * 0.4), potTopY - rimHeight - cH + 3), Offset(cx - (cW * 0.4), potTopY - rimHeight - 1), paint);
+      canvas.drawLine(Offset(cx + (cW * 0.4), potTopY - rimHeight - cH + 3), Offset(cx + (cW * 0.4), potTopY - rimHeight - 1), paint);
+
+      paint.style = PaintingStyle.fill;
+      paint.color = const Color(0xFFFF7043);
+      canvas.drawCircle(Offset(cx, potTopY - rimHeight - cH), isMiniature ? 2.5 : 5, paint);
+      paint.color = const Color(0xFFFFCA28);
+      canvas.drawCircle(Offset(cx, potTopY - rimHeight - cH), isMiniature ? 1.2 : 2.5, paint);
     }
     else if (type == 'drooping') {
-      // Elegant Weeping Bellflower
-      double dx = cx + 22;
-      double dy = bottomY - 92;
-      paint.color = const Color(0xFFBA68C8);
+      double dx = cx + (isMiniature ? 10 : 20);
+      double dy = stemTopY + (isMiniature ? 6 : 14);
+      double bloomSize = isMiniature ? 8 : 18;
 
-      Path droopingBloom = Path();
-      droopingBloom.moveTo(dx, dy - 5);
-      droopingBloom.cubicTo(dx - 12, dy + 5, dx - 10, dy + 22, dx - 8, dy + 24);
-      droopingBloom.lineTo(dx + 8, dy + 24);
-      droopingBloom.cubicTo(dx + 10, dy + 22, dx + 12, dy + 5, dx, dy - 5);
-      droopingBloom.close();
-      canvas.drawPath(droopingBloom, paint);
+      Rect dropBounds = Rect.fromLTRB(dx - bloomSize, dy, dx + bloomSize, dy + (bloomSize * 1.3));
+      paint.shader = const LinearGradient(
+        colors: [Color(0xFFE040FB), Color(0xFF9C27B0), Color(0xFF4A148C)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(dropBounds);
 
-      // Flared bottom edge details
-      paint.color = const Color(0xFF9C27B0);
-      canvas.drawCircle(Offset(dx - 4, dy + 24), 3, paint);
-      canvas.drawCircle(Offset(dx + 4, dy + 24), 3, paint);
+      Path bellFlower = Path();
+      bellFlower.moveTo(dx, dy);
+      bellFlower.quadraticBezierTo(dx - bloomSize, dy + (bloomSize * 0.2), dx - bloomSize, dy + (bloomSize * 0.8));
+      bellFlower.lineTo(dx - bloomSize, dy + (bloomSize * 1.2));
+      bellFlower.lineTo(dx - (bloomSize * 0.4), dy + bloomSize);
+      bellFlower.lineTo(dx, dy + (bloomSize * 1.3));
+      bellFlower.lineTo(dx + (bloomSize * 0.4), dy + bloomSize);
+      bellFlower.lineTo(dx + bloomSize, dy + (bloomSize * 1.2));
+      bellFlower.quadraticBezierTo(dx + bloomSize, dy + (bloomSize * 0.2), dx, dy);
+      bellFlower.close();
+      canvas.drawPath(bellFlower, paint);
+      paint.shader = null;
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// --- MINI DISPATCH SYSTEM FOR THUMBNAILS ---
-class MiniFlowerPainter extends CustomPainter {
-  final String type;
-  MiniFlowerPainter({required this.type});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()..isAntiAlias = true;
-    final double cx = size.width / 2;
-    final double cy = size.height * 0.5;
-
-    paint.style = PaintingStyle.fill;
-    if (type == 'rose') {
-      paint.color = const Color(0xFFF06292);
-      canvas.drawCircle(Offset(cx, cy), 12, paint);
-      paint.color = const Color(0xFFE91E63);
-      canvas.drawCircle(Offset(cx, cy), 6, paint);
-    } else if (type == 'sunflower') {
-      paint.color = const Color(0xFFFFD54F);
-      canvas.drawCircle(Offset(cx, cy), 12, paint);
-      paint.color = const Color(0xFF6D4C41);
-      canvas.drawCircle(Offset(cx, cy), 6, paint);
-    } else if (type == 'blue') {
-      paint.color = const Color(0xFF42A5F5);
-      canvas.drawCircle(Offset(cx - 6, cy), 6, paint);
-      canvas.drawCircle(Offset(cx + 6, cy), 6, paint);
-      canvas.drawCircle(Offset(cx, cy - 6), 6, paint);
-      canvas.drawCircle(Offset(cx, cy + 6), 6, paint);
-      paint.color = const Color(0xFFFFEE58);
-      canvas.drawCircle(Offset(cx, cy), 4, paint);
-    } else if (type == 'cactus') {
-      paint.color = const Color(0xFF66BB6A);
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTRB(cx - 8, cy - 11, cx + 8, cy + 11), const Radius.circular(6)), paint);
-      paint.color = const Color(0xFFFFB74D);
-      canvas.drawCircle(Offset(cx, cy - 12), 3, paint);
-    } else if (type == 'drooping') {
-      paint.color = const Color(0xFFBA68C8);
-      canvas.drawCircle(Offset(cx, cy - 3), 9, paint);
-      paint.color = const Color(0xFF9C27B0);
-      canvas.drawCircle(Offset(cx, cy + 5), 4, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
