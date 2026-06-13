@@ -34,7 +34,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              
+
             },
           ),
         ],
