@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'mood_summary_screen.dart';
+import 'package:gloclone/wellness_dashboard_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,19 +11,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mood Summary',
       debugShowCheckedModeBanner: false,
-
-
+      title: 'Wellness Dashboard',
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFFFAF9FC), // Perfect matching canvas white background
-        fontFamily: 'Roboto', // Custom design fallback
+        primarySwatch: Colors.pink,
       ),
-
-      // Launces your beautiful new analytics and curves breakdown screen on boot
-      home: const MoodSummaryScreen(),
+      home: const WellnessDashboardScreen(),
     );
   }
 }
+
+// Paste your entire WellnessDashboardScreen code directly below this line!

@@ -123,12 +123,12 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                                       ),
                                       Container(
                                         decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Color(0xFFF2EAFF),
+                                          shape: BoxShape.circle, //  Moved inside BoxDecoration
+                                          color: Color(0xFFF2EAFF), //  Moved inside BoxDecoration
                                         ),
                                         padding: const EdgeInsets.all(10),
                                         child: const Text('💜', style: TextStyle(fontSize: 20)),
-                                      ),
+                                      )
                                     ],
                                   ),
                                 ),
