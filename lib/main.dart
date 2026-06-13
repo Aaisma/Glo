@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:gloclone/ActivitySelectionScreen.dart';
-import 'JournalEntryScreen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Glo Wellness App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        // Match the background styling of your interface assets
-        scaffoldBackgroundColor: const Color(0xFFFAF7F2),
-        fontFamily: 'Roboto',
+      home: Scaffold(
+        appBar: AppBar(title: Text('Firebase Connected')),
+        body: Center(child: Text('Hello Firebase!')),
       ),
-      home: const JournalEntryScreen(),
     );
   }
 }
