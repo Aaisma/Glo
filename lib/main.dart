@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gloclone/wellness_dashboard_screen.dart';
+import 'ActivitySelectionScreen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -11,15 +12,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Glo Wellness Log',
       debugShowCheckedModeBanner: false,
-      title: 'Wellness Dashboard',
+
+      // Global Theme definitions matching your clean aesthetic
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.pink,
+        scaffoldBackgroundColor: const Color(0xFFFAF7F2), // Premium soft warm background
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFF3E63), // Core accent pink
+          background: const Color(0xFFFAF7F2),
+        ),
+        fontFamily: 'Roboto', // Modern clean typography
       ),
-      home: const WellnessDashboardScreen(),
+
+      // Direct entry point to view your activity selections
+      home: const ActivitySelectionScreen(),
     );
   }
 }
-
-// Paste your entire WellnessDashboardScreen code directly below this line!
