@@ -19,7 +19,7 @@ dependencies:
   shared_preferences: ^2.2.2
   table_calendar: ^3.0.9   # or latest version
   lucide_icons: ^0.257.0
-
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
