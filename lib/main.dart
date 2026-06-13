@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gloclone/ActivitySelectionScreen.dart';
 import 'JournalEntryScreen.dart';
-import 'journal_entry_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFFAF7F2),
         fontFamily: 'Roboto',
       ),
-      home: const ActivitySelectionScreen(),
+      home: const JournalEntryScreen(),
     );
   }
 }

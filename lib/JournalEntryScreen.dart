@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ActivitySelectionScreen.dart';
 
-
 class JournalEntryScreen extends StatefulWidget {
   const JournalEntryScreen({super.key});
 
@@ -14,20 +13,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
   String _selectedPrompt = "";
   final TextEditingController _journalController = TextEditingController();
 
-  // Selected sub-activity states tracking dictionary
-  final Map<String, String> _loggedActivities = {
+  // Aligned precisely to manage selections for your 4 requested categories
+  final Map<String, String> _selectedActivities = {
     "Physical Activity": "Add",
     "Self Care": "Add",
+    "Lifestyle": "Add",
     "Mood": "Add",
-    "I Inspire": "Add",
-  };
-
-  // Activity definitions mapping directly to image_fc2324.jpg options
-  final Map<String, List<String>> _subActivityOptions = {
-    "Physical Activity": ["Yoga", "Gym", "Running", "Walking", "Cycling"],
-    "Self Care": ["Meditation", "Breathing", "Journaling", "Spa day", "Gratitude"],
-    "Mood": ["Happy", "Calm", "Excited", "Sad", "Angry", "Tired"],
-    "I Inspire": ["Read Quotes", "Write Goals", "Help Friend", "Nature Walk"],
   };
 
   final List<Map<String, dynamic>> _prompts = [
@@ -37,63 +28,29 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     {"text": "I survived", "icon": Icons.water_drop_outlined, "color": Colors.teal},
   ];
 
+  // The 4 synchronized dashboard structural modules
   final List<Map<String, dynamic>> _activitiesStructure = [
     {"label": "Physical Activity", "icon": Icons.directions_run_rounded, "color": const Color(0xFFFF3E63)},
     {"label": "Self Care", "icon": Icons.spa_rounded, "color": const Color(0xFF673AB7)},
+    {"label": "Lifestyle", "icon": Icons.star_rounded, "color": const Color(0xFF1976D2)},
     {"label": "Mood", "icon": Icons.sentiment_satisfied_rounded, "color": const Color(0xFFE65100)},
-    {"label": "I Inspire", "icon": Icons.star_rounded, "color": const Color(0xFF1976D2)},
   ];
 
-  // Functional Activity Logger selection picker sheet overlay panel
-  void _showActivityPicker(String category) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+  void _navigateToActivitySelection() async {
+    final Map<String, String>? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivitySelectionScreen(
+          initialSelections: Map<String, String>.from(_selectedActivities),
+        ),
       ),
-      builder: (context) {
-        final options = _subActivityOptions[category] ?? [];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Select $category",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: options.map((option) {
-                  final isCurrent = _loggedActivities[category] == option;
-                  return ChoiceChip(
-                    label: Text(option),
-                    selected: isCurrent,
-                    selectedColor: const Color(0xFFFFF0F2),
-                    labelStyle: TextStyle(
-                      color: isCurrent ? const Color(0xFFFF3E63) : Colors.black87,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    onSelected: (selected) {
-                      setState(() {
-                        _loggedActivities[category] = option;
-                      });
-                      Navigator.pop(context);
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
     );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedActivities.addAll(result);
+      });
+    }
   }
 
   @override
@@ -104,7 +61,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              physics: const ClampingScrollPhysics(), // Correct compilation class fix here
+              physics: const ClampingScrollPhysics(),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Padding(
@@ -113,8 +70,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
-                      // 1. App Bar Header Navigation Element Row
+                      // Header Navigation Bar Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -135,7 +91,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(width: 40),
+                          IconButton(
+                            icon: const Icon(Icons.notifications_none_rounded, size: 22, color: Colors.black87),
+                            onPressed: () {},
+                          ),
                         ],
                       ),
 
@@ -144,7 +103,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                       ),
 
-                      // 2. Horizontal Quick Prompts Selector Layout Row Module
+                      // Horizontal Quick Prompts Selector List Row
                       SizedBox(
                         height: 44,
                         child: ListView.builder(
@@ -192,10 +151,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         ),
                       ),
 
-                      // 3. Inline Writing Pad Text Input Window Module Card
+                      // Inline Writing Pad Text Input Card Area
                       Container(
                         width: double.infinity,
-                        height: 130,
+                        height: 125,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -214,7 +173,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                             Expanded(
                               child: TextField(
                                 controller: _journalController,
@@ -233,7 +192,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         ),
                       ),
 
-                      // 4. Voice Recorder Component Card Frame
+                      // Voice Journal Card Module
                       GestureDetector(
                         onTap: () => setState(() => _isVoiceRecording = !_isVoiceRecording),
                         child: AnimatedContainer(
@@ -267,7 +226,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    _isVoiceRecording ? "Recording thought logs active..." : "Record your thoughts",
+                                    _isVoiceRecording ? "Recording active audio notes..." : "Record your thoughts",
                                     style: const TextStyle(fontSize: 11, color: Colors.black45),
                                   ),
                                 ],
@@ -283,7 +242,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         ),
                       ),
 
-                      // 5. Functional Section Activities List Grid Row Block
+                      // Clean Activities Row Layout Module
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -295,26 +254,27 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: _navigateToActivitySelection,
                                 child: const Text("View all", style: TextStyle(color: Color(0xFFFF3E63), fontSize: 12, fontWeight: FontWeight.bold)),
                               )
                             ],
                           ),
                           Row(
                             children: _activitiesStructure.map((item) {
-                              final currentLog = _loggedActivities[item["label"]] ?? "Add";
-                              final hasValue = currentLog != "Add";
+                              final currentSelectionValue = _selectedActivities[item["label"]] ?? "Add";
+                              final hasCustomValue = currentSelectionValue != "Add";
+
                               return Expanded(
                                 child: GestureDetector(
-                                  onTap: () => _showActivityPicker(item["label"]),
+                                  onTap: _navigateToActivitySelection,
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(horizontal: 4),
                                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                                     decoration: BoxDecoration(
-                                      color: hasValue ? const Color(0xFFFFF0F2) : Colors.white,
+                                      color: hasCustomValue ? const Color(0xFFFFF0F2) : Colors.white,
                                       borderRadius: BorderRadius.circular(18),
                                       border: Border.all(
-                                        color: hasValue ? item["color"] : Colors.transparent,
+                                        color: hasCustomValue ? item["color"] : Colors.transparent,
                                         width: 1,
                                       ),
                                     ),
@@ -331,7 +291,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          hasValue ? currentLog : "+ Add",
+                                          hasCustomValue ? currentSelectionValue : "+ Add",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: item["color"]),
@@ -346,7 +306,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         ],
                       ),
 
-                      // 6. FIXED BOTTOM ELEMENT: Continuous Streak Grid Metrics Tracker Card Module
+                      // Journal Streak Tracker Analytics Card
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
@@ -416,7 +376,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                           ],
                         ),
                       ),
-
                     ],
                   ),
                 ),
