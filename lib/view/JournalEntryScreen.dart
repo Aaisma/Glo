@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ActivitySelectionScreen.dart';
+import '../viewmodel/journal_entry_viewmodel.dart'; // Import your new ViewModel layer!
 
 class JournalEntryScreen extends StatefulWidget {
   const JournalEntryScreen({super.key});
@@ -9,11 +10,13 @@ class JournalEntryScreen extends StatefulWidget {
 }
 
 class _JournalEntryScreenState extends State<JournalEntryScreen> {
+  // Initialize your MVVM brain object inside the state
+  final JournalEntryViewModel _viewModel = JournalEntryViewModel();
+
   bool _isVoiceRecording = false;
   String _selectedPrompt = "";
   final TextEditingController _journalController = TextEditingController();
 
-  // Aligned precisely to manage selections for your 4 requested categories
   final Map<String, String> _selectedActivities = {
     "Physical Activity": "Add",
     "Self Care": "Add",
@@ -28,13 +31,48 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
     {"text": "I survived", "icon": Icons.water_drop_outlined, "color": Colors.teal},
   ];
 
-  // The 4 synchronized dashboard structural modules
   final List<Map<String, dynamic>> _activitiesStructure = [
     {"label": "Physical Activity", "icon": Icons.directions_run_rounded, "color": const Color(0xFFFF3E63)},
     {"label": "Self Care", "icon": Icons.spa_rounded, "color": const Color(0xFF673AB7)},
     {"label": "Lifestyle", "icon": Icons.star_rounded, "color": const Color(0xFF1976D2)},
     {"label": "Mood", "icon": Icons.sentiment_satisfied_rounded, "color": const Color(0xFFE65100)},
   ];
+
+  // Logic to process the collection upload when clicking 'Journal Today'
+  void _submitJournalToBackend() async {
+    final String textInput = _journalController.text.trim();
+
+    if (textInput.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write a quick entry before logging! 📝')),
+      );
+      return;
+    }
+
+    // Call the Viewmodel background upload function
+    bool isSavedSuccessfully = await _viewModel.uploadJournalEntry(
+      journalText: textInput,
+      quickPrompt: _selectedPrompt,
+      currentActivities: _selectedActivities,
+    );
+
+    if (isSavedSuccessfully && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Journal logged to backend! 🎉')),
+      );
+
+      // Clean up inputs on success
+      setState(() {
+        _journalController.clear();
+        _selectedPrompt = "";
+        _selectedActivities.updateAll((key, value) => "Add");
+      });
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Database upload failed. Check your connection.')),
+      );
+    }
+  }
 
   void _navigateToActivitySelection() async {
     final Map<String, String>? result = await Navigator.push(
@@ -76,7 +114,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.black87),
-                            onPressed: () {},
+                            onPressed: () => Navigator.pop(context),
                           ),
                           const Column(
                             children: [
@@ -354,23 +392,41 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 11),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFFFF3E63), Color(0xFFFF7A85)]),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.edit_document, size: 16, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    "Journal Today",
-                                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
+
+                            // Connected your gradient button to MVVM state listeners
+                            GestureDetector(
+                              onTap: _viewModel.isLoading ? null : _submitJournalToBackend,
+                              child: ListenableBuilder(
+                                  listenable: _viewModel,
+                                  builder: (context, child) {
+                                    return Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(vertical: 11),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(colors: [Color(0xFFFF3E63), Color(0xFFFF7A85)]),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: _viewModel.isLoading
+                                            ? [
+                                          const SizedBox(
+                                            height: 16,
+                                            width: 16,
+                                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                          )
+                                        ]
+                                            : [
+                                          const Icon(Icons.edit_document, size: 16, color: Colors.white),
+                                          const SizedBox(width: 8),
+                                          const Text(
+                                            "Journal Today",
+                                            style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
                               ),
                             ),
                           ],

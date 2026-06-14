@@ -19,7 +19,7 @@ class DefaultFirebaseOptions {
     if (kIsWeb) {
       throw UnsupportedError(
         'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
+            'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
     switch (defaultTargetPlatform) {
@@ -30,17 +30,17 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -63,11 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '714010295460',
     projectId: 'gloo-5dd46',
     storageBucket: 'gloo-5dd46.firebasestorage.app',
-<<<<<<< HEAD
-    androidClientId: '714010295460-4go5mujqm70fm2joqis5o0pund5h5ikc.apps.googleusercontent.com',
+    androidClientId: '714010295460-4go5mujqm70fm2joqis5o0pund5h5ikc.app',
     iosClientId: '714010295460-o6f6uhqb21i031jaa5e8appoc3cujocd.apps.googleusercontent.com',
-=======
->>>>>>> origin/master
     iosBundleId: 'com.example.glo.glo',
   );
 }
