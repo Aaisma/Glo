@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/model/medication_model.dart';
+import '../viewmodel/medication_viewmodel.dart';
+import 'medication_history_screen.dart';
 
 class MedicationScreen extends StatelessWidget {
-  const MedicationScreen({super.key});
+  final String userId; // pass logged-in userId from Firebase Auth
+
+  const MedicationScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<MedicationViewModel>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7F8),
       body: SafeArea(
@@ -36,12 +44,12 @@ class MedicationScreen extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 "Track your medicines and stay consistent 💗",
-                style: TextStyle(color: Colors.black12, fontSize: 18),
+                style: TextStyle(color: Colors.black45, fontSize: 18),
               ),
 
               const SizedBox(height: 20),
 
-              /// TODAY'S SCHEDULE
+              /// TODAY'S SCHEDULE (static demo)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -84,40 +92,44 @@ class MedicationScreen extends StatelessWidget {
                       backgroundColor: const Color(0xffF8A5B8),
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: Navigate to AddMedicationScreen
+                    },
                     child: const Text("+ Add New"),
                   ),
                 ],
               ),
               const SizedBox(height: 15),
 
-              /// MEDICATION CARDS
-              medicationCard(
-                context,
-                image: "assets/images/pill.png",
-                title: "Doxycycline 100mg",
-                subtitle: "1 capsule • After Breakfast",
-                tag: "Antibiotic",
-                doctor: "Dr. Sameer Khan",
-                duration: "Apr 11, 2026 – Apr 13, 2026",
-              ),
-              medicationCard(
-                context,
-                image: "assets/images/tablet.png",
-                title: "Vitamin D3",
-                subtitle: "1 tablet • After Dinner",
-                tag: "Supplement",
-                doctor: "Dr. Sarah Khan",
-                duration: "Apr 01, 2026 – Apr 13, 2026",
-              ),
-              medicationCard(
-                context,
-                image: "assets/images/cream.png",
-                title: "Clindamycin Gel",
-                subtitle: "Apply at Night",
-                tag: "Topical",
-                doctor: "Dr. Sarah Khan",
-                duration: "Apr 01, 2026 – Apr 13, 2026",
+              /// MEDICATION LIST (dynamic from Firestore)
+              StreamBuilder<List<Medication>>(
+                stream: viewModel.fetchMedications(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+                  final meds = snapshot.data ?? [];
+                  if (meds.isEmpty) {
+                    return const Text("No medications found.");
+                  }
+                  return Column(
+                    children: meds
+                        .map((med) => medicationCard(
+                      context,
+                      image: "assets/images/pill.png",
+                      title: med.name,
+                      subtitle: "${med.dosage} • ${med.instructions}",
+                      tag: "Active",
+                      doctor: "Doctor Unknown",
+                      duration:
+                      "${med.startDate.toLocal()} – ${med.endDate.toLocal()}",
+                    ))
+                        .toList(),
+                  );
+                },
               ),
 
               const SizedBox(height: 15),

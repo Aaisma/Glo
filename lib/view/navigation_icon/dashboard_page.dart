@@ -3,19 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../view/components/dashboard_card.dart';
 import '../../../view/components/top_navigation.dart';
 import '../../../view/components/bottom_navigation.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../viewmodel/period_view_model.dart';
 
 // Navigation pages
-import 'glo_profile.dart';
+import 'profile_page.dart';
 import 'insight_page.dart';
 import 'history_page.dart';
 
 // Wellness pages
-import '../../../view/dashboard_card/log_symptom_page.dart';
-import '../../../view/dashboard_card/ovulation_page.dart';
+import '../../../view/dashboard_card/log_symptoms_page.dart';
+import '../dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import '../../../view/cards/daily_journal_page.dart';
-import '../../../view/cards/water_tracker_page.dart';
+import '../../../view/cards/water_tracker.dart';
 import '../../../view/cards/medication_page.dart';
 import '../../../view/cards/skin_tracker_page.dart';
 import '../../../view/cards/skin_derma_page.dart';
@@ -35,7 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DashboardHome(),
     const InsightsPage(),
     const HistoryPage(),
-    const GloProfileScreen(),
+    const ProfilePage(),
   ];
 
   void _onNavTap(int index) {
@@ -62,6 +65,7 @@ class DashboardHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final periodViewModel = context.watch<PeriodViewModel>();
 
     final dashboardItems = [
       {"title": "Daily Journal", "image": "assets/images/journal.png"},
@@ -69,7 +73,7 @@ class DashboardHome extends StatelessWidget {
       {"title": "Medications", "image": "assets/images/medication.png"},
       {"title": "Skin Tracker", "image": "assets/images/acnetracker.png"},
       {"title": "Skin Derma", "image": "assets/images/skinderma.png"},
-      {"title": "Sleep & Stress", "image": "assets/images/stressandsleep.png"},
+      {"title": "Mood and stress", "image": "assets/images/stressandsleep.png"},
     ];
 
     return Container(
@@ -138,10 +142,10 @@ class DashboardHome extends StatelessWidget {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            "DAY 23",
-                            style: TextStyle(
+                            periodViewModel.cycleDay != null ? "DAY ${periodViewModel.cycleDay}" : "DAY --",
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFFFD8CA1),
@@ -152,16 +156,19 @@ class DashboardHome extends StatelessWidget {
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("Ovulation in 2 Days",
-                              style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 6),
+                        children: [
+                          Text(periodViewModel.predictionText,
+                              style: const TextStyle(fontSize: 16, color: Colors.white)),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.show_chart, color: Colors.white, size: 16),
-                              SizedBox(width: 6),
-                              Text("April 03, 2026",
-                                  style: TextStyle(fontSize: 14, color: Colors.white70)),
+                              const Icon(Icons.show_chart, color: Colors.white, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                  periodViewModel.predictionDate != null 
+                                      ? DateFormat('MMMM dd, yyyy').format(periodViewModel.predictionDate!)
+                                      : DateFormat('MMMM dd, yyyy').format(DateTime.now()),
+                                  style: const TextStyle(fontSize: 14, color: Colors.white70)),
                             ],
                           ),
                         ],
@@ -198,7 +205,7 @@ class DashboardHome extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyJournalPage()));
                               break;
                             case "Water Tracker":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
                               break;
                             case "Medications":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationsPage()));
@@ -209,7 +216,7 @@ class DashboardHome extends StatelessWidget {
                             case "Skin Derma":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
                               break;
-                            case "Sleep & Stress":
+                              case "Mood and Wellness":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SleepStressPage()));
                               break;
                           }
@@ -252,7 +259,7 @@ class DashboardHome extends StatelessWidget {
                       ),
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const LogSymptomsPage()),
+                        MaterialPageRoute(builder: (_) => const LogSymptomsPage(isPeriod: false)),
                       ),
                       child: const Text(
                         "Log Symptoms +",
