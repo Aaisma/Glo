@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../viewmodel/water_tracker_viewmodel.dart';
 import '../repo/water_tracker_repo_impl.dart';
 
@@ -19,12 +20,18 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
   @override
   void initState() {
     super.initState();
+
     viewModel = WaterTrackerViewModel(WaterTrackerRepoImpl());
+
+    // Load data from Firebase
+    viewModel.loadData().then((_) {
+      setState(() {});
+    });
   }
 
   void addWater(double amount) {
-    setState(() {
-      viewModel.addWater(amount);
+    viewModel.addWater(amount).then((_) {
+      setState(() {});
     });
   }
 
@@ -65,7 +72,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Intake card
+
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -94,6 +101,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                     ),
 
                     const SizedBox(height: 8),
+
                     Text("Daily Goal: ${viewModel.goal.toStringAsFixed(1)} L"),
 
                     const SizedBox(height: 8),
@@ -126,7 +134,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
 
             const SizedBox(height: 20),
 
-            // NOTES BUTTON (NAVIGATION)
+
             Card(
               child: ListTile(
                 leading: const Icon(Icons.note, color: Colors.blue),
@@ -144,20 +152,15 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
-
-            // QUICK ACTIONS INFO
-            const Text(
-              "Quick Actions",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
             const SizedBox(height: 10),
+
 
             Card(
               child: ListTile(
-                leading: const Icon(Icons.history, color: Colors.green),
-                title: const Text("View Water History"),
+                leading: const Icon(Icons.water_drop, color: Colors.green),
+                title: const Text("Water History"),
+                subtitle: const Text("Check previous days intake"),
+                trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -169,11 +172,16 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
               ),
             ),
 
+            const SizedBox(height: 10),
+
+
             Card(
               child: ListTile(
-                leading: const Icon(Icons.notifications_active,
-                    color: Colors.orange),
-                title: const Text("Set Reminder"),
+                leading:
+                const Icon(Icons.notifications_active, color: Colors.orange),
+                title: const Text("Reminder Settings"),
+                subtitle: const Text("Set water drinking reminders"),
+                trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
                     context,

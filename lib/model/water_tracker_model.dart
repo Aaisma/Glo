@@ -1,12 +1,11 @@
 class WaterTrackerModel {
-  final double currentIntake;
-  final double goal;
+  double currentIntake;
+  double goal;
 
   WaterTrackerModel({
     required this.currentIntake,
     required this.goal,
   });
-
 
   Map<String, dynamic> toMap() {
     return {
@@ -14,7 +13,6 @@ class WaterTrackerModel {
       'goal': goal,
     };
   }
-
 
   factory WaterTrackerModel.fromMap(Map<String, dynamic> map) {
     return WaterTrackerModel(
