@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../viewmodel/user_view_model.dart';
-import '../viewmodel/auth_view_model.dart';
-import 'authentication/login_screen.dart';
-import 'navigation_icon/dashboard_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../register.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,24 +11,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    _checkLogin();
   }
 
-  Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
+  void _checkLogin() async {
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
+
+    final prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
     if (!mounted) return;
-    
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final authVM = context.read<AuthViewModel>();
-      await authVM.checkUserProfile(context, user.uid);
+
+    if (isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Dashboard()),
+      );
     } else {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Register()),
+      );
     }
   }
 
