@@ -1,4 +1,4 @@
-class UserProfile {
+class UserProfileModel {
   final String id;
   final String name;
   final String email;
@@ -6,7 +6,7 @@ class UserProfile {
   final String gender;
   final String photoUrl;
 
-  UserProfile({
+  UserProfileModel({
     required this.id,
     required this.name,
     required this.email,
@@ -15,8 +15,8 @@ class UserProfile {
     required this.photoUrl,
   });
 
-  factory UserProfile.fromMap(Map<String, dynamic> data, String documentId) {
-    return UserProfile(
+  factory UserProfileModel.fromMap(Map<String, dynamic> data, String documentId) {
+    return UserProfileModel(
       id: documentId,
       name: data['name'] ?? '',
       email: data['email'] ?? '',

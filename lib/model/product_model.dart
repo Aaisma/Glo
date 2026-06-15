@@ -1,29 +1,33 @@
-class SkinTip {
+class ProductModel {
   final String id;
-  final String title;
+  final String name;
   final String description;
+  final double price;
   final String imageUrl;
 
-  SkinTip({
+  ProductModel({
     required this.id,
-    required this.title,
+    required this.name,
     required this.description,
+    required this.price,
     required this.imageUrl,
   });
 
-  factory SkinTip.fromMap(Map<String, dynamic> data, String documentId) {
-    return SkinTip(
+  factory ProductModel.fromMap(Map<String, dynamic> data, String documentId) {
+    return ProductModel(
       id: documentId,
-      title: data['title'] ?? '',
+      name: data['name'] ?? '',
       description: data['description'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
       imageUrl: data['imageUrl'] ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'title': title,
+      'name': name,
       'description': description,
+      'price': price,
       'imageUrl': imageUrl,
     };
   }

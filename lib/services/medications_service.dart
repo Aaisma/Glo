@@ -1,27 +1,31 @@
-import 'package:glo/model/medication_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../model/medication_model.dart';
 
 class MedicationsService {
   final _db = FirebaseFirestore.instance;
 
-  Future<void> addMedication(Medication medication, String userId) async {
-    await _db.collection('medications').doc(medication.id).set({
-      ...medication.toMap(),
+  Future<void> addMedication(MedicationModel med, String userId) async {
+    final docRef = _db.collection('medications').doc();
+    med.id = docRef.id;
+    await docRef.set({
+      ...med.toMap(),
       'userId': userId,
     });
   }
 
-  Stream<List<Medication>> fetchMedications(String userId) {
-    return _db
+  Future<List<MedicationModel>> getMedications(String userId) async {
+    final snapshot = await _db
         .collection('medications')
         .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) =>
-        snapshot.docs.map((doc) => Medication.fromMap(doc.data(), doc.id)).toList());
+        .get();
+
+    return snapshot.docs
+        .map((doc) => MedicationModel.fromMap(doc.data(), doc.id))
+        .toList();
   }
 
-  Future<void> updateMedication(Medication medication) async {
-    await _db.collection('medications').doc(medication.id).update(medication.toMap());
+  Future<void> updateMedication(MedicationModel med) async {
+    await _db.collection('medications').doc(med.id).update(med.toMap());
   }
 
   Future<void> deleteMedication(String id) async {

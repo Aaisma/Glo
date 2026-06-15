@@ -1,5 +1,6 @@
 name: glo
 description: "A new Flutter project."
+publish_to: 'none' # Prevent accidental publishing
 
 version: 1.0.0+1
 
@@ -9,20 +10,38 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   cupertino_icons: ^1.0.8
+  firebase_auth: ^6.5.2
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.0.4
+  provider: ^6.1.2
+  cloud_firestore: ^6.5.0
+  shared_preferences: ^2.5.5
+  firebase_core: ^4.10.0
+
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/pill.png
+    - assets/images/tablet.png
+    - assets/images/creamtube.png
+    - assets/images/reminder.png
+    - assets/images/historylog.png
     - assets/images/background.png
+    - assets/images/background1.png
     - assets/images/flower.png
     - assets/images/logo.png
-    - assets/images/profile picture.png
+    - assets/images/profilepicture.png
+    - assets/images/labresult.png
+    - assets/images/logdocvisit.png
+    - assets/images/notes.png
+    - assets/images/prescription.png
+    - assets/images/skintips.png

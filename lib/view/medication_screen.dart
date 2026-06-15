@@ -5,7 +5,7 @@ import '../viewmodel/medication_viewmodel.dart';
 import 'medication_history_screen.dart';
 
 class MedicationScreen extends StatelessWidget {
-  final String userId; // pass logged-in userId from Firebase Auth
+  final String userId;
 
   const MedicationScreen({super.key, required this.userId});
 
@@ -42,6 +42,7 @@ class MedicationScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
+
               const Text(
                 "Track your medicines and stay consistent 💗",
                 style: TextStyle(color: Colors.black45, fontSize: 18),
@@ -49,7 +50,7 @@ class MedicationScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              /// TODAY'S SCHEDULE (static demo)
+              /// TODAY'S SCHEDULE
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -69,6 +70,7 @@ class MedicationScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
+
                     scheduleTile(true, "08:00 AM", "Doxycycline 100mg",
                         "1 capsule after breakfast"),
                     const Divider(),
@@ -80,7 +82,7 @@ class MedicationScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              /// MEDICATION HEADER
+              /// HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -92,40 +94,44 @@ class MedicationScreen extends StatelessWidget {
                       backgroundColor: const Color(0xffF8A5B8),
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: () {
-                      // TODO: Navigate to AddMedicationScreen
-                    },
+                    onPressed: () {},
                     child: const Text("+ Add New"),
                   ),
                 ],
               ),
+
               const SizedBox(height: 15),
 
-              /// MEDICATION LIST (dynamic from Firestore)
-              StreamBuilder<List<Medication>>(
-                stream: viewModel.fetchMedications(userId),
+              /// MEDICATION LIST
+              StreamBuilder<List<MedicationModel>>(
+                stream: viewModel.fetchMedicationsStream(userId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
+
                   if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
+                    return Text("Error: ${snapshot.error}");
                   }
+
                   final meds = snapshot.data ?? [];
+
                   if (meds.isEmpty) {
                     return const Text("No medications found.");
                   }
+
                   return Column(
                     children: meds
                         .map((med) => medicationCard(
                       context,
                       image: "assets/images/pill.png",
-                      title: med.name,
-                      subtitle: "${med.dosage} • ${med.instructions}",
+                      title: med.name ?? "Unnamed",
+                      subtitle:
+                      "${med.dosage ?? ''} • ${med.instructions ?? ''}",
                       tag: "Active",
                       doctor: "Doctor Unknown",
                       duration:
-                      "${med.startDate.toLocal()} – ${med.endDate.toLocal()}",
+                      "${med.startDate?.toLocal().toString().split(' ').first ?? ''} – ${med.endDate?.toLocal().toString().split(' ').first ?? ''}",
                     ))
                         .toList(),
                   );
@@ -157,8 +163,6 @@ class MedicationScreen extends StatelessWidget {
                     ),
                     Switch(
                       value: true,
-                      activeTrackColor: Colors.pink.shade200,
-                      activeThumbColor: Colors.pink,
                       onChanged: (value) {},
                     ),
                   ],
@@ -173,7 +177,9 @@ class MedicationScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const MedicationHistoryScreen()),
+                      builder: (_) =>
+                          MedicationHistoryScreen(userId: userId),
+                    ),
                   );
                 },
                 child: Container(
@@ -211,11 +217,14 @@ class MedicationScreen extends StatelessWidget {
 }
 
 /// Helper widgets
-Widget scheduleTile(bool completed, String time, String medicine, String note) {
+Widget scheduleTile(
+    bool completed, String time, String medicine, String note) {
   return Row(
     children: [
-      Icon(completed ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: completed ? Colors.green : Colors.pink),
+      Icon(
+        completed ? Icons.check_circle : Icons.radio_button_unchecked,
+        color: completed ? Colors.green : Colors.pink,
+      ),
       const SizedBox(width: 12),
       Text(time),
       const SizedBox(width: 15),
@@ -223,7 +232,8 @@ Widget scheduleTile(bool completed, String time, String medicine, String note) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(medicine, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(medicine,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(note, style: const TextStyle(color: Colors.grey)),
           ],
         ),
@@ -232,13 +242,15 @@ Widget scheduleTile(bool completed, String time, String medicine, String note) {
   );
 }
 
-Widget medicationCard(BuildContext context,
-    {required String image,
+Widget medicationCard(
+    BuildContext context, {
+      required String image,
       required String title,
       required String subtitle,
       required String tag,
       required String doctor,
-      required String duration}) {
+      required String duration,
+    }) {
   return Container(
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(14),
@@ -254,7 +266,8 @@ Widget medicationCard(BuildContext context,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(title,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Text(subtitle),
               const SizedBox(height: 8),
@@ -269,26 +282,15 @@ Widget medicationCard(BuildContext context,
                   color: Colors.pink.shade50,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(tag, style: const TextStyle(color: Colors.pink)),
+                child: Text(tag,
+                    style: const TextStyle(color: Colors.pink)),
               ),
             ],
           ),
         ),
-        const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.pink),
+        const Icon(Icons.arrow_forward_ios,
+            size: 18, color: Colors.pink),
       ],
     ),
   );
-}
-
-/// HISTORY SCREEN
-class MedicationHistoryScreen extends StatelessWidget {
-  const MedicationHistoryScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Medication History")),
-      body: const Center(child: Text("Past medication records appear here")),
-    );
-  }
 }

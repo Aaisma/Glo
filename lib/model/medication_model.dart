@@ -1,38 +1,64 @@
-class Medication {
-  final String id;
-  final String name;
-  final String dosage;
-  final DateTime startDate;
-  final DateTime endDate;
-  final String instructions;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  Medication({
-    required this.id,
-    required this.name,
-    required this.dosage,
-    required this.startDate,
-    required this.endDate,
-    required this.instructions,
+class MedicationModel {
+  String? id;
+  String? name;
+  String? type;
+  String? dosage;
+  String? schedule;
+  DateTime? startDate;
+  DateTime? endDate;
+
+  // Prescription fields
+  String? doctorName;
+  String? instructions;
+  DateTime? issuedDate;
+
+  MedicationModel({
+    this.id,
+    this.name,
+    this.type,
+    this.dosage,
+    this.schedule,
+    this.startDate,
+    this.endDate,
+    this.doctorName,
+    this.instructions,
+    this.issuedDate,
   });
 
-  factory Medication.fromMap(Map<String, dynamic> data, String documentId) {
-    return Medication(
-      id: documentId,
-      name: data['name'] ?? '',
-      dosage: data['dosage'] ?? '',
-      startDate: DateTime.parse(data['startDate']),
-      endDate: DateTime.parse(data['endDate']),
-      instructions: data['instructions'] ?? '',
+  factory MedicationModel.fromMap(Map<String, dynamic> data, String docId) {
+    return MedicationModel(
+      id: docId,
+      name: data['name'],
+      type: data['type'],
+      dosage: data['dosage'],
+      schedule: data['schedule'],
+      startDate: data['startDate'] != null
+          ? (data['startDate'] as Timestamp).toDate()
+          : null,
+      endDate: data['endDate'] != null
+          ? (data['endDate'] as Timestamp).toDate()
+          : null,
+      doctorName: data['doctorName'],
+      instructions: data['instructions'],
+      issuedDate: data['issuedDate'] != null
+          ? (data['issuedDate'] as Timestamp).toDate()
+          : null,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
+      'type': type,
       'dosage': dosage,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
+      'schedule': schedule,
+      'startDate': startDate,
+      'endDate': endDate,
+      'doctorName': doctorName,
       'instructions': instructions,
+      'issuedDate': issuedDate,
     };
   }
 }
