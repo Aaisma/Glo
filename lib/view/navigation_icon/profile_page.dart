@@ -14,6 +14,7 @@ import './profile_pages/personal_info_page.dart';
 import './profile_pages/cycle_settings_page.dart';
 import './profile_pages/my_goal_page.dart';
 import 'notification_page.dart';
+import '../admin/admin_dashboard_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -320,6 +321,14 @@ class ProfilePage extends StatelessWidget {
               "App version and info",
               true,
             ),
+            const Divider(height: 1, indent: 70),
+            _menuItem(
+              context,
+              Icons.admin_panel_settings_outlined,
+              "Admin Portal",
+              "Access Insights and Content Moderation",
+              true,
+            ),
           ],
         ),
       ),
@@ -381,6 +390,9 @@ class ProfilePage extends StatelessWidget {
               break;
             case "About Us":
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()));
+              break;
+            case "Admin Portal":
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminDashboardPage()));
               break;
           }
         }
