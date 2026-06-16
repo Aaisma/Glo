@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:provider/provider.dart';
 import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/user_view_model.dart';
@@ -6,6 +7,10 @@ import '../../model/user_model.dart';
 import '../survey_page.dart';
 import '../components/social_login_options.dart';
 import 'login_screen.dart';
+=======
+import '../../repo/user_repo_impl.dart';
+import '../survey_page.dart';
+>>>>>>> pranisha_branch
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

@@ -1,7 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+<<<<<<< HEAD
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+=======
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+>>>>>>> pranisha_branch
 import '../model/user_model.dart';
 import 'user_repo.dart';
 
@@ -11,7 +16,14 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<void> addUser(UserModel userModel) {
+<<<<<<< HEAD
     return firestore.collection("users").doc(userModel.id).set(userModel.toMap());
+=======
+    return firestore
+        .collection("users")
+        .doc(userModel.id)
+        .set(userModel.toMap());
+>>>>>>> pranisha_branch
   }
 
   @override
@@ -21,7 +33,14 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<void> editProfile(UserModel userModel) {
+<<<<<<< HEAD
     return firestore.collection("users").doc(userModel.id).update(userModel.toMap());
+=======
+    return firestore
+        .collection("users")
+        .doc(userModel.id)
+        .update(userModel.toMap());
+>>>>>>> pranisha_branch
   }
 
   @override
@@ -32,22 +51,51 @@ class UserRepoImpl implements UserRepo {
   @override
   Future<List<UserModel>> getAllUser() async {
     final users = await firestore.collection("users").get();
+<<<<<<< HEAD
     return users.docs.map((doc) => UserModel.fromMap(doc.data(), doc.id)).toList();
+=======
+
+    List<UserModel> data = [];
+    for (int i = 0; i < users.docs.length; i++) {
+      data.add(UserModel.fromMap(users.docs[i].data()));
+    }
+    return data;
+>>>>>>> pranisha_branch
   }
 
   @override
   Future<UserModel> getUserByID(String id) async {
+<<<<<<< HEAD
     final doc = await firestore.collection("users").doc(id).get();
     final data = doc.data();
     if (data == null) throw Exception("Unable to fetch data.");
     return UserModel.fromMap(data, doc.id);
+=======
+    final users = await firestore.collection("users").doc(id).get();
+    final data = users.data();
+
+    if (data == null) {
+      throw Exception("Unable to fetch data.");
+    }
+    return UserModel.fromMap(data);
+>>>>>>> pranisha_branch
   }
 
   @override
   Future<String> login(String email, String password) async {
+<<<<<<< HEAD
     final user = await auth.signInWithEmailAndPassword(email: email, password: password);
     final userId = user.user?.uid;
     if (userId == null) throw Exception("Login failed");
+=======
+    final user = await auth.signInWithEmailAndPassword(
+        email: email, password: password);
+    final userId = user.user?.uid;
+
+    if (userId == null) {
+      throw Exception("login failed");
+    }
+>>>>>>> pranisha_branch
     return userId;
   }
 
@@ -58,9 +106,19 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<String> register(String email, String password) async {
+<<<<<<< HEAD
     final userCredential = await auth.createUserWithEmailAndPassword(email: email, password: password);
     final userId = userCredential.user?.uid;
     if (userId == null) throw Exception("Registration failed");
+=======
+    final userCredential = await auth.createUserWithEmailAndPassword(
+        email: email, password: password);
+    final userId = userCredential.user?.uid;
+
+    if (userId == null) {
+      throw Exception("Registration failed");
+    }
+>>>>>>> pranisha_branch
 
     await firestore.collection("users").doc(userId).set({
       'id': userId,
@@ -74,6 +132,7 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<String> signInWithGoogle() async {
+<<<<<<< HEAD
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) throw Exception("Google sign in cancelled");
 
@@ -88,6 +147,26 @@ class UserRepoImpl implements UserRepo {
     final User? user = userCredential.user;
     if (user == null) throw Exception("Google sign in failed");
 
+=======
+    // In version 7.2.0+, use GoogleSignIn.instance and authenticate()
+    final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+
+    // authentication is now a synchronous getter
+    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+    final OAuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: null, // accessToken is optional if idToken is provided
+      idToken: googleAuth.idToken,
+    );
+
+    final UserCredential userCredential =
+    await auth.signInWithCredential(credential);
+    final User? user = userCredential.user;
+
+    if (user == null) throw Exception("Google sign in failed");
+
+    // Check if user exists in Firestore, if not create
+>>>>>>> pranisha_branch
     final doc = await firestore.collection("users").doc(user.uid).get();
     if (!doc.exists) {
       await firestore.collection("users").doc(user.uid).set({
@@ -106,10 +185,20 @@ class UserRepoImpl implements UserRepo {
     final LoginResult result = await FacebookAuth.instance.login();
 
     if (result.status == LoginStatus.success) {
+<<<<<<< HEAD
       final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
 
       final UserCredential userCredential = await auth.signInWithCredential(credential);
       final User? user = userCredential.user;
+=======
+      final OAuthCredential credential =
+      FacebookAuthProvider.credential(result.accessToken!.tokenString);
+
+      final UserCredential userCredential =
+      await auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+>>>>>>> pranisha_branch
       if (user == null) throw Exception("Facebook sign in failed");
 
       final doc = await firestore.collection("users").doc(user.uid).get();
