@@ -1,6 +1,6 @@
 import '../model/water_tracker_model.dart';
 
 abstract class WaterTrackerRepo {
-  Future<void> saveWater(WaterTrackerModel model);
-  Future<WaterTrackerModel?> getWater();
+  Future<WaterTrackerModel?> getData();
+  Future<void> saveData(WaterTrackerModel model);
 }

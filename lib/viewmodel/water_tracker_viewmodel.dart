@@ -1,34 +1,45 @@
 import '../model/water_tracker_model.dart';
-import '../repo/water_tracker_repo.dart';
+import '../repo/water_tracker_repo_impl.dart';
 
 class WaterTrackerViewModel {
-  final WaterTrackerRepo repo;
+  final WaterTrackerRepoImpl repo;
+
+  double currentIntake = 0;
+  double goal = 2.5;
 
   WaterTrackerViewModel(this.repo);
 
-  double currentIntake = 1.2;
-  double goal = 2.5;
-
-  Future<void> loadData() async {
-    final data = await repo.getWater();
+  Future<void> load(String userId) async {
+    final data = await repo.getData(userId);
 
     if (data != null) {
-      currentIntake = data.currentIntake;
+      currentIntake = data.intake;
       goal = data.goal;
     }
   }
 
-  Future<void> addWater(double amount) async {
+  Future<void> addWater(double amount, String userId) async {
     currentIntake += amount;
 
-    if (currentIntake > goal) {
-      currentIntake = goal;
-    }
-
-    await repo.saveWater(
+    await repo.saveData(
       WaterTrackerModel(
-        currentIntake: currentIntake,
+        userId: userId,
+        intake: currentIntake,
         goal: goal,
+        date: DateTime.now().toIso8601String(),
+      ),
+    );
+  }
+
+  Future<void> setGoal(double newGoal, String userId) async {
+    goal = newGoal;
+
+    await repo.saveData(
+      WaterTrackerModel(
+        userId: userId,
+        intake: currentIntake,
+        goal: goal,
+        date: DateTime.now().toIso8601String(),
       ),
     );
   }

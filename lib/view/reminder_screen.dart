@@ -8,57 +8,30 @@ class ReminderScreen extends StatefulWidget {
 }
 
 class _ReminderScreenState extends State<ReminderScreen> {
-  TimeOfDay selectedTime = const TimeOfDay(hour: 11, minute: 0);
-  bool isEnabled = true;
-
-  void pickTime() async {
-    final TimeOfDay? time = await showTimePicker(
-      context: context,
-      initialTime: selectedTime,
-    );
-
-    if (time != null) {
-      setState(() {
-        selectedTime = time;
-      });
-    }
-  }
+  TimeOfDay time = const TimeOfDay(hour: 9, minute: 0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Reminder"),
-        backgroundColor: Colors.lightBlueAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(title: const Text("Reminder")),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SwitchListTile(
-              title: const Text("Enable Reminder"),
-              value: isEnabled,
-              onChanged: (value) {
-                setState(() {
-                  isEnabled = value;
-                });
-              },
-            ),
+            Text("Reminder Time: ${time.format(context)}"),
             const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.access_time),
-              title: const Text("Reminder Time"),
-              subtitle: Text(selectedTime.format(context)),
-              onTap: pickTime,
-            ),
-            const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Reminder Saved")),
+              onPressed: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: time,
                 );
+
+                if (picked != null) {
+                  setState(() => time = picked);
+                }
               },
-              child: const Text("Save Reminder"),
+              child: const Text("Set Reminder"),
             ),
           ],
         ),

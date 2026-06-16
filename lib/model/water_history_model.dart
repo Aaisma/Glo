@@ -9,14 +9,11 @@ class WaterHistoryModel {
     required this.goal,
   });
 
-  double get percent => (intake / goal) * 100;
-
   Map<String, dynamic> toMap() {
     return {
       'date': date,
       'intake': intake,
       'goal': goal,
-      'percent': percent,
     };
   }
 

@@ -1,30 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/water_tracker_model.dart';
-import 'water_tracker_repo.dart';
 
-class WaterTrackerRepoImpl implements WaterTrackerRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class WaterTrackerRepoImpl {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  final String docId = "water_tracker";
-
-  @override
-  Future<void> saveWater(WaterTrackerModel model) async {
-    await _firestore
+  Future<void> saveData(WaterTrackerModel model) async {
+    await firestore
         .collection("water_tracker")
-        .doc(docId)
+        .doc(model.userId)
         .set(model.toMap());
   }
 
-  @override
-  Future<WaterTrackerModel?> getWater() async {
-    final doc = await _firestore
-        .collection("water_tracker")
-        .doc(docId)
-        .get();
+  Future<WaterTrackerModel?> getData(String userId) async {
+    final doc = await firestore.collection("water_tracker").doc(userId).get();
 
-    if (doc.exists) {
-      return WaterTrackerModel.fromMap(doc.data()!);
-    }
-    return null;
+    if (!doc.exists) return null;
+
+    return WaterTrackerModel.fromMap(doc.data()!);
   }
 }

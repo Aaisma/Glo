@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../viewmodel/water_tracker_viewmodel.dart';
 import '../repo/water_tracker_repo_impl.dart';
-
-import 'edit_note_screen.dart';
-import 'reminder_screen.dart';
 import 'water_history_screen.dart';
 
 class WaterTrackerScreen extends StatefulWidget {
@@ -15,28 +11,105 @@ class WaterTrackerScreen extends StatefulWidget {
 }
 
 class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
-  late WaterTrackerViewModel viewModel;
+  late WaterTrackerViewModel vm;
+  final String userId = "demo_user";
 
   @override
   void initState() {
     super.initState();
-
-    viewModel = WaterTrackerViewModel(WaterTrackerRepoImpl());
-
-    // Load data from Firebase
-    viewModel.loadData().then((_) {
-      setState(() {});
-    });
+    vm = WaterTrackerViewModel(WaterTrackerRepoImpl());
+    vm.load(userId).then((_) => setState(() {}));
   }
 
-  void addWater(double amount) {
-    viewModel.addWater(amount).then((_) {
-      setState(() {});
-    });
+  void addWater(double amount) async {
+    await vm.addWater(amount, userId);
+    setState(() {});
+  }
+
+  void setGoalDialog() {
+    TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Set Daily Goal"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: "Enter goal in liters",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              double? newGoal = double.tryParse(controller.text);
+
+              if (newGoal != null && newGoal > 0) {
+                await vm.setGoal(newGoal, userId);
+                setState(() {});
+              }
+
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void openHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const WaterHistoryScreen()),
+    );
+  }
+
+
+  void openEditNote() {
+    TextEditingController controller =
+    TextEditingController(text: vm.noteText);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Note"),
+        content: TextField(
+          controller: controller,
+          maxLines: 5,
+          decoration: const InputDecoration(
+            hintText: "Write your note...",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                vm.noteText = controller.text;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    double progress =
+    (vm.goal == 0) ? 0 : (vm.currentIntake / vm.goal).clamp(0.0, 1.0);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Water Tracker"),
@@ -44,40 +117,20 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const WaterHistoryScreen(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ReminderScreen(),
-                ),
-              );
-            },
+            onPressed: openHistory,
           ),
         ],
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-
+            // 💧 WATER CARD
             Card(
+              elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -85,47 +138,62 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                     const Text(
                       "Current Intake",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
                     Text(
-                      "${viewModel.currentIntake.toStringAsFixed(1)} L",
+                      "${vm.currentIntake.toStringAsFixed(1)} L",
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
-                    Text("Daily Goal: ${viewModel.goal.toStringAsFixed(1)} L"),
+                    Text("Goal: ${vm.goal.toStringAsFixed(1)} L"),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
                     LinearProgressIndicator(
-                      value: viewModel.currentIntake / viewModel.goal,
+                      value: progress,
                       backgroundColor: Colors.grey[300],
                       color: Colors.lightBlueAccent,
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 15),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
                           onPressed: () => addWater(0.1),
-                          child: const Text("+100 ml"),
+                          child: const Text("+100ml"),
                         ),
                         ElevatedButton(
                           onPressed: () => addWater(0.25),
-                          child: const Text("+250 ml"),
+                          child: const Text("+250ml"),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    ElevatedButton(
+                      onPressed: setGoalDialog,
+                      child: const Text("Set Goal"),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    ElevatedButton.icon(
+                      onPressed: openHistory,
+                      icon: const Icon(Icons.history),
+                      label: const Text("View History"),
                     ),
                   ],
                 ),
@@ -134,62 +202,79 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
 
             const SizedBox(height: 20),
 
-
+            // ⏰ REMINDER CARD
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.note, color: Colors.blue),
-                title: const Text("Daily Notes"),
-                subtitle: const Text("Tap to add or edit notes"),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditNoteScreen(),
+              color: Colors.lightBlue[50],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.notifications_active, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          "Reminder",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                    SizedBox(height: 8),
+                    Text("Next Reminder: 11:00 AM"),
+                    Text(
+                      "Reminders: Every 1 Hour",
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  ],
+                ),
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
 
-
+            // 📝 NOTES CARD (FIXED)
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.water_drop, color: Colors.green),
-                title: const Text("Water History"),
-                subtitle: const Text("Check previous days intake"),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const WaterHistoryScreen(),
-                    ),
-                  );
-                },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-
-            const SizedBox(height: 10),
-
-
-            Card(
-              child: ListTile(
-                leading:
-                const Icon(Icons.notifications_active, color: Colors.orange),
-                title: const Text("Reminder Settings"),
-                subtitle: const Text("Set water drinking reminders"),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReminderScreen(),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      "Today's Notes",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
                     ),
-                  );
-                },
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      vm.noteText.isEmpty
+                          ? "No notes yet. Tap edit to add one."
+                          : vm.noteText,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    OutlinedButton(
+                      onPressed: openEditNote,
+                      child: const Text("Edit Note"),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
