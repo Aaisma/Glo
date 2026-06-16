@@ -9,6 +9,8 @@ class WaterTrackerViewModel {
   double goal = 2.5;
   String noteText = "";
 
+  String reminderInterval = "";
+
   WaterTrackerViewModel(this.repo);
 
   // Load latest saved data
