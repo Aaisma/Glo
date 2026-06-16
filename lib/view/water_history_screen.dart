@@ -1,40 +1,45 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../repo/water_tracker_repo_impl.dart';
 
-class WaterHistoryScreen extends StatelessWidget {
-  const WaterHistoryScreen({super.key});
+class WaterHistoryScreen extends StatefulWidget {
+  final String userId;
+  const WaterHistoryScreen({super.key, required this.userId});
 
-  final String userId = "demo_user";
+  @override
+  State<WaterHistoryScreen> createState() => _WaterHistoryScreenState();
+}
+
+class _WaterHistoryScreenState extends State<WaterHistoryScreen> {
+  final repo = WaterTrackerRepoImpl();
+  List history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    load();
+  }
+
+  void load() async {
+    final data = await repo.getHistory(widget.userId);
+    setState(() {
+      history = data;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Water History")),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("water_history")
-            .doc(userId)
-            .collection("days")
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: ListView.builder(
+        itemCount: history.length,
+        itemBuilder: (context, index) {
+          final item = history[index];
 
-          final docs = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data();
-
-              return ListTile(
-                title: Text("Date: ${data['date']}"),
-                subtitle: Text(
-                  "Intake: ${data['intake']} L | Goal: ${data['goal']} L",
-                ),
-              );
-            },
+          return ListTile(
+            title: Text("${item.date}"),
+            subtitle: Text(
+              "Intake: ${item.intake}L | Goal: ${item.goal}L",
+            ),
           );
         },
       ),

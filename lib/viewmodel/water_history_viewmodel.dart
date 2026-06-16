@@ -25,6 +25,7 @@ class WaterHistoryViewModel {
         date: today,
         intake: intake,
         goal: goal,
+        note: "",
       ),
     );
   }

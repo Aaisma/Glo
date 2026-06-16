@@ -66,7 +66,9 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
   void openHistory() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const WaterHistoryScreen()),
+      MaterialPageRoute(
+        builder: (_) => WaterHistoryScreen(userId: userId),
+      ),
     );
   }
 
