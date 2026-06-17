@@ -96,15 +96,22 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<String> signInWithGoogle() async {
-    // In version 7.2.0+, use GoogleSignIn.instance and authenticate()
-    final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+    // Correctly reference the singleton instance
+    final googleSignIn = GoogleSignIn.instance;
 
-    // authentication is now a synchronous getter
-    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+    // Trigger the account picker sheet using authenticate()
+    final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
 
+    if (googleUser == null) throw Exception("Google sign in failed");
+
+    // Modern google_sign_in splits authentication (Identity) from authorization (Access tokens)
+    // To grab the accessToken for Firebase safely, we authorize the basic profile scopes
+    final clientAuth = await googleUser.authorizationClient.authorizeScopes(['email', 'profile']);
+
+    // Create the credential payload using the requested authorization tokens
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: null, // accessToken is optional if idToken is provided
-      idToken: googleAuth.idToken,
+      accessToken: clientAuth.accessToken,
+      idToken: googleUser.authentication.idToken,
     );
 
     final UserCredential userCredential =
@@ -132,6 +139,7 @@ class UserRepoImpl implements UserRepo {
     final LoginResult result = await FacebookAuth.instance.login();
 
     if (result.status == LoginStatus.success) {
+      // AccessToken class is abstract in v7.x; access the key directly via tokenString
       final OAuthCredential credential =
       FacebookAuthProvider.credential(result.accessToken!.tokenString);
 
