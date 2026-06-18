@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'view/glo_splash_screen.dart';
 import 'view/navigation_icon/dashboard_page.dart';
 import 'view/survey_page.dart';
+import 'view/authentication/authentication_page.dart';
 
 // Repos
 import 'repo/user_repo_impl.dart';
@@ -42,6 +43,7 @@ void main() async {
   await Hive.openBox('drafts_box');
   await Hive.openBox('favorites_box');
   await Hive.openBox('hidden_content_box');
+  await Hive.openBox('onboarding_box');
 
   runApp(const MyApp());
 }
@@ -85,12 +87,45 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.pink,
         ),
-        home: const SurveyPage(),
+        home: const AuthGate(),
         routes: {
           '/dashboard': (context) => const DashboardScreen(),
           '/survey': (context) => const SurveyPage(),
         },
       ),
     );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      if (authVM.user != null) {
+        await authVM.checkUserProfile(context, authVM.user!.uid);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authVM = Provider.of<AuthViewModel>(context);
+    if (authVM.user != null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    return const AuthenticationPage();
   }
 }

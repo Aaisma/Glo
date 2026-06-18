@@ -2,11 +2,127 @@ import '../model/user_model.dart';
 import '../repo/user_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../model/onboarding_survey_data.dart';
+import '../services/onboarding_tracker_initializer.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserRepo _userRepo;
 
   UserViewModel({required UserRepo userRepo}) : _userRepo = userRepo;
+
+  // Onboarding Survey Data & Signup Credentials
+  OnboardingSurveyData _surveyData = OnboardingSurveyData();
+  OnboardingSurveyData get surveyData => _surveyData;
+
+  String _signupName = '';
+  String _signupEmail = '';
+  String _signupPassword = '';
+
+  String get signupName => _signupName;
+  String get signupEmail => _signupEmail;
+  String get signupPassword => _signupPassword;
+
+  void setSignupCredentials(String name, String email, String password) {
+    _signupName = name;
+    _signupEmail = email;
+    _signupPassword = password;
+    notifyListeners();
+  }
+
+  void updateSurveyData(OnboardingSurveyData data) {
+    _surveyData = data;
+    notifyListeners();
+  }
+
+  Future<void> saveOnboardingProgress(int currentStep) async {
+    final box = Hive.box('onboarding_box');
+    await box.put('current_step', currentStep);
+    await box.put('survey_data', _surveyData.toMap());
+    await box.put('signup_name', _signupName);
+    await box.put('signup_email', _signupEmail);
+  }
+
+  Future<int> restoreOnboardingProgress() async {
+    final box = Hive.box('onboarding_box');
+    final step = box.get('current_step', defaultValue: 0) as int;
+    final map = box.get('survey_data');
+    if (map != null) {
+      _surveyData = OnboardingSurveyData.fromMap(Map<String, dynamic>.from(map));
+    }
+    _signupName = box.get('signup_name', defaultValue: '') as String;
+    _signupEmail = box.get('signup_email', defaultValue: '') as String;
+    notifyListeners();
+    return step;
+  }
+
+  Future<void> clearOnboardingProgress() async {
+    final box = Hive.box('onboarding_box');
+    await box.delete('current_step');
+    await box.delete('survey_data');
+    _surveyData = OnboardingSurveyData();
+    _signupName = '';
+    _signupEmail = '';
+    _signupPassword = '';
+    notifyListeners();
+  }
+
+  Future<void> finalizeOnboarding({
+    required dynamic authVM,
+    required dynamic periodVM,
+  }) async {
+    setLoading(true);
+    try {
+      if (_signupEmail.isEmpty || _signupPassword.isEmpty) {
+        throw Exception("Signup credentials are empty. Please register first.");
+      }
+
+      // 1. createUserAccount()
+      final user = await authVM.signUp(_signupEmail, _signupPassword);
+      if (user == null) {
+        throw Exception("Failed to register user account.");
+      }
+      setUserId(user.uid);
+
+      // 2. initializeTrackers()
+      await OnboardingTrackerInitializer.initializeAllTrackers(
+        userId: user.uid,
+        surveyData: _surveyData,
+      );
+
+      // 3. saveSurveyAnswers() & markOnboardingComplete()
+      await updateSurvey(
+        userId: user.uid,
+        email: _signupEmail,
+        name: _signupName,
+        ageGroup: _surveyData.ageGroup ?? "Not specified",
+        skinType: _surveyData.skinType ?? "Not specified",
+        goals: _surveyData.goals,
+        actualAge: _surveyData.actualAge,
+        bmi: _surveyData.bmi,
+        waterGoal: _surveyData.waterGoal,
+        lastCycleDate: _surveyData.lastCycleDate,
+        acneTypes: _surveyData.acneTypes,
+        usesMedication: _surveyData.usesMedication,
+        medicationType: _surveyData.medicationType,
+        medicationTime: _surveyData.medicationTime,
+        visitsDerma: _surveyData.visitsDerma,
+        lastDermaVisit: _surveyData.lastDermaVisit,
+      );
+
+      // 4. Fetch cycle tracker logs to sync period data
+      await periodVM.fetchLogs();
+
+      // 5. Clean up local onboarding progress
+      await clearOnboardingProgress();
+    } catch (e) {
+      setError(e.toString());
+      rethrow;
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   String? _error = "";
   String? get error => _error;

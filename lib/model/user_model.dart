@@ -70,20 +70,28 @@ class UserModel {
       name: map['name'] as String,
       contact: map['contact'] as String?,
       email: map['email'] as String,
-      ageGroup: map['ageGroup'] as String?,
-      skinType: map['skinType'] as String?,
-      goals: map['goals'] != null ? List<String>.from(map['goals']) : null,
+      ageGroup: map['ageGroup'] == 'N/A' ? null : map['ageGroup'] as String?,
+      skinType: map['skinType'] == 'N/A' ? null : map['skinType'] as String?,
+      goals: map['goals'] != null
+          ? List<String>.from(map['goals']).where((e) => e != 'N/A').toList()
+          : null,
       surveyCompleted: map['surveyCompleted'] as bool? ?? false,
-      actualAge: map['actualAge'] as int?,
-      bmi: map['bmi'] != null ? (map['bmi'] as num).toDouble() : null,
-      waterGoal: map['waterGoal'] != null ? (map['waterGoal'] as num).toDouble() : null,
-      lastCycleDate: map['lastCycleDate'] != null ? DateTime.parse(map['lastCycleDate']) : null,
-      acneTypes: map['acneTypes'] != null ? List<String>.from(map['acneTypes']) : null,
-      usesMedication: map['usesMedication'] as bool?,
-      medicationType: map['medicationType'] as String?,
-      medicationTime: map['medicationTime'] as String?,
-      visitsDerma: map['visitsDerma'] as bool?,
-      lastDermaVisit: map['lastDermaVisit'] != null ? DateTime.parse(map['lastDermaVisit']) : null,
+      actualAge: (map['actualAge'] is int) ? map['actualAge'] as int : null,
+      bmi: (map['bmi'] is num) ? (map['bmi'] as num).toDouble() : null,
+      waterGoal: (map['waterGoal'] is num) ? (map['waterGoal'] as num).toDouble() : null,
+      lastCycleDate: (map['lastCycleDate'] != null && map['lastCycleDate'] != 'N/A')
+          ? DateTime.tryParse(map['lastCycleDate'] as String)
+          : null,
+      acneTypes: map['acneTypes'] != null
+          ? List<String>.from(map['acneTypes']).where((e) => e != 'N/A').toList()
+          : null,
+      usesMedication: (map['usesMedication'] is bool) ? map['usesMedication'] as bool : null,
+      medicationType: map['medicationType'] == 'N/A' ? null : map['medicationType'] as String?,
+      medicationTime: map['medicationTime'] == 'N/A' ? null : map['medicationTime'] as String?,
+      visitsDerma: (map['visitsDerma'] is bool) ? map['visitsDerma'] as bool : null,
+      lastDermaVisit: (map['lastDermaVisit'] != null && map['lastDermaVisit'] != 'N/A')
+          ? DateTime.tryParse(map['lastDermaVisit'] as String)
+          : null,
     );
   }
 

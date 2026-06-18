@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../viewmodel/user_view_model.dart';
 
 class WaterTrackerScreen extends StatefulWidget {
   const WaterTrackerScreen({super.key});
@@ -11,6 +13,17 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
   double currentIntake = 1.2; // in liters
   double goal = 2.5; // daily goal in liters
   String nextReminder = "11:00 AM";
+
+  @override
+  void initState() {
+    super.initState();
+    // ONBOARDING INITIALIZATION
+    final userVM = Provider.of<UserViewModel>(context, listen: false);
+    if (userVM.user?.waterGoal != null) {
+      goal = userVM.user!.waterGoal!;
+    }
+    // EXISTING TRACKER FUNCTIONALITY
+  }
 
   void addWater(double amount) {
     setState(() {
