@@ -29,29 +29,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final userVM = Provider.of<UserViewModel>(context, listen: false);
 
     try {
-      final user = await authVM.signUp(email, password);
-      if (user != null) {
-        // Initialize basic profile with the provided name
-        userVM.setUserId(user.uid);
-        await userVM.addUser(UserModel(
-          id: user.uid,
-          email: email,
-          name: name,
-          surveyCompleted: false,
-        ));
-
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/survey');
-        }
+      // Cache credentials and start survey
+      userVM.setSignupCredentials(name, email, password);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/survey');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Registration failed: $e")),
+          SnackBar(content: Text("Registration setup failed: $e")),
         );
       }
     }
