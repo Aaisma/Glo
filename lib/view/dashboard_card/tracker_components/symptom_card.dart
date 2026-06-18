@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../constants/ovulation_period_symptoms_colours.dart';
+import '../../../constants/ayd_colour.dart';
 
 class SymptomOption {
   final String label;
@@ -55,9 +55,9 @@ class _SymptomCardState extends State<SymptomCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: SymptomColours.card,
+        color: AydColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SymptomColours.border),
+        border: Border.all(color: AydColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -97,7 +97,7 @@ class _SymptomCardState extends State<SymptomCard> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: SymptomColours.textPrimary,
+                        color: AydColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -107,7 +107,7 @@ class _SymptomCardState extends State<SymptomCard> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
-                        color: SymptomColours.textSecondary,
+                        color: AydColors.textSecondary,
                       ),
                     ),
                   ],
@@ -137,7 +137,7 @@ class _SymptomCardState extends State<SymptomCard> {
               const SizedBox(width: 8),
               Icon(
                 _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_right,
-                color: SymptomColours.textSecondary,
+                color: AydColors.textSecondary,
               ),
             ],
           ),
@@ -162,7 +162,7 @@ class _SymptomCardState extends State<SymptomCard> {
                         border: Border.all(
                           color: isSelected 
                               ? widget.categoryColor 
-                              : SymptomColours.border,
+                              : AydColors.border,
                         ),
                       ),
                       child: Row(
@@ -171,7 +171,7 @@ class _SymptomCardState extends State<SymptomCard> {
                           Text(
                             option.label,
                             style: TextStyle(
-                              color: isSelected ? widget.categoryColor : SymptomColours.textPrimary,
+                              color: isSelected ? widget.categoryColor : AydColors.textPrimary,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               fontSize: 13,
                             ),
