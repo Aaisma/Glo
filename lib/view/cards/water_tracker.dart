@@ -32,6 +32,12 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
     });
   }
 
+  void resetIntake() {
+    setState(() {
+      currentIntake = 0.0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,6 +125,10 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                             onPressed: () => addWater(0.25),
                             child: const Text("+ 250 ml"),
                           ),
+                          ElevatedButton(
+                            onPressed: resetIntake,
+                            child: const Text("Reset"),
+                          ),
                         ],
                       ),
                     ],
@@ -180,10 +190,10 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+                child: const Padding(
+                  padding: EdgeInsets.all(16),
                   child: Column(
-                    children: const [
+                    children: [
                       Text(
                         "Motivation",
                         style: TextStyle(
