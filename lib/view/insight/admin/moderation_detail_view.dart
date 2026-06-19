@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/moderation_view_model.dart';
-import '../../model/community_models.dart';
+import '../../../viewmodel/moderation_view_model.dart';
+import '../../../model/community_models.dart';
 
 class ModerationDetailView extends StatefulWidget {
   final String contentId;
@@ -17,13 +17,13 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
   void initState() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ModerationDetailViewModel>().loadDetail(widget.contentId);
+      context.read<InsightsModerationDetailViewModel>().loadDetail(widget.contentId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<ModerationDetailViewModel>();
+    final viewModel = context.watch<InsightsModerationDetailViewModel>();
     final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
@@ -96,7 +96,7 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -159,7 +159,7 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -271,7 +271,7 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),

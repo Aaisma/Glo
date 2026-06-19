@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/community_view_model.dart';
-import '../../model/community_models.dart';
+import '../../../viewmodel/community_view_model.dart';
+import '../../../model/community_models.dart';
 
 class DiscussionDetailView extends StatefulWidget {
   final String discussionId;
@@ -157,7 +157,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.01),
+                            color: Colors.black.withValues(alpha:0.01),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -320,7 +320,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha:0.04),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -388,7 +388,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha:0.01),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),

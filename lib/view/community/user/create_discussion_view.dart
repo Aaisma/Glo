@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/community_view_model.dart';
+import '../../../viewmodel/community_view_model.dart';
 import 'discussion_preview_view.dart';
 
 class CreateDiscussionView extends StatefulWidget {
@@ -148,7 +148,7 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
                   ),
                   subtitle: const Text("Your username won't be shown publicly"),
                   value: viewModel.isAnonymous,
-                  activeColor: accentColor,
+                  activeThumbColor: accentColor,
                   onChanged: viewModel.toggleAnonymous,
                   contentPadding: EdgeInsets.zero,
                 ),

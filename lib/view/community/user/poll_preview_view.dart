@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../model/community_models.dart';
-import '../../viewmodel/community_view_model.dart';
+import '../../../model/community_models.dart';
+import '../../../viewmodel/community_view_model.dart';
 
 class PollPreviewView extends StatelessWidget {
   const PollPreviewView({super.key});
@@ -63,9 +63,9 @@ class PollPreviewView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.08),
+                  color: accentColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: accentColor.withOpacity(0.2)),
+                  border: Border.all(color: accentColor.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -95,7 +95,7 @@ class PollPreviewView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -111,7 +111,7 @@ class PollPreviewView extends StatelessWidget {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: accentColor.withOpacity(0.1),
+                              backgroundColor: accentColor.withValues(alpha: 0.1),
                               radius: 16,
                               child: Icon(
                                 viewModel.isAnonymous ? Icons.face : Icons.person,
@@ -134,14 +134,14 @@ class PollPreviewView extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: categoryColor.withOpacity(0.2),
+                            color: categoryColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: categoryColor),
                           ),
                           child: Text(
                             selectedCategory.name,
                             style: TextStyle(
-                              color: _hexToColor(selectedCategory.color).withOpacity(0.8) == Colors.white
+                              color: _hexToColor(selectedCategory.color).withValues(alpha: 0.8) == Colors.white
                                   ? const Color(0xFF332B2C)
                                   : _hexToColor(selectedCategory.color),
                               fontSize: 11,
@@ -174,7 +174,7 @@ class PollPreviewView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 12),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            border: Border.all(color: pinkTheme.withOpacity(0.3)),
+                            border: Border.all(color: pinkTheme.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(12),
                             color: const Color(0xFFFFFDFE),
                           ),

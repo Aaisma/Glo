@@ -249,17 +249,19 @@ class PeriodTrackerView extends StatelessWidget {
         return AlertDialog(
           title: Text("Log Flow for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
           content: StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: ['Light', 'Medium', 'Heavy'].map((flow) {
-                return RadioListTile<String>(
-                  title: Text(flow),
-                  value: flow,
-                  groupValue: currentFlow,
-                  activeColor: theme.headerText,
-                  onChanged: (val) => setState(() => currentFlow = val!),
-                );
-              }).toList(),
+            builder: (context, setState) => RadioGroup<String>(
+              groupValue: currentFlow,
+              onChanged: (val) => setState(() => currentFlow = val!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: ['Light', 'Medium', 'Heavy'].map((flow) {
+                  return RadioListTile<String>(
+                    title: Text(flow),
+                    value: flow,
+                    activeColor: theme.headerText,
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: [
@@ -947,20 +949,22 @@ class PeriodTrackerView extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text("Length:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
                   const SizedBox(height: 8),
-                  Column(
-                    children: [5, 6, 7].map((len) {
-                      return RadioListTile<int>(
-                        title: Text("$len days"),
-                        value: len,
-                        groupValue: selectedLength,
-                        activeColor: const Color(0xFFE94B64),
-                        onChanged: (val) {
-                          setState(() {
-                            selectedLength = val!;
-                          });
-                        },
-                      );
-                    }).toList(),
+                  RadioGroup<int>(
+                    groupValue: selectedLength,
+                    onChanged: (val) {
+                      setState(() {
+                        selectedLength = val!;
+                      });
+                    },
+                    child: Column(
+                      children: [5, 6, 7].map((len) {
+                        return RadioListTile<int>(
+                          title: Text("$len days"),
+                          value: len,
+                          activeColor: const Color(0xFFE94B64),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ],
               ),

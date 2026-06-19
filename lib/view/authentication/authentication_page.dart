@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../components/top_navigation.dart';
 import 'login_screen.dart';
 import 'register.dart';
-import 'package:glo/view/navigation_icon/profile_pages/help_support_page.dart';
-import 'package:glo/view/navigation_icon/profile_pages/about_us_page.dart';
+import 'package:gloclone/view/navigation_icon/profile_pages/help_support_page.dart';
+import 'package:gloclone/view/navigation_icon/profile_pages/about_us_page.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});
@@ -46,7 +46,7 @@ class AuthenticationPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFD6E6).withOpacity(0.9),
+        color: const Color(0xFFFFD6E6).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -88,7 +88,7 @@ class AuthenticationPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _cycleStat("Current cycle Day", "--"),
-              Container(width: 1, height: 40, color: Colors.white.withOpacity(0.5)),
+              Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.5)),
               _cycleStat("Cycle Length", "-- Days"),
             ],
           ),
@@ -103,7 +103,7 @@ class AuthenticationPage extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.8)],
+            colors: [color, color.withValues(alpha: 0.8)],
           ),
           borderRadius: BorderRadius.circular(20),
         ),

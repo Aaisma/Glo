@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/period_log_model.dart';
+import '../../model/period_log_model.dart';
 
 class PeriodTrackerSetupService {
   static Future<void> initializeCycleTrackerFromOnboarding({

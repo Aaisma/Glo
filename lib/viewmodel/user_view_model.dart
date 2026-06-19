@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../model/onboarding_survey_data.dart';
-import '../services_copy/onboarding_tracker_initializer.dart';
+import '../services/survey/onboarding_tracker_initializer.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserRepo _userRepo;

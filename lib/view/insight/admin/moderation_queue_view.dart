@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/moderation_view_model.dart';
-import '../../model/community_models.dart';
+import '../../../viewmodel/moderation_view_model.dart';
+import '../../../model/community_models.dart';
 import 'moderation_detail_view.dart';
 
 class ModerationQueueView extends StatefulWidget {

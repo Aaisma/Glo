@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -302,7 +301,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     hintText: "Age",
                     suffixText: "years",
                     filled: true,
-                    fillColor: accentLightPink.withOpacity(0.3),
+                    fillColor: accentLightPink.withValues(alpha: 0.3),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
@@ -345,7 +344,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Weight",
                           filled: true,
-                          fillColor: accentLightPink.withOpacity(0.3),
+                          fillColor: accentLightPink.withValues(alpha: 0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -404,7 +403,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     decoration: InputDecoration(
                       hintText: "Height in cm",
                       filled: true,
-                      fillColor: accentLightPink.withOpacity(0.3),
+                      fillColor: accentLightPink.withValues(alpha: 0.3),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     ),
                   )
@@ -418,7 +417,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Feet",
                             filled: true,
-                            fillColor: accentLightPink.withOpacity(0.3),
+                            fillColor: accentLightPink.withValues(alpha: 0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -431,7 +430,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Inches",
                             filled: true,
-                            fillColor: accentLightPink.withOpacity(0.3),
+                            fillColor: accentLightPink.withValues(alpha: 0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -456,7 +455,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Water Goal",
                           filled: true,
-                          fillColor: accentLightPink.withOpacity(0.3),
+                          fillColor: accentLightPink.withValues(alpha: 0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -637,9 +636,9 @@ class _SurveyPageState extends State<SurveyPage> {
             text: "Tracking your cycle regularly helps improve period and ovulation predictions over time.",
             icon: Image(image: AssetImage("assets/images/survey/tips/cute_calender.png"), width: 40, height: 40),
           ),
-          QuestionCard(
+          const QuestionCard(
             child: Row(
-              children: const [
+              children: [
                 Icon(Icons.edit_note, color: primaryPink),
                 SizedBox(width: 12),
                 Expanded(
@@ -1027,7 +1026,7 @@ class _SurveyPageState extends State<SurveyPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1179,7 +1178,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         runSpacing: 6,
                         children: data.acneTypes.map((c) => Chip(
                           label: Text(c, style: const TextStyle(fontSize: 11, color: primaryPink)),
-                          backgroundColor: primaryPink.withOpacity(0.1),
+                          backgroundColor: primaryPink.withValues(alpha: 0.1),
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

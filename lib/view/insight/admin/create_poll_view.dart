@@ -188,7 +188,7 @@ class _CreatePollViewState extends State<CreatePollView> {
                   ),
                   subtitle: const Text("Your username won't be shown publicly"),
                   value: viewModel.isAnonymous,
-                  activeColor: accentColor,
+                  activeThumbColor: accentColor,
                   onChanged: viewModel.toggleAnonymous,
                   contentPadding: EdgeInsets.zero,
                 ),

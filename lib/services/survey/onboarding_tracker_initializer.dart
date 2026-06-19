@@ -1,4 +1,4 @@
-import '../model/onboarding_survey_data.dart';
+import '../../model/onboarding_survey_data.dart';
 import 'water_tracker_setup_service.dart';
 import 'acne_tracker_setup_service.dart';
 import 'period_tracker_setup_service.dart';

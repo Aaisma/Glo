@@ -46,8 +46,8 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityFeedViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),
@@ -78,7 +78,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -214,7 +214,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -329,7 +329,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -406,8 +406,8 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: votedThis
-                                    ? fillBg.withOpacity(0.2)
-                                    : Colors.pink.shade50.withOpacity(0.3),
+                                    ? fillBg.withValues(alpha: 0.2)
+                                    : Colors.pink.shade50.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
