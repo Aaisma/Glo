@@ -57,12 +57,14 @@ dependencies:
 
   fl_chart: ^0.69.0
 
-  image_picker: ^1.0.7
-
   flutter_svg: ^2.0.9
   table_calendar: ^3.0.9
   lucide_icons: ^0.257.0
-  
+
+  cached_network_image: ^3.4.1
+  cloudinary_public: ^0.23.1
+  #image_picker: ^1.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

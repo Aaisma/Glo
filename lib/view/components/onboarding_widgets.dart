@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Colors consistent with the approved designs
 const Color primaryPink = Color(0xFFFF3E63);
 const Color accentLightPink = Color(0xFFFDECEF);
 
@@ -141,7 +140,7 @@ class QuestionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -183,7 +182,7 @@ class OptionSelector extends StatelessWidget {
           ),
           selected: isSelected,
           onSelected: (val) => onSelected(option),
-          selectedColor: primaryPink.withOpacity(0.15),
+          selectedColor: primaryPink.withValues(alpha: 0.15),
           backgroundColor: Colors.white,
           side: BorderSide(
             color: isSelected ? primaryPink : Colors.black12,
@@ -218,7 +217,7 @@ class DynamicTipCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryPink.withOpacity(0.2)),
+        border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +280,7 @@ class PrimaryActionButton extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: onPressed,
-              child: const Text(
+              child: Text(
                 text,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryPink),
               ),
@@ -334,7 +333,8 @@ class FeatureLaunchCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? primaryPink.withOpacity(0.08) : Colors.black.withOpacity(0.02),
+              color: isSelected ? primaryPink.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -421,7 +421,7 @@ class ReviewAnswerSection extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: primaryPink.withOpacity(0.5)),
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.5)),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Row(

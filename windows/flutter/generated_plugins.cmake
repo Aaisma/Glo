@@ -4,7 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   cloud_firestore
-<<<<<<< HEAD
+  file_selector_windows
   firebase_auth
   firebase_core
   flutter_secure_storage_windows
@@ -12,14 +12,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
   jni
-=======
-  file_selector_windows
-  firebase_auth
-  firebase_core
-)
-
-list(APPEND FLUTTER_FFI_PLUGIN_LIST
->>>>>>> pranisha_branch
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

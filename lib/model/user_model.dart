@@ -1,46 +1,16 @@
 class UserModel {
   final String id;
   final String name;
-<<<<<<< HEAD
+  final String? contact;
   final String? email;
   final String? phone;
   final String? imageUrl;
-
-  UserModel({
-    required this.id,
-    required this.name,
-    this.email,
-    this.phone,
-    this.imageUrl,
-  });
-
-  factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
-    return UserModel(
-      id: documentId,
-      name: data['name'] ?? '',
-      email: data['email'],
-      phone: data['phone'],
-      imageUrl: data['imageUrl'],
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'imageUrl': imageUrl,
-    };
-  }
-=======
-  final String? contact;
-  final String email;
   final String? ageGroup;
   final String? skinType;
   final List<String>? goals;
   final bool surveyCompleted;
 
-  // New Survey Fields
+  // Survey fields
   final int? actualAge;
   final double? bmi;
   final double? waterGoal;
@@ -56,7 +26,9 @@ class UserModel {
     required this.id,
     required this.name,
     this.contact,
-    required this.email,
+    this.email,
+    this.phone,
+    this.imageUrl,
     this.ageGroup,
     this.skinType,
     this.goals,
@@ -79,6 +51,8 @@ class UserModel {
       'name': name,
       'contact': contact,
       'email': email,
+      'phone': phone,
+      'imageUrl': imageUrl,
       'ageGroup': ageGroup,
       'skinType': skinType,
       'goals': goals,
@@ -96,33 +70,35 @@ class UserModel {
     };
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap(Map<String, dynamic> map, String documentId) {
     return UserModel(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      contact: map['contact'] as String?,
-      email: map['email'] as String,
-      ageGroup: map['ageGroup'] == 'N/A' ? null : map['ageGroup'] as String?,
-      skinType: map['skinType'] == 'N/A' ? null : map['skinType'] as String?,
+      id: documentId,
+      name: map['name'] ?? '',
+      contact: map['contact'],
+      email: map['email'],
+      phone: map['phone'],
+      imageUrl: map['imageUrl'],
+      ageGroup: map['ageGroup'] == 'N/A' ? null : map['ageGroup'],
+      skinType: map['skinType'] == 'N/A' ? null : map['skinType'],
       goals: map['goals'] != null
           ? List<String>.from(map['goals']).where((e) => e != 'N/A').toList()
           : null,
       surveyCompleted: map['surveyCompleted'] as bool? ?? false,
-      actualAge: (map['actualAge'] is int) ? map['actualAge'] as int : null,
+      actualAge: (map['actualAge'] is int) ? map['actualAge'] : null,
       bmi: (map['bmi'] is num) ? (map['bmi'] as num).toDouble() : null,
       waterGoal: (map['waterGoal'] is num) ? (map['waterGoal'] as num).toDouble() : null,
       lastCycleDate: (map['lastCycleDate'] != null && map['lastCycleDate'] != 'N/A')
-          ? DateTime.tryParse(map['lastCycleDate'] as String)
+          ? DateTime.tryParse(map['lastCycleDate'])
           : null,
       acneTypes: map['acneTypes'] != null
           ? List<String>.from(map['acneTypes']).where((e) => e != 'N/A').toList()
           : null,
-      usesMedication: (map['usesMedication'] is bool) ? map['usesMedication'] as bool : null,
-      medicationType: map['medicationType'] == 'N/A' ? null : map['medicationType'] as String?,
-      medicationTime: map['medicationTime'] == 'N/A' ? null : map['medicationTime'] as String?,
-      visitsDerma: (map['visitsDerma'] is bool) ? map['visitsDerma'] as bool : null,
+      usesMedication: (map['usesMedication'] is bool) ? map['usesMedication'] : null,
+      medicationType: map['medicationType'] == 'N/A' ? null : map['medicationType'],
+      medicationTime: map['medicationTime'] == 'N/A' ? null : map['medicationTime'],
+      visitsDerma: (map['visitsDerma'] is bool) ? map['visitsDerma'] : null,
       lastDermaVisit: (map['lastDermaVisit'] != null && map['lastDermaVisit'] != 'N/A')
-          ? DateTime.tryParse(map['lastDermaVisit'] as String)
+          ? DateTime.tryParse(map['lastDermaVisit'])
           : null,
     );
   }
@@ -132,6 +108,8 @@ class UserModel {
     String? name,
     String? contact,
     String? email,
+    String? phone,
+    String? imageUrl,
     String? ageGroup,
     String? skinType,
     List<String>? goals,
@@ -152,6 +130,8 @@ class UserModel {
       name: name ?? this.name,
       contact: contact ?? this.contact,
       email: email ?? this.email,
+      phone: phone ?? this.phone,
+      imageUrl: imageUrl ?? this.imageUrl,
       ageGroup: ageGroup ?? this.ageGroup,
       skinType: skinType ?? this.skinType,
       goals: goals ?? this.goals,
@@ -168,5 +148,4 @@ class UserModel {
       lastDermaVisit: lastDermaVisit ?? this.lastDermaVisit,
     );
   }
->>>>>>> pranisha_branch
 }

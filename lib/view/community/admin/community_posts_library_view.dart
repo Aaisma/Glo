@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/community_view_model.dart';
-import '../../model/community_models.dart';
+import '../../../viewmodel/community_view_model.dart';
 
 class CommunityPostsLibraryView extends StatefulWidget {
   const CommunityPostsLibraryView({super.key});
@@ -23,7 +22,6 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityLibraryViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
     return Scaffold(
@@ -124,7 +122,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.01),
+                color: Colors.black.withValues(alpha: 0.01),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -135,7 +133,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.01),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -203,7 +201,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.01),
+                color: Colors.black.withValues(alpha: 0.01),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -214,7 +212,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.01),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

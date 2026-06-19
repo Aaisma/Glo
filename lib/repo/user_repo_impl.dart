@@ -41,8 +41,9 @@ class UserRepoImpl implements UserRepo {
   @override
   Future<List<UserModel>> getAllUser() async {
     final users = await _firestore.collection("users").get();
-    return users.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-  }
+    return users.docs
+        .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+        .toList();}
 
   @override
   Future<UserModel?> getUserByID(String id) async {
@@ -50,7 +51,7 @@ class UserRepoImpl implements UserRepo {
     if (!doc.exists || doc.data() == null) {
       return null;
     }
-    return UserModel.fromMap(doc.data()!);
+    return UserModel.fromMap(doc.data()!, doc.id);
   }
 
   @override

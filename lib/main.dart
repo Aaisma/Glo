@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'firebase_options.dart';
-import 'view/glo_splash_screen.dart';
 import 'view/navigation_icon/dashboard_page.dart';
 import 'view/survey_page.dart';
 import 'view/authentication/authentication_page.dart';
