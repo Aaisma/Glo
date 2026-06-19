@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import '../repo/user_repo.dart';
-import '../repo/user_repo_impl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final UserRepo _repo = UserRepoImpl();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  String? _verificationId;
   bool _loading = false;
   String? _error;
-  String? _userId;
 
   bool get loading => _loading;
   String? get error => _error;
-  String? get userId => _userId;
 
   void _setLoading(bool value) {
     _loading = value;
@@ -23,17 +21,27 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setUserId(String? value) {
-    _userId = value;
-    notifyListeners();
-  }
-
-  Future<void> login(String email, String password) async {
+  // 🔑 Send OTP
+  Future<void> sendOtp(String phoneNumber) async {
     _setLoading(true);
     try {
-      final id = await _repo.login(email, password);
-      _setUserId(id);
-      _setError(null);
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          _setError(null);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          _setError(e.message);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _verificationId = verificationId;
+          _setError(null);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+        },
+      );
     } catch (e) {
       _setError(e.toString());
     } finally {
@@ -41,67 +49,24 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> register(String email, String password) async {
-    _setLoading(true);
-    try {
-      final id = await _repo.register(email, password);
-      _setUserId(id);
-      _setError(null);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
+  // 🔑 Verify OTP
+  Future<bool> verifyOtp(String smsCode) async {
+    if (_verificationId == null) {
+      _setError("No verification ID found");
+      return false;
     }
-  }
 
-  Future<void> logout() async {
-    _setLoading(true);
     try {
-      await _repo.logout();
-      _setUserId(null);
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: smsCode,
+      );
+      await _auth.signInWithCredential(credential);
       _setError(null);
+      return true;
     } catch (e) {
       _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<void> forgetPassword(String email) async {
-    _setLoading(true);
-    try {
-      await _repo.forgetPassword(email);
-      _setError(null);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<void> signInWithGoogle() async {
-    _setLoading(true);
-    try {
-      final id = await _repo.signInWithGoogle();
-      _setUserId(id);
-      _setError(null);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<void> signInWithFacebook() async {
-    _setLoading(true);
-    try {
-      final id = await _repo.signInWithFacebook();
-      _setUserId(id);
-      _setError(null);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
+      return false;
     }
   }
 }
