@@ -32,6 +32,8 @@ dependencies:
   flutter_facebook_auth: ^7.1.1
   lucide_icons: ^0.257.0
   nepali_utils: ^3.0.6
+  tflite_flutter: ^0.11.0
+  image: ^4.3.0
 
 
 
@@ -48,6 +50,15 @@ flutter:
     - assets/images/
     - assets/videos/
     - assets/animations/
+    - assets/ml/model.tflite
+    - assets/ml/labels.txt
+    - assets/images/background.png
+    - assets/images/whiteheads.png
+    - assets/images/blackheads.png
+    - assets/images/papules.png
+    - assets/images/pustules.png
+    - assets/images/nodules.png
+    - assets/images/cystic.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
