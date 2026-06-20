@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:glo/model/medication_model.dart';
+import '../model/medication_model.dart';
 import '../viewmodel/medication_viewmodel.dart';
 import 'medication_history_screen.dart';
 

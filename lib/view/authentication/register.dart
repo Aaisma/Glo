@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:provider/provider.dart';
+import '../../repo/user_repo_impl.dart';
 import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/user_view_model.dart';
-import '../../model/user_model.dart';
 import '../survey_page.dart';
-import '../components/social_login_options.dart';
-import 'login_screen.dart';
-=======
-import '../../repo/user_repo_impl.dart';
-import '../survey_page.dart';
->>>>>>> pranisha_branch
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -39,29 +32,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final userVM = Provider.of<UserViewModel>(context, listen: false);
 
     try {
-      final user = await authVM.signUp(email, password);
-      if (user != null) {
-        // Initialize basic profile with the provided name
-        userVM.setUserId(user.uid);
-        await userVM.addUser(UserModel(
-          id: user.uid,
-          email: email,
-          name: name,
-          surveyCompleted: false,
-        ));
-
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/survey');
-        }
+      // Cache credentials and start survey
+      userVM.setSignupCredentials(name, email, password);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/survey');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Registration failed: $e")),
+          SnackBar(content: Text("Registration setup failed: $e")),
         );
       }
     }

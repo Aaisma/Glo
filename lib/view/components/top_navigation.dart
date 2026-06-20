@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:glo/view/navigation_icon/calendar_screen.dart';
-import 'package:glo/view/navigation_icon/notification_page.dart';
+import '../navigation_icon/calendar_screen.dart';
+import '../navigation_icon/notification_page.dart';
 
 class TopNavigation extends StatelessWidget {
   final bool isLoggedIn;

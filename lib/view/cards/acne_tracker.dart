@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import '../../../viewmodel/user_view_model.dart';
 
 class AcneTrackerPage extends StatefulWidget {
   const AcneTrackerPage({super.key});
@@ -74,21 +76,55 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Current Acne Status
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: const [
-                      Text("Current Acne Status",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.pinkAccent)),
-                      SizedBox(height: 8),
-                      Text("Severity: Moderate"),
-                    ],
-                  ),
-                ),
+              // Current Acne Status
+              Consumer<UserViewModel>(
+                builder: (context, userVM, child) {
+                  // ONBOARDING INITIALIZATION
+                  final user = userVM.user;
+                  final skinType = user?.skinType ?? "Normal";
+                  final acneConcerns = user?.acneTypes != null && user!.acneTypes!.isNotEmpty
+                      ? user.acneTypes!.join(", ")
+                      : "None";
+                  final usesMedication = user?.usesMedication ?? false;
+                  final medicationType = user?.medicationType ?? "None";
+                  final medicationTime = user?.medicationTime ?? "None";
+
+                  // EXISTING TRACKER FUNCTIONALITY
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Current Skin & Acne Status",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.pinkAccent,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text("Skin Type: $skinType", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 8),
+                          Text("Acne Concerns: $acneConcerns", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Treatment: ${usesMedication ? '$medicationType ($medicationTime)' : 'None'}",
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
 

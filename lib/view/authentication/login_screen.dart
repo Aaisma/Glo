@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/user_view_model.dart';
-import '../components/social_login_options.dart';
 import '../../repo/user_repo_impl.dart';
 import 'register.dart';
 

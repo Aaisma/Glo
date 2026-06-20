@@ -3,18 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-<<<<<<< HEAD
+  file_selector_linux
   flutter_secure_storage_linux
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
   jni
-=======
-  file_selector_linux
-)
-
-list(APPEND FLUTTER_FFI_PLUGIN_LIST
->>>>>>> pranisha_branch
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

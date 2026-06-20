@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:nepali_utils/nepali_utils.dart';
-import '../../constants/ovulation_period_symptoms_colours.dart';
+import '../../constants/ayd_colour.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';
 import '../../viewmodel/log_symptoms_view_model.dart';
@@ -124,8 +124,6 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final englishDate = DateFormat('E, MMMM d, yyyy').format(DateTime.now());
@@ -137,20 +135,20 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
         final isSavedStatus = _viewModel.isSaved;
 
         return Scaffold(
-          backgroundColor: SymptomColours.background,
+          backgroundColor: AydColors.background,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,
-            leading: const BackButton(color: SymptomColours.textPrimary),
+            leading: const BackButton(color: AydColors.textPrimary),
             title: Row(
               children: const [
                 Text(
                   "Log Symptoms",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: SymptomColours.textPrimary),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AydColors.textPrimary),
                 ),
                 SizedBox(width: 8),
-                Icon(Icons.info_outline, size: 20, color: SymptomColours.textSecondary),
+                Icon(Icons.info_outline, size: 20, color: AydColors.textSecondary),
               ],
             ),
           ),
@@ -164,7 +162,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       padding: EdgeInsets.only(left: 4.0, bottom: 24),
                       child: Text(
                         "Track symptoms and health observations for today.",
-                        style: TextStyle(fontSize: 14, color: SymptomColours.textSecondary),
+                        style: TextStyle(fontSize: 14, color: AydColors.textSecondary),
                       ),
                     ),
                     Row(
@@ -173,9 +171,9 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: SymptomColours.card,
+                              color: AydColors.card,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: SymptomColours.border),
+                              border: Border.all(color: AydColors.border),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.02),
@@ -191,12 +189,12 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.calendar_today, size: 14, color: SymptomColours.textPrimary),
+                                    const Icon(Icons.calendar_today, size: 14, color: AydColors.textPrimary),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         englishDate,
-                                        style: const TextStyle(fontSize: 12, color: SymptomColours.textPrimary, fontWeight: FontWeight.w500),
+                                        style: const TextStyle(fontSize: 12, color: AydColors.textPrimary, fontWeight: FontWeight.w500),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -211,9 +209,9 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: SymptomColours.card,
+                              color: AydColors.card,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: SymptomColours.border),
+                              border: Border.all(color: AydColors.border),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.02),
@@ -229,12 +227,12 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.calendar_today, size: 14, color: SymptomColours.textPrimary),
+                                    const Icon(Icons.calendar_today, size: 14, color: AydColors.textPrimary),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         nepaliDate,
-                                        style: const TextStyle(fontSize: 12, color: SymptomColours.textPrimary, fontWeight: FontWeight.w500),
+                                        style: const TextStyle(fontSize: 12, color: AydColors.textPrimary, fontWeight: FontWeight.w500),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -255,7 +253,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                           Icon(
                             Icons.circle, 
                             size: 8, 
-                            color: isSavedStatus ? Colors.green : SymptomColours.warning
+                            color: isSavedStatus ? Colors.green : AydColors.warning
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -263,7 +261,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                             style: TextStyle(
                               fontSize: 12, 
                               fontWeight: FontWeight.w500, 
-                              color: isSavedStatus ? Colors.green : SymptomColours.warning
+                              color: isSavedStatus ? Colors.green : AydColors.warning
                             ),
                           ),
                         ],
@@ -286,7 +284,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: SymptomColours.button,
+                      backgroundColor: AydColors.button,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       elevation: 0,
@@ -381,7 +379,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
       child: Center(
         child: Row(
           children: [
-            Expanded(child: Divider(color: SymptomColours.border)),
+            Expanded(child: Divider(color: AydColors.border)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -389,11 +387,11 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: SymptomColours.textSecondary,
+                  color: AydColors.textSecondary,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: SymptomColours.border)),
+            Expanded(child: Divider(color: AydColors.border)),
           ],
         ),
       ),
@@ -432,9 +430,9 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: SymptomColours.card,
+        color: AydColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SymptomColours.border),
+        border: Border.all(color: AydColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -468,7 +466,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: SymptomColours.textPrimary,
+                        color: AydColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -478,7 +476,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
-                        color: SymptomColours.textSecondary,
+                        color: AydColors.textSecondary,
                       ),
                     ),
                   ],
@@ -491,9 +489,9 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
               child: Container(
                 decoration: BoxDecoration(
-                  color: SymptomColours.background,
+                  color: AydColors.background,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: SymptomColours.border),
+                  border: Border.all(color: AydColors.border),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
@@ -503,7 +501,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     hintText: "Add your notes here...",
-                    hintStyle: TextStyle(color: SymptomColours.textSecondary, fontSize: 14),
+                    hintStyle: TextStyle(color: AydColors.textSecondary, fontSize: 14),
                   ),
                 ),
               ),

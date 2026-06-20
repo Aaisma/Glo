@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../viewmodel/user_view_model.dart';
 
 class WaterTrackerScreen extends StatefulWidget {
   const WaterTrackerScreen({super.key});
@@ -12,10 +14,27 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
   double goal = 2.5; // daily goal in liters
   String nextReminder = "11:00 AM";
 
+  @override
+  void initState() {
+    super.initState();
+    // ONBOARDING INITIALIZATION
+    final userVM = Provider.of<UserViewModel>(context, listen: false);
+    if (userVM.user?.waterGoal != null) {
+      goal = userVM.user!.waterGoal!;
+    }
+    // EXISTING TRACKER FUNCTIONALITY
+  }
+
   void addWater(double amount) {
     setState(() {
       currentIntake += amount;
       if (currentIntake > goal) currentIntake = goal;
+    });
+  }
+
+  void resetIntake() {
+    setState(() {
+      currentIntake = 0.0;
     });
   }
 
@@ -106,6 +125,10 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                             onPressed: () => addWater(0.25),
                             child: const Text("+ 250 ml"),
                           ),
+                          ElevatedButton(
+                            onPressed: resetIntake,
+                            child: const Text("Reset"),
+                          ),
                         ],
                       ),
                     ],
@@ -167,10 +190,10 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+                child: const Padding(
+                  padding: EdgeInsets.all(16),
                   child: Column(
-                    children: const [
+                    children: [
                       Text(
                         "Motivation",
                         style: TextStyle(

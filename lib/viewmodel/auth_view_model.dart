@@ -21,7 +21,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 🔑 Send OTP
+  //Sending OTP
   Future<void> sendOtp(String phoneNumber) async {
     _setLoading(true);
     try {
@@ -49,7 +49,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // 🔑 Verify OTP
+  //Verifing OTP
   Future<bool> verifyOtp(String smsCode) async {
     if (_verificationId == null) {
       _setError("No verification ID found");

@@ -244,17 +244,19 @@ class OvulationTrackerView extends StatelessWidget {
         return AlertDialog(
           title: Text("Log Sex Drive for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
           content: StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: ['Low', 'Medium', 'High'].map((drive) {
-                return RadioListTile<String>(
-                  title: Text(drive),
-                  value: drive,
-                  groupValue: currentDrive,
-                  activeColor: theme.headerText,
-                  onChanged: (val) => setState(() => currentDrive = val!),
-                );
-              }).toList(),
+            builder: (context, setState) => RadioGroup<String>(
+              groupValue: currentDrive,
+              onChanged: (val) => setState(() => currentDrive = val!),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: ['Low', 'Medium', 'High'].map((drive) {
+                  return RadioListTile<String>(
+                    title: Text(drive),
+                    value: drive,
+                    activeColor: theme.headerText,
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: [
