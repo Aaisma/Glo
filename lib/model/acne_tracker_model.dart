@@ -1,4 +1,5 @@
 class AcneTrackerModel {
+  final String userId;
   final String date;
   final String severity;
   final List<String> checklist;
@@ -7,6 +8,7 @@ class AcneTrackerModel {
   final String imagePath;
 
   AcneTrackerModel({
+    required this.userId,
     required this.date,
     required this.severity,
     required this.checklist,
@@ -17,6 +19,7 @@ class AcneTrackerModel {
 
   Map<String, dynamic> toMap() {
     return {
+      "userId": userId,
       "date": date,
       "severity": severity,
       "checklist": checklist,
@@ -28,6 +31,7 @@ class AcneTrackerModel {
 
   factory AcneTrackerModel.fromMap(String id, Map<String, dynamic> map) {
     return AcneTrackerModel(
+      userId: map["userId"] ?? "",
       date: map["date"] ?? "",
       severity: map["severity"] ?? "Unknown",
       checklist: List<String>.from(map["checklist"] ?? []),
