@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../view/authentication/register_screen.dart';
-import '../view/dashboard_page.dart';
+import '../view/authentication/auth_wrapper.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -22,22 +20,14 @@ class _SplashScreenState extends State<SplashScreen> {
   void _checkLogin() async {
     await Future.delayed(const Duration(seconds: 2)); // splash delay
 
-    final prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
     if (!mounted) return;
 
-    if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const RegisterScreen()),
-      );
-    }
+    // Hand control entirely to AuthWrapper.
+    // AuthWrapper is the single routing authority based on Firebase Auth + Firestore.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AuthWrapper()),
+    );
   }
 
   @override

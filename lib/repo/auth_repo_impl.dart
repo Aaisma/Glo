@@ -18,17 +18,15 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   Future<UserCredential> signInWithGoogle() async {
-    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn.instance;
-    await googleSignIn.initialize();
-    final gsi.GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
+    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn();
+    final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     if (googleUser == null) throw Exception("Google sign in cancelled");
 
-    final gsi.GoogleSignInAuthentication googleAuth = googleUser.authentication;
-    final authz = await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+    final gsi.GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: authz?.accessToken,
+      accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
@@ -50,7 +48,7 @@ class AuthRepoImpl implements AuthRepo {
   @override
   Future<void> signOut() async {
     await _auth.signOut();
-    await gsi.GoogleSignIn.instance.signOut();
+    await gsi.GoogleSignIn().signOut();
     await FacebookAuth.instance.logOut();
   }
 

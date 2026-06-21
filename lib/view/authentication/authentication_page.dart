@@ -67,14 +67,14 @@ class AuthenticationPage extends StatelessWidget {
                       "Log In",
                       const Color(0xFFFA4E6F
                       ),
-                      () => Navigator.pushNamed(context, '/login'),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
                     ),
                     const SizedBox(height: 8),
                     _authButton(
                       context,
                       "Register",
                       const Color(0xFFFA4E6F),
-                      () => Navigator.pushNamed(context, '/register'),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
                     ),
                   ],
                 ),

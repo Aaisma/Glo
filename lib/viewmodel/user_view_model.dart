@@ -68,19 +68,13 @@ class UserViewModel extends ChangeNotifier {
   }
 
   Future<void> finalizeOnboarding({
-    required dynamic authVM,
     required dynamic periodVM,
   }) async {
     setLoading(true);
     try {
-      if (_signupEmail.isEmpty || _signupPassword.isEmpty) {
-        throw Exception("Signup credentials are empty. Please register first.");
-      }
-
-      // 1. createUserAccount()
-      final user = await authVM.signUp(_signupEmail, _signupPassword);
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        throw Exception("Failed to register user account.");
+        throw Exception("No authenticated user found.");
       }
       setUserId(user.uid);
 
@@ -93,8 +87,8 @@ class UserViewModel extends ChangeNotifier {
       // 3. saveSurveyAnswers() & markOnboardingComplete()
       await updateSurvey(
         userId: user.uid,
-        email: _signupEmail,
-        name: _signupName,
+        email: user.email ?? '',
+        name: user.displayName ?? '',
         ageGroup: _surveyData.ageGroup ?? "Not specified",
         skinType: _surveyData.skinType ?? "Not specified",
         goals: _surveyData.goals,
@@ -204,6 +198,24 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccount() async {
+    setLoading(true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await _userRepo.deleteUser(user.uid);
+        await user.delete();
+      }
+      _user = null;
+      _userId = null;
+      await clearOnboardingProgress();
+    } catch (e) {
+      setError(e.toString());
+    } finally {
+      setLoading(false);
+    }
+  }
+
   Future<void> getAllUser() async {
     setLoading(true);
     setError(null);
@@ -281,7 +293,8 @@ class UserViewModel extends ChangeNotifier {
         visitsDerma: visitsDerma,
         lastDermaVisit: lastDermaVisit,
       );
-      await fetchCurrentUser(); // Refresh the user data
+      // Immediately fetch latest profile, which has surveyCompleted = true
+      await fetchCurrentUser();
     } catch (e) {
       setError(e.toString());
       rethrow;

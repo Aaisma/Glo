@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +18,60 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Main Theme Color
   final Color primaryPink = const Color(0xFFFF3E63);
+
+  void loginUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) return;
+
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+
+    final user = await authVM.signInWithEmail(email, password);
+    if (user != null) {
+      await userVM.fetchCurrentUser();
+      if (mounted) {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authVM.error ?? "Login failed")),
+      );
+    }
+  }
+
+  void loginWithGoogle() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    final user = await authVM.signInWithGoogle();
+    if (user != null) {
+      await userVM.createDefaultProfile(); // Validates and creates doc if missing
+      if (mounted) {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
+      );
+    }
+  }
+
+  void loginWithFacebook() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    final user = await authVM.signInWithFacebook();
+    if (user != null) {
+      await userVM.createDefaultProfile(); // Validates and creates doc if missing
+      if (mounted) {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: Colors.black54,
@@ -173,19 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: () {
-                      String email = emailController.text.trim();
-                      String password =
-                      passwordController.text.trim();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Email: $email\nPassword: $password",
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: loginUser,
                     child: const Text(
                       "Login",
                       style: TextStyle(
@@ -268,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 socialButton(
                   icon: Icons.g_mobiledata,
                   text: "Login with Google",
-                  onTap: () {},
+                  onTap: loginWithGoogle,
                 ),
 
                 const SizedBox(height: 14),
@@ -277,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 socialButton(
                   icon: Icons.facebook,
                   text: "Login with Facebook",
-                  onTap: () {},
+                  onTap: loginWithFacebook,
                 ),
 
                 const SizedBox(height: 30),

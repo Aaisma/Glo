@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gloclone/viewmodel/community_view_model.dart';
 import 'package:gloclone/repo/community_repo.dart';
 import 'package:gloclone/model/community_models.dart';
+import 'package:gloclone/model/shared_models.dart';
 
 // Create a simple mock repository for testing
 class MockCommunityRepo implements CommunityRepo {

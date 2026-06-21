@@ -9,6 +9,8 @@ class UserModel {
   final String? skinType;
   final List<String>? goals;
   final bool surveyCompleted;
+  final bool profileCompleted;
+  final String role;
 
   // Survey fields
   final int? actualAge;
@@ -33,6 +35,8 @@ class UserModel {
     this.skinType,
     this.goals,
     this.surveyCompleted = false,
+    this.profileCompleted = false,
+    this.role = 'user',
     this.actualAge,
     this.bmi,
     this.waterGoal,
@@ -57,6 +61,8 @@ class UserModel {
       'skinType': skinType,
       'goals': goals,
       'surveyCompleted': surveyCompleted,
+      'profileCompleted': profileCompleted,
+      'role': role,
       'actualAge': actualAge,
       'bmi': bmi,
       'waterGoal': waterGoal,
@@ -84,6 +90,8 @@ class UserModel {
           ? List<String>.from(map['goals']).where((e) => e != 'N/A').toList()
           : null,
       surveyCompleted: map['surveyCompleted'] as bool? ?? false,
+      profileCompleted: map['profileCompleted'] as bool? ?? false,
+      role: map['role'] as String? ?? 'user',
       actualAge: (map['actualAge'] is int) ? map['actualAge'] : null,
       bmi: (map['bmi'] is num) ? (map['bmi'] as num).toDouble() : null,
       waterGoal: (map['waterGoal'] is num) ? (map['waterGoal'] as num).toDouble() : null,
@@ -114,6 +122,8 @@ class UserModel {
     String? skinType,
     List<String>? goals,
     bool? surveyCompleted,
+    bool? profileCompleted,
+    String? role,
     int? actualAge,
     double? bmi,
     double? waterGoal,
@@ -136,6 +146,8 @@ class UserModel {
       skinType: skinType ?? this.skinType,
       goals: goals ?? this.goals,
       surveyCompleted: surveyCompleted ?? this.surveyCompleted,
+      profileCompleted: profileCompleted ?? this.profileCompleted,
+      role: role ?? this.role,
       actualAge: actualAge ?? this.actualAge,
       bmi: bmi ?? this.bmi,
       waterGoal: waterGoal ?? this.waterGoal,
