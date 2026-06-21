@@ -17,13 +17,13 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
   void initState() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ModerationQueueViewModel>().loadQueue();
+      context.read<InsightsModerationQueueViewModel>().loadQueue();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<ModerationQueueViewModel>();
+    final viewModel = context.watch<InsightsModerationQueueViewModel>();
     final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
@@ -80,7 +80,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
     );
   }
 
-  Widget _buildModerationTabs(ModerationQueueViewModel viewModel, Color accent) {
+  Widget _buildModerationTabs(InsightsModerationQueueViewModel viewModel, Color accent) {
     return Container(
       height: 48,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -95,7 +95,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
     );
   }
 
-  Widget _buildTabChip(String label, int count, ModerationQueueViewModel vm) {
+  Widget _buildTabChip(String label, int count, InsightsModerationQueueViewModel vm) {
     final isSelected = vm.selectedTab == label;
     final accent = const Color(0xFFFF3E63);
 
@@ -121,13 +121,13 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
     );
   }
 
-  Widget _buildQueueCard(BuildContext context, ModerationItem item, ModerationQueueViewModel vm) {
+  Widget _buildQueueCard(BuildContext context, ModerationItem item, InsightsModerationQueueViewModel vm) {
     final formattedDate = DateFormat('MMM dd, hh:mm a').format(item.reportedAt);
 
     Color typeColor = Colors.grey;
-    if (item.contentType == ContentType.article) typeColor = Colors.pink;
-    if (item.contentType == ContentType.discussion) typeColor = Colors.deepPurple;
-    if (item.contentType == ContentType.poll) typeColor = Colors.blue;
+    if (item.contentType == ModerationContentType.article) typeColor = Colors.pink;
+    if (item.contentType == ModerationContentType.discussion) typeColor = Colors.deepPurple;
+    if (item.contentType == ModerationContentType.poll) typeColor = Colors.blue;
 
     final primaryCountText = vm.selectedTab == 'Reported'
         ? "${item.reportsCount} Reports"
@@ -141,7 +141,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha:0.01),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -156,7 +156,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: typeColor.withOpacity(0.1),
+                  color: typeColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -260,7 +260,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
     );
   }
 
-  Widget _buildPaginationBar(ModerationQueueViewModel viewModel, Color activeColor) {
+  Widget _buildPaginationBar(InsightsModerationQueueViewModel viewModel, Color activeColor) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(

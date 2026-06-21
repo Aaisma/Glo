@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../repo/auth_repo.dart';
-import '../repo/user_repo.dart';
-import '../model/user_model.dart';
-import 'package:provider/provider.dart';
-import 'user_view_model.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepo _authRepo;
@@ -57,68 +54,120 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> signInWithGoogle(BuildContext context) async {
+  // Email Sign Up
+  Future<User?> signUpWithEmail(String email, String password) async {
     _setLoading(true);
     try {
-      final credential = await _authRepo.signInWithGoogle();
-      _user = credential.user;
-      notifyListeners();
-      if (context.mounted) {
-        await checkUserProfile(context, _user!.uid);
-      }
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      _setError(null);
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      _setError(e.message);
+      return null;
     } catch (e) {
-      rethrow;
+      _setError(e.toString());
+      return null;
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> signInWithFacebook(BuildContext context) async {
+  // Email Sign In
+  Future<User?> signInWithEmail(String email, String password) async {
     _setLoading(true);
     try {
-      final credential = await _authRepo.signInWithFacebook();
-      _user = credential.user;
-      notifyListeners();
-      if (context.mounted) {
-        await checkUserProfile(context, _user!.uid);
-      }
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      _setError(null);
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      _setError(e.message);
+      return null;
     } catch (e) {
-      rethrow;
+      _setError(e.toString());
+      return null;
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> checkUserProfile(BuildContext context, String uid) async {
+  // Google Sign In
+  Future<User?> signInWithGoogle() async {
+    _setLoading(true);
     try {
-      final userProfile = await _userRepo.getUserByID(uid);
-      if (context.mounted) {
-        final userVM = context.read<UserViewModel>();
-        userVM.setUserId(uid);
-        if (userProfile != null) {
-          await userVM.fetchCurrentUser();
-        }
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        _setLoading(false);
+        return null; // The user canceled the sign-in
+      }
 
-        if (context.mounted) {
-          if (userProfile == null) {
-            Navigator.pushReplacementNamed(context, '/survey');
-          } else if (userProfile.surveyCompleted == true) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          } else {
-            Navigator.pushReplacementNamed(context, '/dashboard'); // surveyCompleted == false (skip case)
-          }
-        }
-      }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      _setError(null);
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      _setError(e.message);
+      return null;
     } catch (e) {
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, '/survey');
-      }
+      _setError(e.toString());
+      return null;
+    } finally {
+      _setLoading(false);
     }
   }
 
+  // Facebook Sign In
+  Future<User?> signInWithFacebook() async {
+    _setLoading(true);
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      
+      if (result.status == LoginStatus.success) {
+        final AccessToken accessToken = result.accessToken!;
+        final AuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
+        final UserCredential userCredential = await _auth.signInWithCredential(credential);
+        _setError(null);
+        return userCredential.user;
+      } else {
+        _setError(result.message);
+        return null;
+      }
+    } on FirebaseAuthException catch (e) {
+      _setError(e.message);
+      return null;
+    } catch (e) {
+      _setError(e.toString());
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Sign Out
   Future<void> signOut() async {
-    await _authRepo.signOut();
-    _user = null;
-    notifyListeners();
+    _setLoading(true);
+    try {
+      await Future.wait([
+        _auth.signOut(),
+        GoogleSignIn().signOut(),
+        FacebookAuth.instance.logOut(),
+      ]);
+      _setError(null);
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
   }
 }

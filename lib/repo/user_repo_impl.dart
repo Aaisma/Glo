@@ -4,35 +4,42 @@ import '../model/user_model.dart';
 import 'user_repo.dart';
 
 class UserRepoImpl implements UserRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  @override
-  Future<void> createDefaultProfile(User user) {
-    return _firestore.collection("users").doc(user.uid).set({
-      'id': user.uid,
-      'email': user.email,
-      'name': user.displayName ?? '',
-      'surveyCompleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
+  final auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
 
   @override
   Future<void> addUser(UserModel userModel) {
-    return _firestore
+    return firestore
         .collection("users")
         .doc(userModel.id)
         .set(userModel.toMap());
   }
 
   @override
+  Future<void> createDefaultProfile(User user) async {
+    final docRef = firestore.collection("users").doc(user.uid);
+    final doc = await docRef.get();
+    if (!doc.exists) {
+      final newUser = UserModel(
+        id: user.uid,
+        email: user.email,
+        name: user.displayName ?? '',
+        role: 'user',
+        surveyCompleted: false,
+        profileCompleted: false,
+      );
+      await docRef.set(newUser.toMap());
+    }
+  }
+
+  @override
   Future<void> deleteUser(String id) {
-    return _firestore.collection("users").doc(id).delete();
+    return firestore.collection("users").doc(id).delete();
   }
 
   @override
   Future<void> editProfile(UserModel userModel) {
-    return _firestore
+    return firestore
         .collection("users")
         .doc(userModel.id)
         .update(userModel.toMap());
@@ -40,13 +47,13 @@ class UserRepoImpl implements UserRepo {
 
   @override
   Future<List<UserModel>> getAllUser() async {
-    final users = await _firestore.collection("users").get();
-    return users.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    final users = await firestore.collection("users").get();
+    return users.docs.map((doc) => UserModel.fromMap(doc.data(), doc.id)).toList();
   }
 
   @override
   Future<UserModel?> getUserByID(String id) async {
-    final doc = await _firestore.collection("users").doc(id).get();
+    final doc = await firestore.collection("users").doc(id).get();
     if (!doc.exists || doc.data() == null) {
       return null;
     }
@@ -72,7 +79,7 @@ class UserRepoImpl implements UserRepo {
     bool? visitsDerma,
     DateTime? lastDermaVisit,
   }) {
-    return _firestore.collection("users").doc(userId).set({
+    return firestore.collection("users").doc(userId).set({
       'id': userId,
       'email': email,
       'name': name == null || name.isEmpty ? 'N/A' : name,

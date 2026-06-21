@@ -2,12 +2,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
 import 'view/glo_splash_screen.dart';
-import 'view/navigation_icon/dashboard_page.dart';
-import 'view/survey_page.dart';
+import 'view/authentication/auth_wrapper.dart';
 import 'view/authentication/authentication_page.dart';
+import 'view/authentication/login_screen.dart';
+import 'view/authentication/register_screen.dart';
+import 'view/survey_page.dart';
+import 'view/navigation_icon/glo_profile.dart';
+import 'view/dashboard_page.dart';
+import 'view/admin/admin_dashboard_page.dart';
 
 // Repos
 import 'repo/user_repo_impl.dart';
@@ -18,6 +24,7 @@ import 'repo/insights_repo_impl.dart';
 import 'repo/community_repo_impl.dart';
 import 'repo/insights_moderation_repo_impl.dart';
 import 'repo/community_moderation_repo_impl.dart';
+import 'repo/acne_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_view_model.dart';
@@ -27,6 +34,8 @@ import 'viewmodel/ovulation_view_model.dart';
 import 'viewmodel/insight_view_model.dart';
 import 'viewmodel/community_view_model.dart';
 import 'viewmodel/moderation_view_model.dart';
+import 'viewmodel/tracker_navigation_view_model.dart';
+import 'viewmodel/acne_tracker_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,11 +64,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Pre-existing ViewModels
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
-        ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
         ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
+        ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
+        ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
 
         // Insights Module ViewModels
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
@@ -86,11 +96,19 @@ class MyApp extends StatelessWidget {
         title: 'Glo Project',
         theme: ThemeData(
           primarySwatch: Colors.pink,
+          scaffoldBackgroundColor: Colors.white,
         ),
-        home: const AuthGate(),
+        home: const SplashScreen(),
         routes: {
-          '/dashboard': (context) => const DashboardScreen(),
+          '/splash': (context) => const SplashScreen(),
+          '/authWrapper': (context) => const AuthWrapper(),
+          '/authentication': (context) => const AuthenticationPage(),
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
           '/survey': (context) => const SurveyPage(),
+          '/gloProfile': (context) => const GloProfileScreen(),
+          '/dashboard': (context) => const DashboardScreen(),
+          '/adminDashboard': (context) => const AdminDashboardPage(),
         },
       ),
     );

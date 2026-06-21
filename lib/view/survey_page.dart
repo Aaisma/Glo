@@ -149,7 +149,6 @@ class _SurveyPageState extends State<SurveyPage> {
 
   Future<void> _finalizeRegistration() async {
     final userVM = Provider.of<UserViewModel>(context, listen: false);
-    final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final periodVM = Provider.of<PeriodViewModel>(context, listen: false);
 
     try {
@@ -161,11 +160,10 @@ class _SurveyPageState extends State<SurveyPage> {
         ),
       );
 
-      await userVM.finalizeOnboarding(authVM: authVM, periodVM: periodVM);
+      await userVM.finalizeOnboarding(periodVM: periodVM);
 
       if (mounted) {
         Navigator.pop(context); // Pop loading
-        Navigator.of(context).pushReplacementNamed('/dashboard');
       }
     } catch (e) {
       if (mounted) {

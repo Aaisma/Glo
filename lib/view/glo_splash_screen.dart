@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../viewmodel/user_view_model.dart';
-import '../viewmodel/auth_view_model.dart';
-import 'authentication/login_screen.dart';
-import 'navigation_icon/dashboard_page.dart';
+import '../view/authentication/auth_wrapper.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,19 +16,17 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkAuth();
   }
 
-  Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
+  void _checkLogin() async {
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
+
     if (!mounted) return;
-    
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final authVM = context.read<AuthViewModel>();
-      await authVM.checkUserProfile(context, user.uid);
-    } else {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    }
+
+    // Hand control entirely to AuthWrapper.
+    // AuthWrapper is the single routing authority based on Firebase Auth + Firestore.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AuthWrapper()),
+    );
   }
 
   @override

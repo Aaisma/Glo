@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import '../authentication/register.dart';
-import '../authentication/login_screen.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/image_viewmodel.dart';
+import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/auth_view_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'profile_pages/personal_info_page.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -11,9 +16,19 @@ class GloProfileScreen extends StatefulWidget {
 
 class _GloProfileScreenState extends State<GloProfileScreen> {
   void _onItemTap(String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("$title clicked")),
-    );
+    if (title == "Personal Information") {
+      // Route to PersonalInformationPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PersonalInformationPage()),
+      );
+    } else if (title == "Delete Account") {
+      _deleteAccount();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("$title clicked")),
+      );
+    }
   }
 
   void _logout() {
@@ -28,11 +43,18 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Logged out")),
-              );
+              final authVM = context.read<AuthViewModel>();
+              final userVM = context.read<UserViewModel>();
+              await authVM.signOut();
+              userVM.setError(null); // Optional clear
+              if (mounted) {
+                // AuthWrapper will handle navigation automatically
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Logged out")),
+                );
+              }
             },
             child: const Text("Logout"),
           ),
@@ -40,6 +62,52 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       ),
     );
   }
+
+  void _deleteAccount() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Delete Account"),
+        content: const Text("Are you sure you want to delete your account? This action cannot be undone."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              final userVM = context.read<UserViewModel>();
+              await userVM.deleteAccount();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Account deleted")),
+                );
+              }
+            },
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context); // capture before await
+    final vm = Provider.of<ImageViewModel>(context, listen: false);
+
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      await vm.updateProfileImage("user123", image.path);
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Profile image updated")),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +234,9 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 _menuItem(Icons.flag, "My Goal"),
                 _menuItem(Icons.help, "Help & Support"),
                 _menuItem(Icons.info, "About Us"),
+                _menuItem(Icons.delete_forever, "Delete Account"),
 
                 const SizedBox(height: 20),
-
                 // LOGOUT
                 GestureDetector(
                   onTap: _logout,

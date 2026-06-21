@@ -176,7 +176,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreateDiscussionView()),
+                    MaterialPageRoute(builder: (_) => CreateDiscussionView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
@@ -193,7 +193,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreatePollView()),
+                    MaterialPageRoute(builder: (_) => CreatePollView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
