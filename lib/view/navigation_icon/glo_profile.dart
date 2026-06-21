@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../authentication/register.dart';
-import '../authentication/login_screen.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/image_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -40,6 +41,22 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       ),
     );
   }
+
+  Future<void> _pickImage(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context); // capture before await
+    final vm = Provider.of<ImageViewModel>(context, listen: false);
+
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      await vm.updateProfileImage("user123", image.path);
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Profile image updated")),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -93,11 +110,27 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 25,
-                            backgroundImage: NetworkImage(
-                              "https://i.pravatar.cc/150?img=47",
-                            ),
+                          Consumer<ImageViewModel>(
+                            builder: (context, vm, child) {
+                              return Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 25,
+                                    backgroundImage: vm.currentImage != null
+                                        ? NetworkImage(vm.currentImage!.url)
+                                        : const NetworkImage("https://i.pravatar.cc/150?img=47"),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.camera_alt, color: Colors.pink),
+                                      onPressed: () => _pickImage(context),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
