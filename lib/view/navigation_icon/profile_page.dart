@@ -4,7 +4,7 @@ import '../../viewmodel/user_view_model.dart';
 import '../../model/user_model.dart';
 
 import '../authentication/login_screen.dart';
-import '../authentication/register.dart';
+import '../authentication/register_screen.dart';
 import '../authentication/logout.dart';
 
 import '../components/top_navigation.dart';

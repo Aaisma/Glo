@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '../../../view/components/dashboard_card.dart';
-import '../../../view/components/top_navigation.dart';
-import '../../../view/components/bottom_navigation.dart';
+import '../../view/components/dashboard_card.dart';
+import '../../view/components/top_navigation.dart';
+import '../../view/components/bottom_navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/period_view_model.dart';
+import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
-import 'glo_profile.dart';
-import 'insight_page.dart';
-import 'history_page.dart';
+import 'navigation_icon/glo_profile.dart';
+import 'navigation_icon/insight_page.dart';
+import 'navigation_icon/history_page.dart';
 
 // Wellness pages
-import '../../../view/dashboard_card/log_symptoms_page.dart';
-import '../dashboard_card/ovulation_period_page.dart';
+import '../../view/dashboard_card/log_symptoms_page.dart';
+import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
-import '../../../view/cards/daily_journal_page.dart';
+import '../../view/cards/daily_journal_page.dart';
 import 'package:gloclone/view/water_tracker.dart';
-import '../../../view/medication_screen.dart';
-import '../../view/acne_tracker.dart';
-import '../../../view/cards/skin_derma_page.dart';
-import '../../../view/cards/sleep_stress_page.dart';
+import '../../view/medication_screen.dart';
+import 'acne_tracker.dart';
+import '../../view/cards/skin_derma_page.dart';
+import '../../view/cards/sleep_stress_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -38,7 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DashboardHome(),
     const InsightsPage(),
     const HistoryPage(),
-    const ProfilePage(),
+    const GloProfileScreen(),
   ];
 
   void _onNavTap(int index) {

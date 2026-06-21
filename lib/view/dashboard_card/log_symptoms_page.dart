@@ -7,7 +7,7 @@ import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';
 import '../../viewmodel/log_symptoms_view_model.dart';
 import 'tracker_components/symptom_card.dart';
-import '../navigation_icon/dashboard_page.dart';
+import '../dashboard_page.dart';
 
 const List<SymptomOption> sexualActivityOptions = [
   SymptomOption("No Sex", Icons.block),

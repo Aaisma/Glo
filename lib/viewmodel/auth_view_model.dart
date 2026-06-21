@@ -9,6 +9,7 @@ class AuthViewModel extends ChangeNotifier {
   String? _error;
 
   bool get loading => _loading;
+
   String? get error => _error;
 
   void _setLoading(bool value) {
@@ -49,7 +50,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  //Verifing OTP
+  //Verifying OTP
   Future<bool> verifyOtp(String smsCode) async {
     if (_verificationId == null) {
       _setError("No verification ID found");

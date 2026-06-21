@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../register.dart';
+import '../view/authentication/register_screen.dart';
+import '../view/dashboard_page.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -29,12 +30,12 @@ class _SplashScreenState extends State<SplashScreen> {
     if (isLoggedIn) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Dashboard()),
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Register()),
+        MaterialPageRoute(builder: (context) => const RegisterScreen()),
       );
     }
   }
