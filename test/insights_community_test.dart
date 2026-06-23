@@ -106,6 +106,27 @@ class MockCommunityRepo implements CommunityRepo {
   Future<void> addDiscussionView(String id) async {}
   @override
   Future<void> addPollView(String id) async {}
+
+  @override
+  Future<List<String>> getHiddenContentIds() async => [];
+
+  @override
+  Future<bool> isDiscussionLiked(String id) async => false;
+
+  @override
+  Future<void> hideDiscussion(String id) async {}
+
+  @override
+  Future<void> toggleSaveDiscussion(String id) async {}
+
+  @override
+  Future<List<Discussion>> getSavedDiscussions() async => [];
+
+  @override
+  Future<void> toggleSavePoll(String id) async {}
+
+  @override
+  Future<List<CommunityPoll>> getSavedPolls() async => [];
 }
 
 void main() {

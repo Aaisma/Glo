@@ -17,4 +17,6 @@ abstract class InsightsRepo {
   Future<List<Insight>> getAllAdminInsights();
   Future<void> addView(String id);
   Future<void> likeInsight(String id);
+  Future<bool> isInsightLiked(String id);
+  Future<void> hideInsight(String id);
 }

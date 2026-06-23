@@ -41,6 +41,16 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Color(0xFF332B2C)),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Color(0xFF332B2C)),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -53,10 +63,11 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
+                        backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
                       ),
                       onPressed: () {
                         Navigator.push(
@@ -70,13 +81,12 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF0E6FF),
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.deepPurple,
+                        side: BorderSide(color: Colors.deepPurple.shade200),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 0,
                       ),
                       onPressed: () {
                         Navigator.push(
@@ -84,7 +94,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                           MaterialPageRoute(builder: (_) => const CreatePollView()),
                         ).then((_) => viewModel.loadInsights());
                       },
-                      icon: const Icon(Icons.poll_outlined, size: 20),
+                      icon: const Icon(Icons.add, size: 20),
                       label: const Text("Create Poll", style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
@@ -95,15 +105,31 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             // Tab bar
             _buildLibraryTabs(viewModel),
 
+            // Table Headers
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              child: Row(
+                children: const [
+                  SizedBox(width: 60, child: Text("Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                  Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                  Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                  Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                  SizedBox(width: 40, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
             // Table / Rows
             Expanded(
               child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
+                  ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
                   : viewModel.insights.isEmpty
                       ? const Center(child: Text("No articles found in this section 🌸", style: TextStyle(color: Colors.grey)))
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                           itemCount: viewModel.insights.length,
+                          separatorBuilder: (_, __) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
                           itemBuilder: (context, index) {
                             final insight = viewModel.insights[index];
                             return _buildInsightRow(context, insight, viewModel);
@@ -112,7 +138,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             ),
 
             // Pagination Controls
-            _buildPaginationBar(viewModel, pinkTheme),
+            _buildPaginationBar(viewModel, Colors.deepPurple),
           ],
         ),
       ),
@@ -146,13 +172,13 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
               ),
               selected: isSelected,
               onSelected: (val) => viewModel.setTab(tab),
-              selectedColor: const Color(0xFFFF3E63),
+              selectedColor: Colors.deepPurple,
               backgroundColor: Colors.white,
-              elevation: 1,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
+                  color: isSelected ? Colors.deepPurple : Colors.grey.shade300,
                 ),
               ),
             ),
@@ -174,88 +200,82 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
     if (insight.status == InsightStatus.archived) statusColor = Colors.red;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Status Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              insight.status.name.toUpperCase(),
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+          SizedBox(
+            width: 60,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  insight.status.name.substring(0, 1).toUpperCase() + insight.status.name.substring(1),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-
-          // Title & Info
+          
+          // Title
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  insight.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "${insight.category} • $formattedDate",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(
+                insight.title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF332B2C)),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
-          const SizedBox(width: 12),
 
-          // Action Icons
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.copy, color: Colors.grey, size: 20),
-                onPressed: () async {
-                  await vm.duplicateInsight(insight.id);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Draft duplicated! 🌸")),
-                    );
-                  }
+          // Category
+          Expanded(
+            flex: 2,
+            child: Text(
+              insight.category,
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // Date
+          Expanded(
+            flex: 2,
+            child: Text(
+              insight.status == InsightStatus.draft ? "--" : formattedDate,
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ),
+
+          // Actions
+          SizedBox(
+            width: 40,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.more_horiz, color: Colors.grey, size: 18),
+                onPressed: () {
+                  // Show modal bottom sheet with actions like in mockup if needed,
+                  // or just keep it as a menu button.
                 },
               ),
-              if (insight.status != InsightStatus.archived)
-                IconButton(
-                  icon: const Icon(Icons.archive_outlined, color: Colors.grey, size: 20),
-                  onPressed: () async {
-                    await vm.archiveInsight(insight.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Article archived! 🌸")),
-                      );
-                    }
-                  },
-                ),
-            ],
+            ),
           ),
         ],
       ),
@@ -268,18 +288,29 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Expanded(
+            child: Text(
+              "Showing 1-${viewModel.insights.length} of ${viewModel.insights.length}", // Mocking total as current for visual parity
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ),
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 14),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.chevron_left, size: 18, color: Colors.grey),
             onPressed: viewModel.currentPage > 1 ? viewModel.prevPage : null,
           ),
-          const SizedBox(width: 12),
-          Text(
-            "Page ${viewModel.currentPage}",
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-          ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+          const Text("1", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple, fontSize: 12)),
+          const SizedBox(width: 8),
+          const Text("2", style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(width: 8),
+          const Text("3", style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.arrow_forward_ios, size: 14),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
             onPressed: viewModel.hasMore ? viewModel.nextPage : null,
           ),
         ],

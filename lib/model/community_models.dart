@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'shared_models.dart';
 
 enum ModerationReason { spam, misinformation, harassment, inappropriateContent, other }
@@ -119,10 +120,10 @@ class Discussion {
       'repliesCount': repliesCount,
       'reportsCount': reportsCount,
       'hiddenCount': hiddenCount,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt,
       'replies': replies.map((x) => x.toMap()).toList(),
       'isDeleted': isDeleted,
-      'deletedAt': deletedAt?.toIso8601String(),
+      'deletedAt': deletedAt,
     };
   }
 
@@ -139,12 +140,16 @@ class Discussion {
       repliesCount: map['repliesCount'] ?? 0,
       reportsCount: map['reportsCount'] ?? 0,
       hiddenCount: map['hiddenCount'] ?? 0,
-      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       replies: List<DiscussionReply>.from(
         (map['replies'] ?? []).map((x) => DiscussionReply.fromMap(x)),
       ),
       isDeleted: map['isDeleted'] ?? false,
-      deletedAt: map['deletedAt'] != null ? DateTime.parse(map['deletedAt']) : null,
+      deletedAt: map['deletedAt'] != null 
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          : null,
     );
   }
 }
@@ -199,9 +204,9 @@ class DiscussionReply {
       'username': username,
       'content': content,
       'likes': likes,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt,
       'isDeleted': isDeleted,
-      'deletedAt': deletedAt?.toIso8601String(),
+      'deletedAt': deletedAt,
     };
   }
 
@@ -212,9 +217,13 @@ class DiscussionReply {
       username: map['username'] ?? '',
       content: map['content'] ?? '',
       likes: map['likes'] ?? 0,
-      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       isDeleted: map['isDeleted'] ?? false,
-      deletedAt: map['deletedAt'] != null ? DateTime.parse(map['deletedAt']) : null,
+      deletedAt: map['deletedAt'] != null 
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          : null,
     );
   }
 }
@@ -297,11 +306,11 @@ class CommunityPoll {
       'shares': shares,
       'reportsCount': reportsCount,
       'hiddenCount': hiddenCount,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt,
       'createdBy': createdBy,
       'userVotedOption': userVotedOption,
       'isDeleted': isDeleted,
-      'deletedAt': deletedAt?.toIso8601String(),
+      'deletedAt': deletedAt,
     };
   }
 
@@ -316,11 +325,15 @@ class CommunityPoll {
       shares: map['shares'] ?? 0,
       reportsCount: map['reportsCount'] ?? 0,
       hiddenCount: map['hiddenCount'] ?? 0,
-      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       createdBy: map['createdBy'] ?? '',
       userVotedOption: map['userVotedOption'],
       isDeleted: map['isDeleted'] ?? false,
-      deletedAt: map['deletedAt'] != null ? DateTime.parse(map['deletedAt']) : null,
+      deletedAt: map['deletedAt'] != null 
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          : null,
     );
   }
 }
@@ -395,7 +408,7 @@ class ModerationItem {
       'reasons': reasons.map((x) => x.name).toList(),
       'reportsCount': reportsCount,
       'hiddenCount': hiddenCount,
-      'reportedAt': reportedAt.toIso8601String(),
+      'reportedAt': reportedAt,
       'isArchived': isArchived,
       'isDeleted': isDeleted,
     };
@@ -419,7 +432,9 @@ class ModerationItem {
       ),
       reportsCount: map['reportsCount'] ?? 0,
       hiddenCount: map['hiddenCount'] ?? 0,
-      reportedAt: DateTime.parse(map['reportedAt'] ?? DateTime.now().toIso8601String()),
+      reportedAt: map['reportedAt'] is Timestamp 
+          ? (map['reportedAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['reportedAt'] ?? DateTime.now().toIso8601String()),
       isArchived: map['isArchived'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
     );

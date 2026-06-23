@@ -220,7 +220,6 @@ class _PollDetailViewState extends State<PollDetailView> {
               ),
               const SizedBox(height: 24),
 
-              // Options
               ..._poll!.options.keys.map((option) {
                 final votes = _poll!.options[option] ?? 0;
                 final double percent = _poll!.totalVotes > 0 ? (votes / _poll!.totalVotes) : 0;
@@ -248,8 +247,8 @@ class _PollDetailViewState extends State<PollDetailView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? pinkTheme.withOpacity(0.3)
-                                    : Colors.pink.shade50.withOpacity(0.5),
+                                    ? pinkTheme.withValues(alpha: 0.3)
+                                    : Colors.pink.shade50.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
@@ -288,7 +287,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
 
               const SizedBox(height: 16),
 
@@ -300,7 +299,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF6F8),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: pinkTheme.withOpacity(0.5)),
+                    border: Border.all(color: pinkTheme.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [
@@ -340,7 +339,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.01),
+                            color: Colors.black.withValues(alpha: 0.01),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),

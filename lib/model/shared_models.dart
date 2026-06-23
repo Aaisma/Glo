@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum ContentType { article, poll, discussion }
 
@@ -53,7 +54,7 @@ class FavoriteItem {
       'id': id,
       'contentId': contentId,
       'type': type.name,
-      'savedAt': savedAt.toIso8601String(),
+      'savedAt': savedAt,
     };
   }
 
@@ -65,7 +66,9 @@ class FavoriteItem {
         (e) => e.name == map['type'],
         orElse: () => FavoriteType.article,
       ),
-      savedAt: DateTime.parse(map['savedAt'] ?? DateTime.now().toIso8601String()),
+      savedAt: map['savedAt'] is Timestamp 
+          ? (map['savedAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['savedAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 }
@@ -95,7 +98,7 @@ class DraftItem {
       'id': id,
       'type': type.name,
       'content': content,
-      'updatedAt': updatedAt.toIso8601String(),
+      'updatedAt': updatedAt,
     };
   }
 
@@ -107,7 +110,9 @@ class DraftItem {
         orElse: () => DraftType.insightArticle,
       ),
       content: Map<String, dynamic>.from(map['content'] ?? {}),
-      updatedAt: DateTime.parse(map['updatedAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: map['updatedAt'] is Timestamp 
+          ? (map['updatedAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 }
