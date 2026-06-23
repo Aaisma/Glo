@@ -50,7 +50,7 @@ flutter:
     - assets/images/
     - assets/videos/
     - assets/animations/
-    - assets/ml/model.tflite
+    - assets/ml/model_unquant.tflite
     - assets/ml/labels.txt
     - assets/images/background.png
     - assets/images/whiteheads.png

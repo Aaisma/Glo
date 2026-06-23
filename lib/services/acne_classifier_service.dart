@@ -9,7 +9,7 @@ class AcneClassifierService {
   static const int inputSize = 224;
 
   Future<void> loadModel() async {
-    _interpreter = await Interpreter.fromAsset('assets/ml/model.tflite');
+    _interpreter = await Interpreter.fromAsset('assets/ml/model_unquant.tflite');
     final labelsData = await rootBundle.loadString('assets/ml/labels.txt');
     _labels = labelsData
         .split('\n')

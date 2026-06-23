@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../viewmodel/user_view_model.dart';
 import '../viewmodel/acne_tracker_viewmodel.dart';
+import '../app_colors.dart';
 
 class AcneTrackerPage extends StatefulWidget {
   const AcneTrackerPage({super.key});
@@ -29,9 +30,11 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
   @override
   void initState() {
     super.initState();
-    userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user"; // fallback only if no one's signed in
-    final vm = context.read<AcneTrackerViewModel>();
-    vm.loadToday(userId).then((_) {
+    userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
+    Future.microtask(() async {
+      final vm = context.read<AcneTrackerViewModel>();
+      await vm.initClassifier();
+      await vm.loadToday(userId);
       _noteController.text = vm.note;
     });
   }
@@ -73,6 +76,37 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
     );
   }
 
+  List<Widget> _scannerCorners() {
+    const double size = 24;
+    const double thickness = 3;
+    BoxDecoration corner(bool top, bool left) => BoxDecoration(
+      border: Border(
+        top: top ? BorderSide(color: AppColors.pink, width: thickness) : BorderSide.none,
+        bottom: !top ? BorderSide(color: AppColors.pink, width: thickness) : BorderSide.none,
+        left: left ? BorderSide(color: AppColors.pink, width: thickness) : BorderSide.none,
+        right: !left ? BorderSide(color: AppColors.pink, width: thickness) : BorderSide.none,
+      ),
+    );
+
+    return [
+      Positioned(top: 10, left: 10, child: Container(width: size, height: size, decoration: corner(true, true))),
+      Positioned(top: 10, right: 10, child: Container(width: size, height: size, decoration: corner(true, false))),
+      Positioned(bottom: 10, left: 10, child: Container(width: size, height: size, decoration: corner(false, true))),
+      Positioned(bottom: 10, right: 10, child: Container(width: size, height: size, decoration: corner(false, false))),
+    ];
+  }
+
+  Widget _statusRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.purple),
+        const SizedBox(width: 8),
+        Text("$label: ", style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.text)),
+        Expanded(child: Text(value, style: TextStyle(color: AppColors.grey))),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<AcneTrackerViewModel>();
@@ -83,9 +117,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
         backgroundColor: Colors.pinkAccent,
         centerTitle: true,
       ),
-      body: vm.isLoading && vm.severity == "Unknown" && vm.imagePath.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : Container(
+      body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/images/background.png"),
@@ -97,7 +129,78 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Current Skin & Acne Status (from survey/onboarding data)
+              // Skin scanner
+              GestureDetector(
+                onTap: vm.isLoading ? null : _showImageSourceSheet,
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 260,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.lightPink,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: vm.imagePath.isNotEmpty
+                          ? Image.network(vm.imagePath, fit: BoxFit.cover, width: double.infinity)
+                          : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.face_retouching_natural, size: 48, color: AppColors.pink),
+                            const SizedBox(height: 10),
+                            Text(
+                              vm.isLoading ? "Scanning your skin..." : "Tap to scan your skin",
+                              style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (vm.isLoading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ..._scannerCorners(),
+                    if (vm.imagePath.isNotEmpty && !vm.isLoading)
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: ElevatedButton.icon(
+                          onPressed: _showImageSourceSheet,
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text("Retake"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.pink,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              if (vm.detectedType != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    "Detected: ${vm.detectedType} (${(vm.detectedConfidence! * 100).toStringAsFixed(0)}% confidence)",
+                    style: TextStyle(color: AppColors.pink, fontWeight: FontWeight.w600),
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              // Current Skin & Acne Status
               Consumer<UserViewModel>(
                 builder: (context, userVM, child) {
                   final user = userVM.user;
@@ -109,65 +212,41 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
                   final medicationType = user?.medicationType ?? "None";
                   final medicationTime = user?.medicationTime ?? "None";
 
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardPink,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.borderPink),
                     ),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Current Skin & Acne Status",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.pinkAccent,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text("Skin Type: $skinType", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 8),
-                          Text("Acne Concerns: $acneConcerns", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Treatment: ${usesMedication ? '$medicationType ($medicationTime)' : 'None'}",
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Current Skin & Acne Status",
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.pink),
+                        ),
+                        const SizedBox(height: 14),
+                        _statusRow(Icons.face_outlined, "Skin Type", skinType),
+                        const SizedBox(height: 10),
+                        _statusRow(Icons.healing_outlined, "Acne Concerns", acneConcerns),
+                        const SizedBox(height: 10),
+                        _statusRow(
+                          Icons.medication_outlined,
+                          "Treatment",
+                          usesMedication ? "$medicationType ($medicationTime)" : "None",
+                        ),
+                      ],
                     ),
                   );
                 },
-              ),
-              const SizedBox(height: 20),
-
-              // Photo capture
-              if (vm.imagePath.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(vm.imagePath, height: 200, fit: BoxFit.cover),
-                ),
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                onPressed: _showImageSourceSheet,
-                icon: const Icon(Icons.camera_alt),
-                label: Text(vm.imagePath.isEmpty ? "Add today's photo" : "Replace photo"),
               ),
 
               const SizedBox(height: 20),
 
               // Severity selector
               const Text("How's your skin today?",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pinkAccent)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -186,10 +265,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
 
               // Acne Types Gallery
               const Text("Acne Types",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pinkAccent)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent)),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -207,10 +283,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
 
               // Daily Care Checklist
               const Text("Daily Care Checklist",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pinkAccent)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent)),
               Column(
                 children: _checklistOptions.map((task) {
                   return CheckboxListTile(
@@ -226,18 +299,13 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
 
               // Product Tracker with Star Rating
               const Text("Product Tracker",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pinkAccent)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent)),
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _productController,
-                      decoration: const InputDecoration(
-                        hintText: "Enter product name...",
-                      ),
+                      decoration: const InputDecoration(hintText: "Enter product name..."),
                     ),
                   ),
                   ElevatedButton(
@@ -260,9 +328,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
                         return IconButton(
                           icon: Icon(
                             Icons.star,
-                            color: starIndex < vm.products[index]["rating"]
-                                ? Colors.amber
-                                : Colors.grey,
+                            color: starIndex < vm.products[index]["rating"] ? Colors.amber : Colors.grey,
                           ),
                           onPressed: () => vm.updateProductRating(index, starIndex + 1),
                         );
@@ -286,10 +352,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text("Daily Journal",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.pinkAccent)),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent)),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _noteController,
@@ -309,8 +372,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
                 color: Colors.pink[50],
                 child: const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text("✨ Stay confident, healing takes time! ✨",
-                      textAlign: TextAlign.center),
+                  child: Text("✨ Stay confident, healing takes time! ✨", textAlign: TextAlign.center),
                 ),
               ),
 
@@ -358,9 +420,7 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
         child: Container(
           color: Colors.black54,
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-          child: Text(title,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-              textAlign: TextAlign.center),
+          child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 12), textAlign: TextAlign.center),
         ),
       ),
     );
