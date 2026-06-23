@@ -23,6 +23,10 @@ dependencies:
   fluttertoast: ^9.1.0
   nepali_utils: ^3.0.8
   nepali_date_picker: ^7.0.1
+  intl: ^0.20.2
+  badges: ^3.1.2
+  uuid: ^4.5.1
+  flutter_local_notifications: ^22.0.1
 
   # Shared preferences & Firebase components
   shared_preferences: ^2.2.3
