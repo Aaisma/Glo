@@ -62,7 +62,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateInsightViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
+    final themeColor = Colors.deepPurple;
 
     // Trigger draft dialog after frame paint if flag set
     if (viewModel.showDraftRecovery) {
@@ -99,7 +99,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             },
             child: const Text(
               "Save Draft",
-              style: TextStyle(color: Color(0xFFFF3E63), fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -108,7 +108,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
         child: Column(
           children: [
             // ProgressBar
-            _buildProgressBar(viewModel.currentStep, pinkTheme),
+            _buildProgressBar(viewModel.currentStep, themeColor),
 
             const SizedBox(height: 16),
 
@@ -117,9 +117,9 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
               child: IndexedStack(
                 index: viewModel.currentStep,
                 children: [
-                  _buildStep1Content(viewModel, pinkTheme),
-                  CreateInsightDetailsView(activeColor: pinkTheme),
-                  CreateInsightPreviewView(activeColor: pinkTheme),
+                  _buildStep1Content(viewModel, themeColor),
+                  CreateInsightDetailsView(activeColor: themeColor),
+                  CreateInsightPreviewView(activeColor: themeColor),
                 ],
               ),
             ),
@@ -320,14 +320,12 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF0E6FF),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.deepPurple,
-                  elevation: 0,
-                  side: const BorderSide(color: Color(0xFFFF3E63)),
+                  side: BorderSide(color: Colors.deepPurple.shade200),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -335,8 +333,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
                     MaterialPageRoute(builder: (_) => const CreatePollView()),
                   );
                 },
-                icon: const Icon(Icons.poll_outlined, size: 20),
-                label: const Text("Create Poll"),
+                child: const Text("+ Create Poll"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(

@@ -29,4 +29,11 @@ abstract class CommunityRepo {
   Future<void> softDeletePoll(String id);
   Future<void> addDiscussionView(String id);
   Future<void> addPollView(String id);
+  Future<bool> isDiscussionLiked(String id);
+  Future<void> hideDiscussion(String id);
+  Future<List<String>> getHiddenContentIds();
+  Future<void> toggleSaveDiscussion(String id);
+  Future<List<Discussion>> getSavedDiscussions();
+  Future<void> toggleSavePoll(String id);
+  Future<List<CommunityPoll>> getSavedPolls();
 }

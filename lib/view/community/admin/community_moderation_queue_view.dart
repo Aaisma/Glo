@@ -14,6 +14,9 @@ class CommunityModerationQueueView extends StatefulWidget {
 }
 
 class _CommunityModerationQueueViewState extends State<CommunityModerationQueueView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
   @override
   void initState() {
     super.initState();
@@ -23,12 +26,18 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityModerationQueueViewModel>();
     final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
 
     final activeList = viewModel.selectedTab == 'Reported' ? viewModel.reportedItems : viewModel.hiddenItems;
+    final filteredList = activeList.where((item) => item.title.toLowerCase().contains(_searchQuery)).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),
@@ -45,54 +54,131 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Moderation Tabs
-            _buildModerationTabs(viewModel, accentColor),
-
-            const SizedBox(height: 12),
-
-            // Content Queue List
-            Expanded(
-              child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
-                  : activeList.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "Community moderation queue is empty! 🌸",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          itemCount: activeList.length,
-                          itemBuilder: (context, index) {
-                            final item = activeList[index];
-                            return _buildQueueCard(context, item, viewModel);
-                          },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar & Filter Button Row
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val.toLowerCase();
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: "Search reported content...",
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
                         ),
-            ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.filter_list, color: Color(0xFF332B2C)),
+                      onPressed: () {},
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            // Pagination Controls
-            _buildPaginationBar(viewModel, pinkTheme),
-          ],
+              // Moderation Tabs
+              _buildModerationTabs(viewModel),
+              const SizedBox(height: 20),
+
+              // Content Table
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Table Header
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                              ),
+                              child: Row(
+                                children: const [
+                                  Expanded(flex: 1, child: Text("Type", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 2, child: Text("Stats", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 2, child: Text("Reported At", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  SizedBox(width: 100, child: Text("Actions", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12), textAlign: TextAlign.center)),
+                                ],
+                              ),
+                            ),
+
+                            // Table Body
+                            Expanded(
+                              child: filteredList.isEmpty
+                                  ? const Center(
+                                      child: Text("Queue is empty! 🌸", style: TextStyle(color: Colors.grey)),
+                                    )
+                                  : ListView.separated(
+                                      itemCount: filteredList.length,
+                                      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
+                                      itemBuilder: (context, index) {
+                                        final item = filteredList[index];
+                                        return _buildQueueTableRow(context, item, viewModel);
+                                      },
+                                    ),
+                            ),
+
+                            // Pagination Controls
+                            _buildPaginationBar(viewModel, pinkTheme),
+                          ],
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildModerationTabs(CommunityModerationQueueViewModel viewModel, Color accent) {
-    return Container(
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildTabChip("Reported", viewModel.reportedCount, viewModel),
-          const SizedBox(width: 16),
-          _buildTabChip("Hidden", viewModel.hiddenCount, viewModel),
-        ],
-      ),
+  Widget _buildModerationTabs(CommunityModerationQueueViewModel viewModel) {
+    return Row(
+      children: [
+        _buildTabChip("Reported", viewModel.reportedCount, viewModel),
+        const SizedBox(width: 16),
+        _buildTabChip("Hidden", viewModel.hiddenCount, viewModel),
+      ],
     );
   }
 
@@ -100,7 +186,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
     final isSelected = vm.selectedTab == label;
     final accent = const Color(0xFFFF3E63);
 
-    return FilterChip(
+    return ChoiceChip(
       label: Text(
         "$label ($count)",
         style: TextStyle(
@@ -113,6 +199,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
       onSelected: (val) => vm.setTab(label),
       selectedColor: accent,
       backgroundColor: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -122,7 +209,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
     );
   }
 
-  Widget _buildQueueCard(BuildContext context, ModerationItem item, CommunityModerationQueueViewModel vm) {
+  Widget _buildQueueTableRow(BuildContext context, ModerationItem item, CommunityModerationQueueViewModel vm) {
     final formattedDate = DateFormat('MMM dd, hh:mm a').format(item.reportedAt);
 
     Color typeColor = Colors.grey;
@@ -130,134 +217,113 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
     if (item.contentType == ContentType.discussion) typeColor = Colors.deepPurple;
     if (item.contentType == ContentType.poll) typeColor = Colors.blue;
 
-    final primaryCountText = vm.selectedTab == 'Reported'
+    final statsText = vm.selectedTab == 'Reported'
         ? "${item.reportsCount} Reports"
-        : "Hidden by ${item.hiddenCount} users";
+        : "${item.hiddenCount} Hidden";
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
         children: [
-          Row(
-            children: [
-              // Content Type badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: typeColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  item.contentType.name.toUpperCase(),
-                  style: TextStyle(color: typeColor, fontSize: 10, fontWeight: FontWeight.bold),
-                ),
+          // Type Badge
+          Expanded(
+            flex: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: typeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const Spacer(),
-              Text(
-                formattedDate,
-                style: const TextStyle(color: Colors.grey, fontSize: 11),
+              child: Text(
+                item.contentType.name.toUpperCase(),
+                style: TextStyle(color: typeColor, fontSize: 10, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 10),
-
+          const SizedBox(width: 16),
           // Title
-          Text(
-            item.title,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Expanded(
+            flex: 3,
+            child: Text(
+              item.title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const SizedBox(height: 4),
-
-          // Snippet
-          Text(
-            item.contentSnippet,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          const SizedBox(width: 16),
+          // Stats
+          Expanded(
+            flex: 2,
+            child: Text(
+              statsText,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      primaryCountText,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "Reasons: ${item.reasons.map((r) => r.name).join(', ')}",
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+          const SizedBox(width: 16),
+          // Date
+          Expanded(
+            flex: 2,
+            child: Text(
+              formattedDate,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Actions
+          SizedBox(
+            width: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey, size: 20),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CommunityModerationDetailView(contentId: item.contentId),
+                      ),
+                    ).then((res) {
+                      if (res == true) vm.loadQueue();
+                    });
+                  },
                 ),
-              ),
-
-              // Actions
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // View Details Eye Icon
-                  IconButton(
-                    icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey, size: 20),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CommunityModerationDetailView(contentId: item.contentId),
-                        ),
-                      ).then((res) {
-                        if (res == true) vm.loadQueue();
-                      });
-                    },
-                  ),
-                  // Archive icon
-                  IconButton(
-                    icon: const Icon(Icons.archive_outlined, color: Colors.grey, size: 20),
-                    onPressed: () async {
-                      await vm.archiveItem(item.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Flagged item archived! 🌸")),
-                        );
-                      }
-                    },
-                  ),
-                  // Delete icon (Soft-delete)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                    onPressed: () async {
-                      await vm.softDeleteItem(item.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Content soft-deleted! 🌸")),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ],
+                const SizedBox(width: 8),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.archive_outlined, color: Colors.grey, size: 20),
+                  onPressed: () async {
+                    await vm.archiveItem(item.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Flagged item archived! 🌸")),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                  onPressed: () async {
+                    await vm.softDeleteItem(item.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Content soft-deleted! 🌸")),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -267,6 +333,9 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
   Widget _buildPaginationBar(CommunityModerationQueueViewModel viewModel, Color activeColor) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.grey.shade100)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

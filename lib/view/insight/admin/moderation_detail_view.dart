@@ -221,11 +221,11 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                         await viewModel.archiveContent(context);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Content archived successfully! 🌸")),
+                            const SnackBar(content: Text("Report dismissed! 🌸")),
                           );
                         }
                       },
-                      child: const Text("Archive Content", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text("Dismiss Report", style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -241,11 +241,11 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                         await viewModel.softDeleteContent(context);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Content soft-deleted successfully! 🌸")),
+                            const SnackBar(content: Text("Content removed successfully! 🌸")),
                           );
                         }
                       },
-                      child: const Text("Delete Content", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text("Remove Content", style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

@@ -1,39 +1,10 @@
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/community_models.dart';
 import '../model/shared_models.dart';
 import 'insights_moderation_repo.dart';
 
 class InsightsModerationRepoImpl implements InsightsModerationRepo {
-  final Box _box;
-
-  InsightsModerationRepoImpl({Box? box})
-      : _box = box ?? Hive.box('insights_moderation_box') {
-    _initMockData();
-  }
-
-  void _initMockData() {
-    if (_box.isEmpty) {
-      final now = DateTime.now();
-      final mocks = [
-        ModerationItem(
-          id: 'ins_mod_1',
-          contentId: 'art_2', // Power of Boundaries mock article
-          contentType: ContentType.article,
-          title: "The Power of Boundaries",
-          authorName: 'admin_1',
-          contentSnippet: "Boundaries are essential for healthy living. Setting clear...",
-          reasons: [ModerationReason.misinformation],
-          reportsCount: 3,
-          hiddenCount: 0,
-          reportedAt: now.subtract(const Duration(hours: 5)),
-        ),
-      ];
-
-      for (var mock in mocks) {
-        _box.put(mock.id, mock.toMap());
-      }
-    }
-  }
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Future<List<ModerationItem>> getModerationQueue({
@@ -41,17 +12,18 @@ class InsightsModerationRepoImpl implements InsightsModerationRepo {
     required int limit,
     required bool isArchived,
   }) async {
-    final allItems = _box.values
-        .where((e) {
-          if (e is! Map) return false;
-          final item = ModerationItem.fromMap(Map<String, dynamic>.from(e));
-          if (item.isDeleted) return false;
-          return item.isArchived == isArchived;
-        })
-        .map((e) => ModerationItem.fromMap(Map<String, dynamic>.from(e)))
-        .toList();
+    final snapshot = await _firestore.collection('moderation_queue')
+        .where('contentType', isEqualTo: ContentType.article.name)
+        .where('isArchived', isEqualTo: isArchived)
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('reportedAt', descending: true)
+        .get();
 
-    allItems.sort((a, b) => b.reportedAt.compareTo(a.reportedAt));
+    final allItems = snapshot.docs.map((d) {
+      final map = d.data();
+      map['id'] = d.id;
+      return ModerationItem.fromMap(map);
+    }).toList();
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= allItems.length) return [];
@@ -61,17 +33,24 @@ class InsightsModerationRepoImpl implements InsightsModerationRepo {
 
   @override
   Future<ModerationItem?> getModerationDetail(String id) async {
-    final raw = _box.get(id);
-    if (raw != null) {
-      return ModerationItem.fromMap(Map<String, dynamic>.from(raw));
+    // ID could be the moderation item ID or the content ID. The old code checked both.
+    var doc = await _firestore.collection('moderation_queue').doc(id).get();
+    if (doc.exists) {
+      final map = doc.data()!;
+      map['id'] = doc.id;
+      return ModerationItem.fromMap(map);
     }
-    for (var val in _box.values) {
-      if (val is Map) {
-        final item = ModerationItem.fromMap(Map<String, dynamic>.from(val));
-        if (item.contentId == id) {
-          return item;
-        }
-      }
+
+    final snapshot = await _firestore.collection('moderation_queue')
+        .where('contentId', isEqualTo: id)
+        .where('contentType', isEqualTo: ContentType.article.name)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final map = snapshot.docs.first.data();
+      map['id'] = snapshot.docs.first.id;
+      return ModerationItem.fromMap(map);
     }
     return null;
   }
@@ -84,18 +63,24 @@ class InsightsModerationRepoImpl implements InsightsModerationRepo {
     required String contentSnippet,
     required ModerationReason reason,
   }) async {
-    ModerationItem? existing = await getModerationDetail(contentId);
-    if (existing != null) {
+    final snapshot = await _firestore.collection('moderation_queue')
+        .where('contentId', isEqualTo: contentId)
+        .where('contentType', isEqualTo: ContentType.article.name)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final docId = snapshot.docs.first.id;
+      final existing = ModerationItem.fromMap(snapshot.docs.first.data());
       final reasons = List<ModerationReason>.from(existing.reasons);
       if (!reasons.contains(reason)) {
         reasons.add(reason);
       }
-      final updated = existing.copyWith(
-        reportsCount: existing.reportsCount + 1,
-        reasons: reasons,
-        reportedAt: DateTime.now(),
-      );
-      await _box.put(existing.id, updated.toMap());
+      await _firestore.collection('moderation_queue').doc(docId).update({
+        'reportsCount': existing.reportsCount + 1,
+        'reasons': reasons.map((e) => e.name).toList(),
+        'reportedAt': FieldValue.serverTimestamp(),
+      });
     } else {
       final id = 'ins_mod_${DateTime.now().millisecondsSinceEpoch}';
       final item = ModerationItem(
@@ -110,18 +95,13 @@ class InsightsModerationRepoImpl implements InsightsModerationRepo {
         hiddenCount: 0,
         reportedAt: DateTime.now(),
       );
-      await _box.put(id, item.toMap());
+      await _firestore.collection('moderation_queue').doc(id).set(item.toMap());
     }
   }
 
   @override
   Future<void> archiveModerationItem(String id) async {
-    final raw = _box.get(id);
-    if (raw != null) {
-      final item = ModerationItem.fromMap(Map<String, dynamic>.from(raw));
-      final updated = item.copyWith(isArchived: true);
-      await _box.put(id, updated.toMap());
-    }
+    await _firestore.collection('moderation_queue').doc(id).update({'isArchived': true});
   }
 
   @override
@@ -129,17 +109,11 @@ class InsightsModerationRepoImpl implements InsightsModerationRepo {
     ModerationItem? item = await getModerationDetail(id);
     if (item == null) return;
 
-    final updatedItem = item.copyWith(isDeleted: true);
-    await _box.put(item.id, updatedItem.toMap());
+    await _firestore.collection('moderation_queue').doc(item.id).update({'isDeleted': true});
 
-    final now = DateTime.now();
-    final box = Hive.box('insights_box');
-    final raw = box.get(item.contentId);
-    if (raw != null) {
-      final data = Map<String, dynamic>.from(raw);
-      data['isDeleted'] = true;
-      data['deletedAt'] = now.toIso8601String();
-      await box.put(item.contentId, data);
-    }
+    await _firestore.collection('insights').doc(item.contentId).update({
+      'isDeleted': true,
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

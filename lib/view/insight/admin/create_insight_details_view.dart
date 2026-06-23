@@ -29,8 +29,8 @@ class CreateInsightDetailsView extends StatelessWidget {
                   subtitle: const Text("Make it live immediately"),
                   value: "Publish Now",
                   groupValue: viewModel.publishType,
-                  activeColor: const Color(0xFFFF3E63),
-                  onChanged: (val) => viewModel.setPublishType(val!),
+                  onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
+                  activeColor: Colors.deepPurple,
                 ),
                 const Divider(),
                 RadioListTile<String>(
@@ -42,9 +42,9 @@ class CreateInsightDetailsView extends StatelessWidget {
                   ),
                   value: "Schedule",
                   groupValue: viewModel.publishType,
-                  activeColor: const Color(0xFFFF3E63),
                   onChanged: (val) async {
-                    viewModel.setPublishType(val!);
+                    if (val == null) return;
+                    viewModel.setPublishType(val);
                     final date = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
@@ -60,6 +60,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                       }
                     }
                   },
+                  activeColor: Colors.deepPurple,
                 ),
                 const Divider(),
                 RadioListTile<String>(
@@ -67,8 +68,8 @@ class CreateInsightDetailsView extends StatelessWidget {
                   subtitle: const Text("Continue editing later"),
                   value: "Save as Draft",
                   groupValue: viewModel.publishType,
-                  activeColor: const Color(0xFFFF3E63),
-                  onChanged: (val) => viewModel.setPublishType(val!),
+                  onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
+                  activeColor: Colors.deepPurple,
                 ),
               ],
             ),
@@ -86,9 +87,9 @@ class CreateInsightDetailsView extends StatelessWidget {
               children: [
                 CheckboxListTile(
                   title: const Text("Featured Insight", style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text("Show in featured header section"),
+                  subtitle: const Text("Show in featured section"),
                   value: viewModel.isFeatured,
-                  activeColor: const Color(0xFFFF3E63),
+                  activeColor: Colors.deepPurple,
                   onChanged: (val) => viewModel.setFeatured(val!),
                 ),
                 const Divider(),
@@ -96,7 +97,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   title: const Text("Trending", style: TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text("Show in trending section"),
                   value: viewModel.isTrending,
-                  activeColor: const Color(0xFFFF3E63),
+                  activeColor: Colors.deepPurple,
                   onChanged: (val) => viewModel.setTrending(val!),
                 ),
               ],
