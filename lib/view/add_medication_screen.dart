@@ -1,135 +1,215 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../model/medication_model.dart';
+import '../viewmodel/medication_viewmodel.dart';
 
-class AddMedicationScreen extends StatelessWidget {
-  const AddMedicationScreen({super.key});
+class AddMedicationScreen extends StatefulWidget {
+  final String userId;
+
+  const AddMedicationScreen({super.key, required this.userId});
+
+  @override
+  State<AddMedicationScreen> createState() => _AddMedicationScreenState();
+}
+
+class _AddMedicationScreenState extends State<AddMedicationScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController dosageController = TextEditingController();
+  final TextEditingController scheduleController = TextEditingController();
+  final TextEditingController doctorController =
+  TextEditingController(text: "Dr. Sarah Khan");
+
+  DateTime? startDate;
+  DateTime? endDate;
+
+  String? selectedType;
+  final List<String> types = [
+    "💊 Tablet",
+    "🟣 Capsule",
+    "🧴 Topical",
+    "💉 Injection"
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF7F8),
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/images/background.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: const Text(
+            "Add Medication",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// HEADER
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    "Add Medication",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.pink,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               const Text(
-                "Fill out the details to add your medication ❤️",
-                style: TextStyle(color: Colors.black54, fontSize: 16),
-              ),
-
-              const SizedBox(height: 20),
-
-              /// FORM FIELDS
-              buildTextField("Medication Name", "e.g., Doxycycline 100mg"),
-              buildDropdownField("Medication Type", ["Antibiotic", "Supplement", "Topical"]),
-              buildTextField("Dosage", "e.g., 100mg, 1 tablet"),
-              buildTextField("Schedule", "e.g., After breakfast"),
-              buildTextField("Doctor", "Dr. Sarah Khan"),
-              buildDateField("Start Date", "Apr 01, 2026"),
-              buildDateField("End Date", "Apr 15, 2026"),
-
-              const SizedBox(height: 30),
-
-              /// SAVE BUTTON
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    "Save Medication",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
+                "Let’s add your medication 🩷",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 20),
+
+              /// Medication Name
+              const Text("💊 Medication Name",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  hintText: "Enter medication name",
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Medication Type Dropdown
+              const Text("🟣 Medication Type",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              DropdownButtonFormField<String>(
+                initialValue: selectedType,
+                items: types
+                    .map((type) =>
+                    DropdownMenuItem(value: type, child: Text(type)))
+                    .toList(),
+                onChanged: (value) => setState(() => selectedType = value),
+                decoration: const InputDecoration(
+                  hintText: "Select type",
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Dosage
+              const Text("⚖️ Dosage",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextField(
+                controller: dosageController,
+                decoration: const InputDecoration(
+                  hintText: "e.g. 100mg, 1 tablet",
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Schedule
+              const Text("⏰ Schedule",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextField(
+                controller: scheduleController,
+                decoration: const InputDecoration(
+                  hintText: "e.g. After breakfast",
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Doctor
+              const Text("👩‍⚕️ Doctor",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextField(
+                controller: doctorController,
+                decoration: const InputDecoration(
+                  hintText: "Enter doctor name",
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Start Date
+              const Text("📅 Start Date",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextButton(
+                onPressed: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
+                  );
+                  if (picked != null) {
+                    setState(() => startDate = picked);
+                  }
+                },
+                child: Text(
+                  startDate != null
+                      ? startDate!.toLocal().toString().split(' ').first
+                      : "Select start date",
+                  style: const TextStyle(color: Colors.pink),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// End Date
+              const Text("📅 End Date",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextButton(
+                onPressed: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
+                  );
+                  if (picked != null) {
+                    setState(() => endDate = picked);
+                  }
+                },
+                child: Text(
+                  endDate != null
+                      ? endDate!.toLocal().toString().split(' ').first
+                      : "Select end date",
+                  style: const TextStyle(color: Colors.pink),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              /// Save Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffF8A5B8),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                onPressed: () async {
+                  final newMedication = MedicationModel(
+                    name: nameController.text,
+                    type: selectedType,
+                    dosage: dosageController.text,
+                    schedule: scheduleController.text,
+                    doctorName: doctorController.text,
+                    instructions: scheduleController.text,
+                    startDate: startDate,
+                    endDate: endDate,
+                    issuedDate: DateTime.now(),
+                  );
+
+                  // Capture provider and navigator BEFORE async gap
+                  final viewModel =
+                  Provider.of<MedicationViewModel>(context, listen: false);
+                  final navigator = Navigator.of(context);
+
+                  await viewModel.addMedication(widget.userId as MedicationModel, newMedication as String);
+
+                  navigator.pop(); // safe, no async gap
+                },
+                child: const Text("💊 Save Medication"),
+              ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Helper Widgets
-  Widget buildTextField(String label, String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDropdownField(String label, List<String> items) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(labelText: label, border: InputBorder.none),
-          items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-          onChanged: (value) {},
-        ),
-      ),
-    );
-  }
-
-  Widget buildDateField(String label, String date) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        readOnly: true,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: date,
-          suffixIcon: const Icon(Icons.calendar_today, color: Colors.pink),
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
           ),
         ),
       ),

@@ -37,7 +37,6 @@ flutter:
     - assets/images/reminder.png
     - assets/images/historylog.png
     - assets/images/background.png
-    - assets/images/background1.png
     - assets/images/flower.png
     - assets/images/logo.png
     - assets/images/profilepicture.png
@@ -46,3 +45,4 @@ flutter:
     - assets/images/notes.png
     - assets/images/prescription.png
     - assets/images/skintips.png
+    - assets/images/background1.png

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 // ViewModels
 import 'viewmodel/auth_viewmodel.dart';
-import 'viewmodel/user_viewmodel.dart';
 import 'viewmodel/medication_viewmodel.dart';
 import 'viewmodel/visit_viewmodel.dart';
 import 'viewmodel/health_viewmodel.dart';
@@ -34,12 +33,11 @@ class GloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String userId = "testUser123";
+    const String userId = "testUser123"; // ✅ define once
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ChangeNotifierProvider(create: (_) => UserViewModel()),
         ChangeNotifierProvider(create: (_) => MedicationViewModel()),
         ChangeNotifierProvider(create: (_) => VisitViewModel()),
         ChangeNotifierProvider(create: (_) => HealthViewModel()),
@@ -55,7 +53,7 @@ class GloApp extends StatelessWidget {
         routes: {
           '/profile': (context) => const GloProfileScreen(),
           '/medications': (context) => MedicationScreen(userId: userId),
-          '/addMedication': (context) => const AddMedicationScreen(),
+          '/addMedication': (context) => AddMedicationScreen(userId: userId), // ✅ FIXED
           '/medicationHistory': (context) =>
               MedicationHistoryScreen(userId: userId),
           '/dermaVisit': (context) => const DermaVisitScreen(),
