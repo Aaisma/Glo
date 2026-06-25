@@ -384,8 +384,12 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
                     : () async {
                   await vm.saveToday(userId);
                   if (context.mounted) {
+                    final result = context.read<AcneTrackerViewModel>();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Today's entry saved!")),
+                      SnackBar(
+                        content: Text(result.errorMessage ?? "Today's entry saved!"),
+                        backgroundColor: result.errorMessage != null ? Colors.red : null,
+                      ),
                     );
                   }
                 },
