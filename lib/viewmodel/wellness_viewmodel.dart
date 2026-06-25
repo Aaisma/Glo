@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../model/user_model_mood.dart';
-import '../repo/mood_repository.dart';
-import '../repo/mood_repository_impl.dart';
+import 'package:glo/models/user_model_mood.dart';
+import 'package:glo/repo/mood_repository.dart';
+import 'package:glo/repo/mood_repository_impl.dart';
 
 class WellnessViewModel extends ChangeNotifier {
   final MoodRepository _repository = MoodRepositoryImpl();

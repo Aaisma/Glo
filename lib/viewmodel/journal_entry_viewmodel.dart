@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../model/journal_entry_model.dart';
-import '../repo/journal_repo_impl.dart';
+import 'package:glo/models/journal_entry_model.dart';
+import 'package:glo/repo/journal_repo_impl.dart';
 
 class JournalEntryViewModel extends ChangeNotifier {
   final JournalRepoImpl _repo = JournalRepoImpl();

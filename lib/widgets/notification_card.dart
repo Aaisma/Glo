@@ -1,64 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:Glo/models/notification_model.dart';
-import 'package:Glo/widgets/notification_badge.dart';
+import 'package:intl/intl.dart';
+import 'package:glo/models/notification_model.dart';
+import 'package:glo/widgets/notification_badge.dart';
 
 class NotificationCard extends StatelessWidget {
-  final NotificationModel item;
+  final NotificationModel notification;
   final VoidCallback onTap;
 
   const NotificationCard({
-    super.key,
-    required this.item,
+    Key? key,
+    required this.notification,
     required this.onTap,
-  });
+  }) : super(key: key);
+
+  Widget _buildIcon() {
+    Color bg;
+    Widget icon;
+
+    switch (notification.type) {
+      case NotificationType.ovulation:
+        bg = const Color(0xFFFFF0F2);
+        icon = const Text('🌸', style: TextStyle(fontSize: 22));
+        break;
+      case NotificationType.medication:
+        bg = const Color(0xFFFFF5EB);
+        icon = const Text('💊', style: TextStyle(fontSize: 22));
+        break;
+      case NotificationType.moodTracker:
+        bg = const Color(0xFFFFFDE7);
+        icon = const Text('😊', style: TextStyle(fontSize: 22));
+        break;
+      case NotificationType.dermaVisit:
+        bg = const Color(0xFFE0F7FA);
+        icon = const Icon(Icons.medical_services_outlined, color: Colors.cyan, size: 24);
+        break;
+      case NotificationType.period:
+        bg = const Color(0xFFFFEBEE);
+        icon = const Text('🩸', style: TextStyle(fontSize: 22));
+        break;
+      case NotificationType.periodLog:
+        bg = const Color(0xFFFFE0F4);
+        icon = const Icon(Icons.calendar_today_outlined, color: Colors.pinkAccent, size: 22);
+        break;
+      case NotificationType.journal:
+        bg = const Color(0xFFF3E5F5);
+        icon = const Icon(Icons.book_outlined, color: Colors.purple, size: 22);
+        break;
+      case NotificationType.water:
+        bg = const Color(0xFFE3F2FD);
+        icon = const Text('💧', style: TextStyle(fontSize: 22));
+        break;
+      case NotificationType.acne:
+        bg = const Color(0xFFE8F5E9);
+        icon = const Text('✨', style: TextStyle(fontSize: 22));
+        break;
+    }
+
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
+      alignment: Alignment.center,
+      child: icon,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final timeString = DateFormat('h:mm a').format(notification.timestamp);
+
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE96581).withValues(alpha: 0.05),
-              spreadRadius: 2,
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (item.isUnread)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0, right: 8.0),
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE96581),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              )
-            else
-              const SizedBox(width: 14),
             Container(
-              width: 44,
-              height: 44,
+              width: 6,
+              height: 6,
+              margin: const EdgeInsets.only(top: 22, right: 8),
               decoration: BoxDecoration(
-                color: item.iconBg,
                 shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(item.icon, style: const TextStyle(fontSize: 22)),
+                color: notification.isRead ? Colors.transparent : const Color(0xFFE91E63),
               ),
             ),
+            _buildIcon(),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -68,24 +95,24 @@ class NotificationCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          item.title,
+                          notification.title,
                           style: const TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C2C2C),
-                            fontSize: 14,
                           ),
                         ),
                       ),
                       const SizedBox(width: 4),
-                      NotificationBadge(label: item.tag),
+                      NotificationBadge(type: notification.type, label: notification.badgeText),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.description,
-                    style: const TextStyle(
-                      color: Color(0xFF757575),
-                      fontSize: 12,
+                    notification.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
                       height: 1.3,
                     ),
                   ),
@@ -97,26 +124,13 @@ class NotificationCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  item.time,
-                  style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 10),
+                  timeString,
+                  style: TextStyle(fontSize: 10, color: Colors.grey[500], fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    if (item.isUnread)
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE96581),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    const Icon(Icons.chevron_right, color: Color(0xFFFFCCD3), size: 18),
-                  ],
-                )
+                Icon(Icons.chevron_right, size: 16, color: Colors.grey[400]),
               ],
-            ),
+            )
           ],
         ),
       ),

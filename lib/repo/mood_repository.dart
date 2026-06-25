@@ -1,4 +1,4 @@
-import '../model/user_model_mood.dart';
+import 'package:glo/models/user_model_mood.dart';
 
 abstract class MoodRepository {
   Stream<List<UserModelMood>> streamUserMoodLogs(String userId);

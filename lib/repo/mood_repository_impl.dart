@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/user_model_mood.dart';
+import 'package:glo/models/user_model_mood.dart';
 import 'mood_repository.dart';
 
 class MoodRepositoryImpl implements MoodRepository {

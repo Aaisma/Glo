@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:gloclone/viewmodel/wellness_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:glo/viewmodel/wellness_viewmodel.dart';
 
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
@@ -10,17 +11,32 @@ class WellnessDashboardScreen extends StatefulWidget {
 }
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // MVVM: Start syncing mood data from Firebase when the screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
+      context.read<WellnessViewModel>().initUserSync(userId);
+    });
+  }
 
   /// Helper to render the correct plant asset stage dynamically based on entry count from MVVM
   String _getGardenPlant(String moodKey, int count) {
     if (count == 0) return '🌱\n🪴'; // Seedling state if zero logs exist
     switch (moodKey) {
-      case 'Amazing': return '🌹\n🪴';
-      case 'Happy': return '🌻\n🪴';
-      case 'Calm': return '💠\n🪴';
-      case 'Energy': return '🌵\n🪴';
-      case 'Sad': return '🪻\n🪴';
-      default: return '🌱\n🪴';
+      case 'Amazing':
+        return '🌹\n🪴';
+      case 'Happy':
+        return '🌻\n🪴';
+      case 'Calm':
+        return '💠\n🪴';
+      case 'Energy':
+        return '🌵\n🪴';
+      case 'Sad':
+        return '🪻\n🪴';
+      default:
+        return '🌱\n🪴';
     }
   }
 
@@ -31,7 +47,6 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
       body: SafeArea(
         child: Consumer<WellnessViewModel>(
           builder: (context, viewModel, child) {
-
             // Fix & Optimization: Safely initialize map and fallback if moodHistory is null or empty
             final Map<String, int> liveMoodCounts = {
               'Amazing': 0,
@@ -41,12 +56,10 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               'Sad': 0,
             };
 
-            // Safely iterate through the history once (O(N) instead of O(5N)) to avoid breakdown errors
-            if (viewModel.moodHistory != null) {
-              for (var mood in viewModel.moodHistory) {
-                if (liveMoodCounts.containsKey(mood.moodType)) {
-                  liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
-                }
+            // Safely iterate through the history once to avoid breakdown errors
+            for (var mood in viewModel.moodHistory) {
+              if (liveMoodCounts.containsKey(mood.moodType)) {
+                liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
               }
             }
 
@@ -262,18 +275,12 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                     children: [
                       Expanded(
                         child: _buildMetricCard(
-                            'Current Streak',
-                            '${viewModel.currentStreak ?? 0}', // Safe null-check fallback
-                            'days', '🔥', Colors.orange[50]!
-                        ),
+                            'Current Streak', '${viewModel.currentStreak}', 'days', '🔥', Colors.orange[50]!),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: _buildMetricCard(
-                            'Longest Streak',
-                            '${viewModel.longestStreak ?? 0}', // Safe null-check fallback
-                            'days', '🏆', Colors.blue[50]!
-                        ),
+                            'Longest Streak', '${viewModel.longestStreak}', 'days', '🏆', Colors.blue[50]!),
                       ),
                     ],
                   ),
@@ -286,7 +293,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                     'Mood Calendar',
                     'Track your mood trends',
                     const Color(0xFFFF527B),
-                        () => Navigator.pushNamed(context, '/mood_calendar'),
+                    () => Navigator.pushNamed(context, '/mood_calendar'),
                   ),
                   _buildNavigationRow(
                     context,
@@ -294,7 +301,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                     'Mood Summary',
                     'Understand your mood patterns',
                     Colors.indigoAccent,
-                        () => Navigator.pushNamed(context, '/mood_summary'),
+                    () => Navigator.pushNamed(context, '/mood_summary'),
                   ),
 
                   const SizedBox(height: 20),
@@ -309,7 +316,8 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                     ),
                     child: const Column(
                       children: [
-                        Text('“', style: TextStyle(fontSize: 24, color: Colors.purple, fontWeight: FontWeight.bold, height: 0.6)),
+                        Text('“',
+                            style: TextStyle(fontSize: 24, color: Colors.purple, fontWeight: FontWeight.bold, height: 0.6)),
                         Text(
                           'You’re allowed to be both\na masterpiece and a work in progress.',
                           textAlign: TextAlign.center,
@@ -360,7 +368,8 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
     );
   }
 
-  Widget _buildNavigationRow(BuildContext context, IconData icon, String title, String subtitle, Color colorTone, VoidCallback action) {
+  Widget _buildNavigationRow(
+      BuildContext context, IconData icon, String title, String subtitle, Color colorTone, VoidCallback action) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(

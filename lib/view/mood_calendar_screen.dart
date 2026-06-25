@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:glo/viewmodel/wellness_viewmodel.dart';
+import 'package:glo/models/user_model_mood.dart';
 
 class MoodCalendarScreen extends StatefulWidget {
   const MoodCalendarScreen({super.key});
@@ -9,12 +13,10 @@ class MoodCalendarScreen extends StatefulWidget {
 }
 
 class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
-  // FIXED: Changed to 'final' to solve the private field lint warning
   final CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime(2026, 1, 1);
+  DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  // Moods explicitly defined by their name and emoji
   final List<Map<String, String>> _moodDefinitions = [
     {'name': 'Amazing', 'emoji': '😍'},
     {'name': 'Happy', 'emoji': '😀'},
@@ -23,19 +25,6 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
     {'name': 'Sad', 'emoji': '😢'},
     {'name': 'Angry', 'emoji': '😡'},
   ];
-
-  // Map tracking user logged moods
-  final Map<DateTime, String> _userLoggedMoods = {
-    DateTime(2026, 1, 1): '😍',
-    DateTime(2026, 1, 2): '😢',
-    DateTime(2026, 1, 3): '😡',
-    DateTime(2026, 1, 4): '😐',
-    DateTime(2026, 1, 5): '😐',
-    DateTime(2026, 1, 6): '😀',
-    DateTime(2026, 1, 7): '😍',
-    DateTime(2026, 1, 8): '😢',
-    DateTime(2026, 1, 9): '😀',
-  };
 
   final Map<String, String> _moodQuotes = {
     '😍': '"Enjoy the little things, for one day you may look back and realize they were the big things."',
@@ -67,6 +56,19 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
         return const Color(0xFFFFD6D6);
       default:
         return Colors.transparent;
+    }
+  }
+
+  String _getEmojiFromMood(String moodType) {
+    switch (moodType) {
+      case 'Amazing': return '😍';
+      case 'Happy': return '😀';
+      case 'Calm': return '😌';
+      case 'Neutral': return '😐';
+      case 'Sed':
+      case 'Sad': return '😢';
+      case 'Angry': return '😡';
+      default: return '✨';
     }
   }
 
@@ -105,17 +107,20 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                   final name = mood['name']!;
 
                   return InkWell(
-                    onTap: () {
-                      setState(() {
-                        _userLoggedMoods[_normalizeDate(date)] = emoji;
-                      });
-                      Navigator.pop(context);
+                    onTap: () async {
+                      final userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
+                      await Provider.of<WellnessViewModel>(context, listen: false).logMood(
+                        userId: userId,
+                        mood: name,
+                        note: "Logged from calendar",
+                        factors: [],
+                      );
+                      if (mounted) Navigator.pop(context);
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       decoration: BoxDecoration(
-                        // FIXED: Using updated modern Flutter .withValues() method to avoid deprecation warnings
-                        color: _getMoodColor(emoji).withValues(alpha: 0.7),
+                        color: _getMoodColor(emoji).withOpacity(0.7),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.pink.shade50, width: 1),
                       ),
@@ -126,7 +131,6 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                           const SizedBox(height: 6),
                           Text(
                             name,
-                            // FIXED: Removed the undefined 'black70' parameter and invalid constant error
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54),
                           ),
                         ],
@@ -146,143 +150,144 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
+    // Start syncing if not already started
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
+      context.read<WellnessViewModel>().initUserSync(userId);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final normalizedSelected = _selectedDay != null ? _normalizeDate(_selectedDay!) : null;
-    final selectedEmoji = _userLoggedMoods[normalizedSelected] ?? '✨';
-    final dailyQuote = _moodQuotes[selectedEmoji] ?? _moodQuotes['✨']!;
+    return Consumer<WellnessViewModel>(
+      builder: (context, viewModel, child) {
+        // Map history to a lookup map for the calendar
+        final Map<DateTime, String> moodMap = {};
+        for (var log in viewModel.moodHistory) {
+          moodMap[_normalizeDate(log.date)] = _getEmojiFromMood(log.moodType);
+        }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {},
-        ),
-        title: const Text(
-          'Mood Calendar',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month, color: Colors.black),
-            onPressed: () {},
+        final normalizedSelected = _selectedDay != null ? _normalizeDate(_selectedDay!) : null;
+        final selectedEmoji = moodMap[normalizedSelected] ?? '✨';
+        final dailyQuote = _moodQuotes[selectedEmoji] ?? _moodQuotes['✨']!;
+
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              'Mood Calendar',
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // --- Calendar View ---
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFFCE4EC), width: 1.5),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-                child: TableCalendar(
-                  firstDay: DateTime(2026, 1, 1),
-                  lastDay: DateTime(2036, 12, 31),
-                  focusedDay: _focusedDay,
-                  calendarFormat: _calendarFormat,
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  headerStyle: const HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                    titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    leftChevronIcon: Icon(Icons.chevron_left, color: Colors.pinkAccent),
-                    rightChevronIcon: Icon(Icons.chevron_right, color: Colors.pinkAccent),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFFFCE4EC), width: 1.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                    child: TableCalendar(
+                      firstDay: DateTime(2020, 1, 1),
+                      lastDay: DateTime(2030, 12, 31),
+                      focusedDay: _focusedDay,
+                      calendarFormat: _calendarFormat,
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      headerStyle: const HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        leftChevronIcon: Icon(Icons.chevron_left, color: Colors.pinkAccent),
+                        rightChevronIcon: Icon(Icons.chevron_right, color: Colors.pinkAccent),
+                      ),
+                      selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                      onDaySelected: (selectedDay, focusedDay) {
+                        setState(() {
+                          _selectedDay = selectedDay;
+                          _focusedDay = focusedDay;
+                        });
+                        _openMoodLoggingSheet(selectedDay);
+                      },
+                      onPageChanged: (focusedDay) {
+                        _focusedDay = focusedDay;
+                      },
+                      rowHeight: 76,
+                      calendarBuilders: CalendarBuilders(
+                        defaultBuilder: (context, day, focusedDay) => _buildCell(day, Colors.black, moodMap),
+                        outsideBuilder: (context, day, focusedDay) => _buildCell(day, Colors.grey.shade400, moodMap),
+                        selectedBuilder: (context, day, focusedDay) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.pinkAccent, width: 2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: _buildCell(day, Colors.black, moodMap),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  daysOfWeekStyle: const DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600, fontSize: 13),
-                    weekendStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    _openMoodLoggingSheet(selectedDay);
-                  },
-                  onPageChanged: (focusedDay) {
-                    _focusedDay = focusedDay;
-                  },
-                  rowHeight: 76,
-                  calendarBuilders: CalendarBuilders(
-                    // FIXED: Removed the invalid parameter 'weekendBuilder' completely
-                    defaultBuilder: (context, day, focusedDay) => _buildCell(day, Colors.black),
-                    outsideBuilder: (context, day, focusedDay) => _buildCell(day, Colors.grey.shade400),
-                    selectedBuilder: (context, day, focusedDay) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.pinkAccent, width: 2),
-                          borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF0F0),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: _getMoodColor(selectedEmoji),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            selectedEmoji,
+                            style: const TextStyle(fontSize: 32),
+                          ),
                         ),
-                        child: _buildCell(day, Colors.black),
-                      );
-                    },
+                        const SizedBox(height: 16),
+                        Text(
+                          dailyQuote,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.black87,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 24),
-
-              // --- Dynamic Insight Quote Card ---
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0F0),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: _getMoodColor(selectedEmoji),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        selectedEmoji,
-                        style: const TextStyle(fontSize: 32),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      dailyQuote,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.black87,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildCell(DateTime day, Color textColor) {
-    String? emoji = _userLoggedMoods[_normalizeDate(day)];
+  Widget _buildCell(DateTime day, Color textColor, Map<DateTime, String> moodMap) {
+    String? emoji = moodMap[_normalizeDate(day)];
     Color glowColor = emoji != null ? _getMoodColor(emoji) : Colors.transparent;
 
     return Container(
@@ -309,8 +314,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
               shape: BoxShape.circle,
               boxShadow: emoji != null ? [
                 BoxShadow(
-                  // FIXED: Changed .withOpacity to modern .withValues() method
-                  color: glowColor.withValues(alpha: 0.4),
+                  color: glowColor.withOpacity(0.4),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -326,5 +330,3 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
     );
   }
 }
-
-

@@ -1,32 +1,14 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:Gloclone/services/notification_service.dart';
+import 'package:Gloclone/models/notification_model.dart';
 
-class LocalNotificationService implements FlutterLocalNotificationsPlugin {
-  final FlutterLocalNotificationsPlugin _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
+class LocalNotificationService implements NotificationService {
+  @override
   Future<void> initialize() async {
-    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
-
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await _localNotificationsPlugin.initialize(initSettings);
+    // Initialize flutter_local_notifications settings here
   }
 
-  Future<void> showImmediateNotification({
-    required int id,
-    required String title,
-    required String body,
-  }) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'glo_channel_id',
-      'Glo Notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const NotificationDetails platformDetails = NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails());
-    await _localNotificationsPlugin.show(id, title, body, platformDetails);
+  @override
+  Future<void> showNotification(NotificationModel notification) async {
+    // Logic to trigger local alarms or periodic alerts (e.g. water reminders)
   }
 }

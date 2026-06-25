@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:glo/model/user_model_mood.dart';
 
 class UserModelMood {
   final String id;

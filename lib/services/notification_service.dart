@@ -1,5 +1,6 @@
+import 'package:glo/models/notification_model.dart';
+
 abstract class NotificationService {
   Future<void> initialize();
-  Future<String?> getDeviceToken();
-  void listenToIncomingNotifications(Function(Map<String, dynamic>) onNotificationReceived);
+  Future<void> showNotification(NotificationModel notification);
 }
