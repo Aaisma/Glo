@@ -9,6 +9,7 @@ import 'viewmodel/visit_viewmodel.dart';
 import 'viewmodel/health_viewmodel.dart';
 
 // Views
+import 'view/glo_splash_screen.dart';
 import 'view/glo_profile.dart';
 import 'view/medication_screen.dart';
 import 'view/add_medication_screen.dart';
@@ -33,7 +34,7 @@ class GloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String userId = "testUser123"; // ✅ define once
+    const String userId = "testUser123";
 
     return MultiProvider(
       providers: [
@@ -49,11 +50,11 @@ class GloApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: const Color(0xFFFFF7F8),
         ),
-        home: MedicationScreen(userId: userId),
+        home: const SplashScreen(),
         routes: {
           '/profile': (context) => const GloProfileScreen(),
           '/medications': (context) => MedicationScreen(userId: userId),
-          '/addMedication': (context) => AddMedicationScreen(userId: userId), // ✅ FIXED
+          '/addMedication': (context) => AddMedicationScreen(userId: userId),
           '/medicationHistory': (context) =>
               MedicationHistoryScreen(userId: userId),
           '/dermaVisit': (context) => const DermaVisitScreen(),

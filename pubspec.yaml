@@ -21,6 +21,7 @@ dependencies:
   cached_network_image: ^3.4.1
   image_picker: ^1.2.2
   cloudinary_public: ^0.23.1
+  flutter_animated_splash: ^0.0.10
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +43,9 @@ flutter:
     - assets/images/profilepicture.png
     - assets/images/labresult.png
     - assets/images/logdocvisit.png
+    - assets/images/splash_background.png
     - assets/images/notes.png
     - assets/images/prescription.png
     - assets/images/skintips.png
     - assets/images/background1.png
+
