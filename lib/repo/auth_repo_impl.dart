@@ -5,7 +5,7 @@ import 'auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  static const String _googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
+  static const String _googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
 
   @override
   Future<UserCredential> signInWithEmail(String email, String password) async {
