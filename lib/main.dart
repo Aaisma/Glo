@@ -2,36 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'viewmodel/wellness_viewmodel.dart';
-import 'view/wellness_dashboard_screen.dart';
-
-<<<<<<< Updated upstream
-import 'view/glo_splash_screen.dart';
-import 'view/authentication/auth_wrapper.dart';
-import 'view/authentication/authentication_page.dart';
-import 'view/authentication/login_screen.dart';
-import 'view/authentication/register_screen.dart';
-import 'view/survey_page.dart';
-import 'view/navigation_icon/glo_profile.dart';
-import 'view/dashboard_page.dart';
-import 'view/admin/admin_dashboard_page.dart';
-import 'view/navigation_icon/insight_page.dart';
-import 'view/dashboard_card/ovulation_period_page.dart';
-import 'view/dashboard_card/period_tracker.dart';
-import 'view/dashboard_card/log_symptoms_page.dart';
-
-// Repos
-import 'repo/user_repo_impl.dart';
-import 'repo/auth_repo_impl.dart';
-import 'repo/period_repo_impl.dart';
-import 'repo/ovulation_repo_impl.dart';
-import 'repo/insights_repo_impl.dart';
-import 'repo/community_repo_impl.dart';
-import 'repo/insights_moderation_repo_impl.dart';
-import 'repo/community_moderation_repo_impl.dart';
-import 'repo/acne_repo_impl.dart';
 
 // ViewModels
+import 'viewmodel/wellness_viewmodel.dart';
 import 'viewmodel/user_view_model.dart';
 import 'viewmodel/auth_view_model.dart';
 import 'viewmodel/period_view_model.dart';
@@ -53,23 +26,31 @@ import 'repo/community_repo_impl.dart';
 import 'repo/insights_moderation_repo_impl.dart';
 import 'repo/community_moderation_repo_impl.dart';
 import 'repo/acne_repo_impl.dart';
-import 'repo/Image_repo_impl.dart';
+import 'repo/image_repo_impl.dart';
 
-// Additional views for dev menu
+// Views
+import 'view/wellness_dashboard_screen.dart';
+import 'view/glo_splash_screen.dart';
+import 'view/authentication/auth_wrapper.dart';
+import 'view/authentication/authentication_page.dart';
+import 'view/authentication/login_screen.dart';
+import 'view/authentication/register_screen.dart';
+import 'view/survey_page.dart';
+import 'view/navigation_icon/glo_profile.dart';
+import 'view/dashboard_page.dart';
+import 'view/admin/admin_dashboard_page.dart';
+import 'view/navigation_icon/insight_page.dart';
+import 'view/dashboard_card/ovulation_period_page.dart';
+import 'view/dashboard_card/period_tracker.dart';
+import 'view/dashboard_card/log_symptoms_page.dart';
 import 'view/community/user/community_discussions_view.dart';
 import 'view/insight/user/insights_feed_view.dart';
 
 void main() async {
-=======
-Future<void> main() async {
->>>>>>> Stashed changes
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const MyApp());
 }
 
@@ -80,7 +61,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-<<<<<<< Updated upstream
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
@@ -88,31 +68,27 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
         ChangeNotifierProvider(create: (_) => ImageViewModel(ImageRepoImpl())),
+        ChangeNotifierProvider(create: (_) => WellnessViewModel()),
 
-        // Insights Module ViewModels
+        // Insights Module
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
         ChangeNotifierProvider(create: (_) => FavoritesViewModel(InsightsRepoImpl(), CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => CreateInsightViewModel(InsightsRepoImpl())),
         ChangeNotifierProvider(create: (_) => InsightsLibraryViewModel(InsightsRepoImpl())),
         ChangeNotifierProvider(create: (_) => ArticleDetailViewModel(InsightsRepoImpl(), InsightsModerationRepoImpl())),
 
-        // Community Module ViewModels
+        // Community Module
         ChangeNotifierProvider(create: (_) => CommunityFeedViewModel(CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => DiscussionDetailViewModel(CommunityRepoImpl(), CommunityModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CreateDiscussionViewModel(CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => CreatePollViewModel(CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityLibraryViewModel(CommunityRepoImpl())),
 
-        // Separated Moderation ViewModels
+        // Moderation
         ChangeNotifierProvider(create: (_) => InsightsModerationQueueViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => InsightsModerationDetailViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationQueueViewModel(CommunityModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationDetailViewModel(CommunityModerationRepoImpl())),
-=======
-        ChangeNotifierProvider(
-          create: (_) => WellnessViewModel(),
-        ),
->>>>>>> Stashed changes
       ],
       child: MaterialApp(
         title: 'Glo Wellness',
@@ -122,7 +98,6 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFFFAFAFA),
           fontFamily: 'Roboto',
         ),
-<<<<<<< Updated upstream
         home: const DevMenuPage(),
         routes: {
           '/splash': (context) => const SplashScreen(),
@@ -134,10 +109,8 @@ class MyApp extends StatelessWidget {
           '/gloProfile': (context) => const GloProfileScreen(),
           '/dashboard': (context) => const DashboardScreen(),
           '/adminDashboard': (context) => const AdminDashboardPage(),
+          '/wellness': (context) => const WellnessDashboardScreen(),
         },
-=======
-        home: const WellnessDashboardScreen(),
->>>>>>> Stashed changes
       ),
     );
   }
@@ -158,6 +131,7 @@ class DevMenuPage extends StatelessWidget {
           _buildMenuItem(context, 'Splash Screen', const SplashScreen()),
           _buildMenuItem(context, 'Auth Wrapper (Default Flow)', const AuthWrapper()),
           _buildMenuItem(context, 'Dashboard', const DashboardScreen()),
+          _buildMenuItem(context, 'Wellness Dashboard', const WellnessDashboardScreen()),
           _buildMenuItem(context, 'Insight', const InsightsPage()),
           _buildMenuItem(context, 'Profile', const GloProfileScreen()),
           _buildMenuItem(context, 'Survey Page', const SurveyPage()),

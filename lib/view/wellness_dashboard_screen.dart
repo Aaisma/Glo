@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:gloclone/viewmodel/wellness_viewmodel.dart';
+import '../viewmodel/wellness_viewmodel.dart';
 
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
@@ -32,7 +32,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
         child: Consumer<WellnessViewModel>(
           builder: (context, viewModel, child) {
 
-            // Fix & Optimization: Safely initialize map and fallback if moodHistory is null or empty
+            // Fix & Optimization: Safely initialize map and fallback if moodHistory is empty
             final Map<String, int> liveMoodCounts = {
               'Amazing': 0,
               'Happy': 0,
@@ -41,12 +41,10 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
               'Sad': 0,
             };
 
-            // Safely iterate through the history once (O(N) instead of O(5N)) to avoid breakdown errors
-            if (viewModel.moodHistory != null) {
-              for (var mood in viewModel.moodHistory) {
-                if (liveMoodCounts.containsKey(mood.moodType)) {
-                  liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
-                }
+            // Safely iterate through the history
+            for (var mood in viewModel.moodHistory) {
+              if (liveMoodCounts.containsKey(mood.moodType)) {
+                liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
               }
             }
 
@@ -86,9 +84,9 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                   const SizedBox(height: 20),
 
                   // 2. Greeting Header Text Elements
-                  const Text(
-                    'Good Morning, Shiny 🌸',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
+                  Text(
+                    'Good Morning, ${viewModel.userName} 🌸',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -263,7 +261,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       Expanded(
                         child: _buildMetricCard(
                             'Current Streak',
-                            '${viewModel.currentStreak ?? 0}', // Safe null-check fallback
+                            '${viewModel.currentStreak}',
                             'days', '🔥', Colors.orange[50]!
                         ),
                       ),
@@ -271,7 +269,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       Expanded(
                         child: _buildMetricCard(
                             'Longest Streak',
-                            '${viewModel.longestStreak ?? 0}', // Safe null-check fallback
+                            '${viewModel.longestStreak}',
                             'days', '🏆', Colors.blue[50]!
                         ),
                       ),

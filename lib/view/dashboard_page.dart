@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gloclone/view/wellness_dashboard_screen.dart';
+import 'package:glo/view/wellness_dashboard_screen.dart';
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';

@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'shared_models.dart';
 
 enum ModerationReason { spam, misinformation, harassment, inappropriateContent, other }
 
@@ -13,7 +11,7 @@ class CommunityCategory {
   CommunityCategory({
     required this.id,
     required this.name,
-    required this.color,
+    this.color = '#FD8CA1',
     this.isActive = true,
   });
 
@@ -440,3 +438,5 @@ class ModerationItem {
     );
   }
 }
+
+import 'shared_models.dart';
