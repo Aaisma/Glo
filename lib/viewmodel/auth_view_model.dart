@@ -111,7 +111,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signInWithGoogle() async {
     _setLoading(true);
     try {
-      const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
+      const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '714010295460-brtm8b47nffm381uje37pkkbr7bvuenj.apps.googleusercontent.com');
       final GoogleSignIn googleSignIn = GoogleSignIn(
         clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
         serverClientId: googleClientId,

@@ -41,7 +41,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
 
-            if (userVM.loading || userVM.user == null) {
+            if (userVM.loading) {
+              return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            }
+
+            if (userVM.user == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                userVM.createDefaultProfile();
+              });
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
 
