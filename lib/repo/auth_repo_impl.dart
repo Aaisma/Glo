@@ -5,7 +5,6 @@ import 'auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  static const String _googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
 
   @override
   Future<UserCredential> signInWithEmail(String email, String password) async {
@@ -19,9 +18,8 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   Future<UserCredential> signInWithGoogle() async {
-    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn(
-      clientId: _googleClientId.isEmpty ? null : _googleClientId,
-    );
+    const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
+    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn(clientId: googleClientId);
     final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     if (googleUser == null) throw Exception("Google sign in cancelled");

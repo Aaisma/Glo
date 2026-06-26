@@ -9,7 +9,6 @@ import 'article_detail_view.dart';
 import 'favorites_view.dart';
 import '../../community/user/community_discussions_view.dart';
 import '../../community/user/discussion_detail_view.dart';
-import '../../../view/components/top_navigation.dart';
 
 class InsightsFeedView extends StatefulWidget {
   const InsightsFeedView({super.key});
@@ -48,79 +47,72 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InsightsFeedViewModel>();
-    const pinkTheme = Color(0xFFFD8CA1);
+    final pinkTheme = const Color(0xFFFD8CA1);
 
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/images/background.png"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Column(
-            children: [
-              const TopNavigation(),
-
-              // Search Bar & Bookmark
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (val) => viewModel.setSearchQuery(val),
-                          decoration: const InputDecoration(
-                            hintText: "Search articles, topics...",
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 14),
-                          ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF6F8),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.menu, color: Color(0xFF332B2C), size: 28),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        "Insights Feed",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF3E63),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.bookmark_border, color: Color(0xFF332B2C)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const FavoritesView()),
-                          );
-                        },
-                      ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.bookmark_border, color: Color(0xFF332B2C), size: 28),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const FavoritesView()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) => viewModel.setSearchQuery(val),
+                  decoration: const InputDecoration(
+                    hintText: "Search articles, topics, experts...",
+                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
               ),
+            ),
 
             // Category Chips List
             _buildCategorySection(viewModel, pinkTheme),
@@ -160,9 +152,9 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                 ],
 
                                 // Latest Insights
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
+                                  children: const [
                                     Text(
                                       "Latest Insights",
                                       style: TextStyle(
@@ -251,7 +243,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
           ],
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildCategorySection(InsightsFeedViewModel viewModel, Color activeColor) {
@@ -621,8 +613,8 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
-                            children: [
+                          Row(
+                            children: const [
                               Icon(Icons.chat_bubble_outline, size: 10, color: Colors.deepPurple),
                               SizedBox(width: 4),
                               Text(

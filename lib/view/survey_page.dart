@@ -5,7 +5,6 @@ import '../../model/onboarding_survey_data.dart';
 import '../../viewmodel/user_view_model.dart';
 import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
-import '../../constants/ayd_colour.dart';
 import 'components/onboarding_widgets.dart';
 
 class SurveyPage extends StatefulWidget {
@@ -50,8 +49,6 @@ class _SurveyPageState extends State<SurveyPage> {
     _heightController.addListener(_updateBmi);
     _feetController.addListener(_updateBmi);
     _inchesController.addListener(_updateBmi);
-    _ageController.addListener(() => setState(() {}));
-    _waterGoalController.addListener(() => setState(() {}));
   }
 
   void _syncDataToControllers(OnboardingSurveyData data) {
@@ -93,16 +90,16 @@ class _SurveyPageState extends State<SurveyPage> {
       data.bmi = bmi;
       if (bmi < 18.5) {
         data.bmiStatus = "Underweight";
-        data.bmiTip = "Focus on nutrient-rich foods to fuel your glow! Healthy fats and proteins can support your energy and overall wellness.";
+        data.bmiTip = "✨ Focus on nutrient-rich foods to fuel your glow!";
       } else if (bmi < 25) {
         data.bmiStatus = "Healthy Weight";
-        data.bmiTip = "Great job maintaining a healthy BMI. Continue focusing on balanced nutrition, regular physical activity, hydration, and adequate sleep to support your overall wellness.";
+        data.bmiTip = "Great!\nYour BMI falls within the healthy range.\nMaintaining hydration,\nbalanced nutrition,\nand regular activity\ncan support long-term wellness.";
       } else if (bmi < 30) {
         data.bmiStatus = "Overweight";
-        data.bmiTip = "Small steps in movement can lead to big changes! Consider adding gentle, consistent activity to your daily routine.";
+        data.bmiTip = "🌸 Small steps in movement can lead to big changes!";
       } else {
         data.bmiStatus = "Obese";
-        data.bmiTip = "Prioritize self-care by focusing on nourishing whole foods and gentle, regular activity. Consult with a healthcare provider for personalized guidance.";
+        data.bmiTip = "Prioritize self-care! Focus on nourishing whole foods and gentle, regular activity.";
       }
     } else {
       data.bmi = null;
@@ -159,7 +156,7 @@ class _SurveyPageState extends State<SurveyPage> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: AydColors.primaryPink),
+          child: CircularProgressIndicator(color: primaryPink),
         ),
       );
 
@@ -207,7 +204,7 @@ class _SurveyPageState extends State<SurveyPage> {
     final data = userVM.surveyData;
 
     return Scaffold(
-      backgroundColor: AydColors.accentLightPink,
+      backgroundColor: accentLightPink,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -247,7 +244,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     ],
                     Expanded(
                       child: PrimaryActionButton(
-                        text: _currentStep == _totalSteps - 1 ? "Start My Journey" : "Next",
+                        text: _currentStep == _totalSteps - 1 ? "Start My Journey ✨" : "Next",
                         onPressed: _isStepValid(data)
                             ? (_currentStep == _totalSteps - 1 ? _finalizeRegistration : _nextPage)
                             : null,
@@ -265,7 +262,7 @@ class _SurveyPageState extends State<SurveyPage> {
     return OnboardingPageScaffold(
       currentStep: _currentStep,
       totalSteps: _totalSteps,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Let's get to know you. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Let's get to know you 💕",
       subtitle: "Your answers help us personalize your skincare & wellness journey.",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -302,7 +299,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     hintText: "Age",
                     suffixText: "years",
                     filled: true,
-                    fillColor: AydColors.accentLightPink.withValues(alpha: 0.3),
+                    fillColor: accentLightPink.withOpacity(0.3),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
@@ -325,7 +322,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Your Body Basics. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Your Body Basics ✨",
       subtitle: "Helps us give you better insights and recommendations.",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -345,7 +342,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Weight",
                           filled: true,
-                          fillColor: AydColors.accentLightPink.withValues(alpha: 0.3),
+                          fillColor: accentLightPink.withOpacity(0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -404,7 +401,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     decoration: InputDecoration(
                       hintText: "Height in cm",
                       filled: true,
-                      fillColor: AydColors.accentLightPink.withValues(alpha: 0.3),
+                      fillColor: accentLightPink.withOpacity(0.3),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     ),
                   )
@@ -418,7 +415,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Feet",
                             filled: true,
-                            fillColor: AydColors.accentLightPink.withValues(alpha: 0.3),
+                            fillColor: accentLightPink.withOpacity(0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -431,7 +428,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Inches",
                             filled: true,
-                            fillColor: AydColors.accentLightPink.withValues(alpha: 0.3),
+                            fillColor: accentLightPink.withOpacity(0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -441,12 +438,6 @@ class _SurveyPageState extends State<SurveyPage> {
               ],
             ),
           ),
-          if (data.bmi != null)
-            DynamicTipCard(
-              title: "BMI Tip",
-              text: data.bmiTip ?? "",
-              icon: const Image(image: AssetImage("assets/images/survey/tips/heart_character.png"), width: 40, height: 40),
-            ),
           QuestionCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +453,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Water Goal",
                           filled: true,
-                          fillColor: AydColors.appBackground.withValues(alpha: 0.5),
+                          fillColor: accentLightPink.withOpacity(0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -470,7 +461,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     const SizedBox(width: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(color: AydColors.cardBackground, borderRadius: BorderRadius.circular(12), border: Border.all(color: AydColors.softSurface)),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.black12)),
                       child: const Text("Liters", style: TextStyle(fontWeight: FontWeight.bold)),
                     )
                   ],
@@ -478,10 +469,21 @@ class _SurveyPageState extends State<SurveyPage> {
               ],
             ),
           ),
-          const DynamicTipCard(
-            title: "Hydration Tip",
-            text: "Good hydration level. Maintain consistency throughout the day to keep your skin glowing.",
-            icon: Image(image: AssetImage("assets/images/survey/tips/water_bottle.png"), width: 50, height: 50),
+          // Stacked vertical tip cards (Hydration tip + BMI Tip if calculated)
+          Column(
+            children: [
+              const DynamicTipCard(
+                title: "Hydration Tip",
+                text: "Good hydration level. Maintain consistency throughout the day.",
+                icon: Image(image: AssetImage("assets/images/survey/tips/water_bottle.png"), width: 40, height: 40),
+              ),
+              if (data.bmi != null)
+                DynamicTipCard(
+                  title: "BMI Tip",
+                  text: "Calculated BMI: ${data.bmi!.toStringAsFixed(1)} (${data.bmiStatus})",
+                  icon: const Image(image: AssetImage("assets/images/survey/tips/heart_character.png"), width: 40, height: 40),
+                ),
+            ],
           ),
         ],
       ),
@@ -494,7 +496,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Here's your BMI. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Here's your BMI",
       subtitle: "",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -508,7 +510,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 const SizedBox(height: 8),
                 Text(
                   data.bmi?.toStringAsFixed(1) ?? "--",
-                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: AydColors.primaryPink),
+                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: primaryPink),
                 ),
                 Text(
                   data.bmiStatus ?? "Unknown",
@@ -526,7 +528,7 @@ class _SurveyPageState extends State<SurveyPage> {
             duration: const Duration(milliseconds: 300),
             child: DynamicTipCard(
               key: ValueKey(data.bmiStatus ?? 'empty'),
-              title: "Wellness Insight",
+              title: "💡 Wellness Insight",
               text: data.bmiTip ?? "Please enter your height and weight in the previous step to get a personalized wellness insight card.",
             ),
           ),
@@ -561,7 +563,7 @@ class _SurveyPageState extends State<SurveyPage> {
             // Positioned indicator heart
             Positioned(
               left: (constraints.maxWidth - 24) * relativePosition,
-              child: const Icon(Icons.favorite, color: AydColors.primaryPink, size: 24),
+              child: const Icon(Icons.favorite, color: primaryPink, size: 24),
             ),
           ],
         );
@@ -575,7 +577,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Let's track your cycle. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Let's track your cycle 🌸",
       subtitle: "When did your last period start?",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -619,7 +621,7 @@ class _SurveyPageState extends State<SurveyPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const Icon(Icons.calendar_month, color: AydColors.primaryPink),
+                        const Icon(Icons.calendar_month, color: primaryPink),
                       ],
                     ),
                   ),
@@ -632,8 +634,19 @@ class _SurveyPageState extends State<SurveyPage> {
             text: "Tracking your cycle regularly helps improve period and ovulation predictions over time.",
             icon: Image(image: AssetImage("assets/images/survey/tips/cute_calender.png"), width: 40, height: 40),
           ),
-          const SurveyNoteCard(
-            text: "You can always edit your cycle information later from the Period & Ovulation Tracker in the app.",
+          QuestionCard(
+            child: Row(
+              children: const [
+                Icon(Icons.edit_note, color: primaryPink),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Note: You can always edit your cycle information later from the Period & Ovulation Tracker in the app.",
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -646,7 +659,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Tell us about your skin. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Tell us about your skin ✨",
       subtitle: "What is your skin type?",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -657,18 +670,15 @@ class _SurveyPageState extends State<SurveyPage> {
               children: [
                 const Text("What is your skin type?", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                Column(
-                  children: [
-                    SurveyOptionTile(title: 'Normal', imagePath: 'assets/images/survey/skin_type/normal_skin.png', isSelected: data.skinType == 'Normal', onTap: () { setState(() { data.skinType = 'Normal'; }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Dry', imagePath: 'assets/images/survey/skin_type/dry_skin.png', isSelected: data.skinType == 'Dry', onTap: () { setState(() { data.skinType = 'Dry'; }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Oily', imagePath: 'assets/images/survey/skin_type/oily_skin.png', isSelected: data.skinType == 'Oily', onTap: () { setState(() { data.skinType = 'Oily'; }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Combination', imagePath: 'assets/images/survey/skin_type/combination_skin.png', isSelected: data.skinType == 'Combination', onTap: () { setState(() { data.skinType = 'Combination'; }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Sensitive', imagePath: 'assets/images/survey/skin_type/sensitive_skin.png', isSelected: data.skinType == 'Sensitive', onTap: () { setState(() { data.skinType = 'Sensitive'; }); _updateBmi(); }),
-                  ],
+                OptionSelector(
+                  options: const ['Normal', 'Dry', 'Oily', 'Combination', 'Sensitive'],
+                  selectedOptions: data.skinType != null ? [data.skinType!] : [],
+                  onSelected: (val) {
+                    setState(() {
+                      data.skinType = val;
+                    });
+                    _updateBmi();
+                  },
                 ),
               ],
             ),
@@ -710,7 +720,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Your acne concerns. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Your acne concerns 💖",
       subtitle: "Which types of acne do you usually experience? (Choose all that apply)",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -721,46 +731,26 @@ class _SurveyPageState extends State<SurveyPage> {
               children: [
                 const Text("Select Acne Concerns", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                Column(
-                  children: [
-                    SurveyOptionTile(title: 'None', imagePath: 'assets/images/survey/acne_type/clear.png', isSelected: data.acneTypes.contains('None'), onTap: () { setState(() { data.acneTypes.clear(); data.acneTypes.add('None'); }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Whiteheads', imagePath: 'assets/images/survey/acne_type/whitehead.png', isSelected: data.acneTypes.contains('Whiteheads'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Whiteheads')) {
-                      data.acneTypes.remove('Whiteheads');
-                    } else {
-                      data.acneTypes.add('Whiteheads');
-                    } }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Blackheads', imagePath: 'assets/images/survey/acne_type/blackhead.png', isSelected: data.acneTypes.contains('Blackheads'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Blackheads')) {
-                      data.acneTypes.remove('Blackheads');
-                    } else {
-                      data.acneTypes.add('Blackheads');
-                    } }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Cystic', imagePath: 'assets/images/survey/acne_type/cystic.png', isSelected: data.acneTypes.contains('Cystic'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Cystic')) {
-                      data.acneTypes.remove('Cystic');
-                    } else {
-                      data.acneTypes.add('Cystic');
-                    } }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Pustules', imagePath: 'assets/images/survey/acne_type/pustules.png', isSelected: data.acneTypes.contains('Pustules'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Pustules')) {
-                      data.acneTypes.remove('Pustules');
-                    } else {
-                      data.acneTypes.add('Pustules');
-                    } }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Nodules', imagePath: 'assets/images/survey/acne_type/nodules.png', isSelected: data.acneTypes.contains('Nodules'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Nodules')) {
-                      data.acneTypes.remove('Nodules');
-                    } else {
-                      data.acneTypes.add('Nodules');
-                    } }); _updateBmi(); }),
-                    const SizedBox(height: 8),
-                    SurveyOptionTile(title: 'Not Sure', imagePath: 'assets/images/survey/acne_type/not_sure.png', isSelected: data.acneTypes.contains('Not Sure'), onTap: () { setState(() { data.acneTypes.remove('None'); if(data.acneTypes.contains('Not Sure')) {
-                      data.acneTypes.remove('Not Sure');
-                    } else {
-                      data.acneTypes.add('Not Sure');
-                    } }); _updateBmi(); }),
-                  ],
+                OptionSelector(
+                  options: const ['None', 'Whiteheads', 'Blackheads', 'Cystic', 'Pustules', 'Nodules', 'Not Sure'],
+                  selectedOptions: data.acneTypes,
+                  multiSelect: true,
+                  onSelected: (val) {
+                    setState(() {
+                      if (val == 'None') {
+                        data.acneTypes.clear();
+                        data.acneTypes.add('None');
+                      } else {
+                        data.acneTypes.remove('None');
+                        if (data.acneTypes.contains(val)) {
+                          data.acneTypes.remove(val);
+                        } else {
+                          data.acneTypes.add(val);
+                        }
+                      }
+                    });
+                    _updateBmi();
+                  },
                 ),
               ],
             ),
@@ -781,7 +771,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁About your treatments. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "About your treatments 💊",
       subtitle: "Are you currently using any acne treatments?",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -882,7 +872,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁Dermatology care. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "Dermatology care 👩‍⚕️",
       subtitle: "Do you visit a dermatologist for expert care?",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -966,7 +956,7 @@ class _SurveyPageState extends State<SurveyPage> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const Icon(Icons.calendar_month, color: AydColors.primaryPink),
+                          const Icon(Icons.calendar_month, color: primaryPink),
                         ],
                       ),
                     ),
@@ -990,7 +980,7 @@ class _SurveyPageState extends State<SurveyPage> {
       currentStep: _currentStep,
       totalSteps: _totalSteps,
       onBack: _prevPage,
-      title: ". ݁₊ ⊹ . ݁˖ . ݁All set, Lovely!. ݁₊ ⊹ . ݁˖ . ݁",
+      title: "All set, Lovely! 🎉",
       subtitle: "Here's your personalized wellness snapshot.",
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1004,20 +994,21 @@ class _SurveyPageState extends State<SurveyPage> {
             ),
           ),
           const SizedBox(height: 16),
-          // Single-Column list of Wellness Cards
-          Column(
+          // 2-Column Grid of Wellness Cards
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.3,
             children: [
-              _buildSnapshotCard("‧₊˚❀༉‧₊˚.Cycle Tracking", data.lastCycleDate != null ? "Enabled" : "Not Enabled", true),
-              const SizedBox(height: 12),
-              _buildSnapshotCard("₊˚.𓆝༄.°.Water Goal", "${data.waterGoal ?? 2.0} Liters Daily", true),
-              const SizedBox(height: 12),
-              _buildSnapshotCard("₊˚ ༘⋆༄.°⋆BMI Status", "${data.bmi?.toStringAsFixed(1) ?? '--'} - ${data.bmiStatus ?? 'Normal'}", true),
-              const SizedBox(height: 12),
-              _buildSnapshotCard("₊˚✴⋆︎˚⋆.Skin Type", "${data.skinType ?? 'Normal'} Skin", true),
-              const SizedBox(height: 12),
-              _buildSnapshotCard("₊˚♡౨‧｡⋆.Acne Concerns", data.acneTypes.join(", "), data.acneTypes.isNotEmpty && !data.acneTypes.contains("None")),
-              const SizedBox(height: 12),
-              _buildSnapshotCard("₊˚˖𓂃☘︎₊˚.Treatment", data.usesMedication ? "${data.medicationType ?? 'Topical'} (${data.medicationTime ?? 'Evening'})" : "No Treatment", data.usesMedication),
+              _buildSnapshotCard("🌸 Cycle Tracking", data.lastCycleDate != null ? "Enabled" : "Not Enabled", true),
+              _buildSnapshotCard("💧 Water Goal", "${data.waterGoal ?? 2.0} Liters Daily", true),
+              _buildSnapshotCard("⚖️ BMI Status", "${data.bmi?.toStringAsFixed(1) ?? '--'}\n${data.bmiStatus ?? 'Normal'}", true),
+              _buildSnapshotCard("✨ Skin Type", "${data.skinType ?? 'Normal'} Skin", true),
+              _buildSnapshotCard("❤️ Acne Concerns", data.acneTypes.join(", "), data.acneTypes.isNotEmpty && !data.acneTypes.contains("None")),
+              _buildSnapshotCard("💊 Treatment", data.usesMedication ? "${data.medicationType ?? 'Topical'} (${data.medicationTime ?? 'Evening'})" : "No Treatment", data.usesMedication),
             ],
           ),
         ],
@@ -1033,7 +1024,7 @@ class _SurveyPageState extends State<SurveyPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1045,9 +1036,9 @@ class _SurveyPageState extends State<SurveyPage> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: [
               // Visual status badge dot
@@ -1063,7 +1054,7 @@ class _SurveyPageState extends State<SurveyPage> {
               Expanded(
                 child: Text(
                   status,
-                  style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w500),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1078,7 +1069,7 @@ class _SurveyPageState extends State<SurveyPage> {
   // STEP 10: Review answers page (New screen with sticky bottom CTA)
   Widget _buildStep10ReviewAnswers(OnboardingSurveyData data) {
     return Scaffold(
-      backgroundColor: AydColors.accentLightPink,
+      backgroundColor: accentLightPink,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1105,7 +1096,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     child: LinearProgressIndicator(
                       value: (_currentStep + 1) / _totalSteps,
                       backgroundColor: Colors.white,
-                      color: AydColors.primaryPink,
+                      color: primaryPink,
                       minHeight: 6,
                     ),
                   ),
@@ -1121,9 +1112,9 @@ class _SurveyPageState extends State<SurveyPage> {
               padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: Column(
                 children: [
-                  Text(". ݁₊ ⊹ . ݁˖ .Review Your Profile. ݁₊ ⊹ . ݁˖ .", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text("Review Your Profile ✨", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
                   SizedBox(height: 4),
-                  Text("Check your information before completing setup. You can edit any section.", style: TextStyle(color: AydColors.primaryPink, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                  Text("Check your information before completing setup. You can edit any section.", style: TextStyle(color: primaryPink, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -1133,7 +1124,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 children: [
                   // Personal Info Card
                   ReviewAnswerSection(
-                    icon: "⏱༄⚘.",
+                    icon: "👤",
                     title: "Personal Information",
                     onEdit: () => _editPersonalSection(data),
                     fields: [
@@ -1143,7 +1134,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Body Basics Card
                   ReviewAnswerSection(
-                    icon: "₊˚.𓆝༄.°",
+                    icon: "⚖️",
                     title: "Body Basics",
                     onEdit: () => _editBodyBasicsSection(data),
                     fields: [
@@ -1156,7 +1147,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Cycle Tracking Card
                   ReviewAnswerSection(
-                    icon: "‧₊˚❀༉‧₊˚.",
+                    icon: "🌸",
                     title: "Cycle Tracking",
                     onEdit: () => _editCycleSection(data),
                     fields: [
@@ -1165,7 +1156,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Skin Profile Card
                   ReviewAnswerSection(
-                    icon: "₊˚✴⋆︎˚⋆.",
+                    icon: "✨",
                     title: "Skin Profile",
                     onEdit: () => _editSkinProfileSection(data),
                     fields: [
@@ -1175,7 +1166,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Acne Concerns Card
                   ReviewAnswerSection(
-                    icon: "₊˚ ༘⋆༄.°⋆",
+                    icon: "❤️",
                     title: "Acne Concerns",
                     onEdit: () => _editAcneSection(data),
                     fields: [
@@ -1184,8 +1175,8 @@ class _SurveyPageState extends State<SurveyPage> {
                         spacing: 6,
                         runSpacing: 6,
                         children: data.acneTypes.map((c) => Chip(
-                          label: Text(c, style: const TextStyle(fontSize: 11, color: AydColors.primaryPink)),
-                          backgroundColor: AydColors.primaryPink.withValues(alpha: 0.1),
+                          label: Text(c, style: const TextStyle(fontSize: 11, color: primaryPink)),
+                          backgroundColor: primaryPink.withOpacity(0.1),
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1195,7 +1186,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Treatments Card
                   ReviewAnswerSection(
-                    icon: "₊˚˖𓂃☘︎₊˚.",
+                    icon: "💊",
                     title: "Treatments",
                     onEdit: () => _editTreatmentsSection(data),
                     fields: [
@@ -1208,7 +1199,7 @@ class _SurveyPageState extends State<SurveyPage> {
                   ),
                   // Dermatology Card
                   ReviewAnswerSection(
-                    icon: "₊˚ ༘⋆༄.°⋆",
+                    icon: "👩‍⚕️",
                     title: "Dermatology",
                     onEdit: () => _editDermatologySection(data),
                     fields: [
@@ -1225,7 +1216,7 @@ class _SurveyPageState extends State<SurveyPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: PrimaryActionButton(
-                  text: "Looks Good",
+                  text: "Looks Good ✨",
                   onPressed: _nextPage,
                 ),
               ),
@@ -1238,13 +1229,12 @@ class _SurveyPageState extends State<SurveyPage> {
 
   Widget _buildReviewField(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontSize: 13, color: Colors.black54)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
         ],
       ),
     );
@@ -1266,7 +1256,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Personal Info. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Personal Info 👤", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   const Text("Age Group", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 8),
@@ -1321,7 +1311,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Body Basics. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Body Basics ⚖️", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _weightController,
@@ -1432,7 +1422,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Last Period Date. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Last Period Date 🌸", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 20),
                   InkWell(
                     onTap: () async {
@@ -1454,7 +1444,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(data.lastCycleDate == null ? "Select Date" : DateFormat('MMMM dd, yyyy').format(data.lastCycleDate!)),
-                          const Icon(Icons.calendar_month, color: AydColors.primaryPink),
+                          const Icon(Icons.calendar_month, color: primaryPink),
                         ],
                       ),
                     ),
@@ -1491,7 +1481,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Skin Profile. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Skin Profile ✨", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   const Text("Skin Type", style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
@@ -1553,7 +1543,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Acne Concerns. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Acne Concerns ❤️", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   OptionSelector(
                     options: const ['None', 'Whiteheads', 'Blackheads', 'Cystic', 'Pustules', 'Nodules', 'Not Sure'],
@@ -1608,7 +1598,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Treatments. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Treatments 💊", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -1694,7 +1684,7 @@ class _SurveyPageState extends State<SurveyPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(". ݁₊ ⊹ . ݁˖ . ݁Edit Dermatology Care. ݁₊ ⊹ . ݁˖ . ݁", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AydColors.primaryPink)),
+                  const Text("Edit Dermatology Care 👩‍⚕️", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPink)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -1746,7 +1736,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(data.lastDermaVisit == null ? "Select Date" : DateFormat('MMMM dd, yyyy').format(data.lastDermaVisit!)),
-                            const Icon(Icons.calendar_month, color: AydColors.primaryPink),
+                            const Icon(Icons.calendar_month, color: primaryPink),
                           ],
                         ),
                       ),
@@ -1904,7 +1894,7 @@ class _SurveyPageState extends State<SurveyPage> {
           DynamicTipCard(
             title: "${selectedFeature["icon"]} ${selectedFeature["title"]}",
             text: "${selectedFeature["description"]}\n\nThis tracker will be initialized automatically based on your survey answers once you complete setup.",
-            icon: Image(image: AssetImage(selectedFeature["image"]!), width: 44, height: 44, errorBuilder: (_, __, ___) => const Icon(Icons.star, color: AydColors.primaryPink, size: 36)),
+            icon: Image(image: AssetImage(selectedFeature["image"]!), width: 44, height: 44, errorBuilder: (_, __, ___) => const Icon(Icons.star, color: primaryPink, size: 36)),
           ),
         ],
       ),

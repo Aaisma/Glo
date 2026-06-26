@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../viewmodel/insight_view_model.dart';
-import '../../../constants/ayd_colour.dart';
 import 'create_poll_view.dart';
 import 'create_insight_details_view.dart';
 import 'create_insight_preview_view.dart';
@@ -63,7 +62,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateInsightViewModel>();
-    final themeColor = AydColors.adminPrimary;
+    final themeColor = Colors.deepPurple;
 
     // Trigger draft dialog after frame paint if flag set
     if (viewModel.showDraftRecovery) {
@@ -72,15 +71,8 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
       });
     }
 
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/admin_background.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF6F8),
       appBar: AppBar(
         title: const Text(
           "Create Insight",
@@ -107,7 +99,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             },
             child: const Text(
               "Save Draft",
-              style: TextStyle(color: AydColors.adminPrimary, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -132,7 +124,6 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
               ),
             ),
           ],
-        ),
         ),
       ),
     );
@@ -331,8 +322,8 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             children: [
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AydColors.adminPrimary,
-                  side: BorderSide(color: AydColors.adminPrimary.withValues(alpha: 0.3)),
+                  foregroundColor: Colors.deepPurple,
+                  side: BorderSide(color: Colors.deepPurple.shade200),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),

@@ -4,73 +4,59 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  static const String _googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
-
-  String? _verificationId;
+  final AuthRepo _authRepo;
+  final UserRepo _userRepo;
+  
+  User? _user;
   bool _loading = false;
   String? _error;
-
-  bool get loading => _loading;
-
   String? get error => _error;
+  void _setError(String? value) {
+    _error = value;
+    notifyListeners();
+  }
+
+  AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo}) 
+      : _authRepo = authRepo, 
+        _userRepo = userRepo {
+    _user = _authRepo.currentUser;
+  }
+
+  User? get user => _user;
+  bool get loading => _loading;
 
   void _setLoading(bool value) {
     _loading = value;
     notifyListeners();
   }
 
-  void _setError(String? value) {
-    _error = value;
-    notifyListeners();
-  }
-
-  //Sending OTP
-  Future<void> sendOtp(String phoneNumber) async {
+  Future<void> login(BuildContext context, String email, String password) async {
     _setLoading(true);
     try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          _setError(null);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          _setError(e.message);
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          _verificationId = verificationId;
-          _setError(null);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          _verificationId = verificationId;
-        },
-      );
+      final credential = await _authRepo.signInWithEmail(email, password);
+      _user = credential.user;
+      notifyListeners();
+      if (context.mounted) {
+        await checkUserProfile(context, _user!.uid);
+      }
     } catch (e) {
-      _setError(e.toString());
+      rethrow;
     } finally {
       _setLoading(false);
     }
   }
 
-  //Verifying OTP
-  Future<bool> verifyOtp(String smsCode) async {
-    if (_verificationId == null) {
-      _setError("No verification ID found");
-      return false;
-    }
-
+  Future<User?> signUp(String email, String password) async {
+    _setLoading(true);
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: smsCode,
-      );
-      await _auth.signInWithCredential(credential);
-      _setError(null);
-      return true;
+      final credential = await _authRepo.signUpWithEmail(email, password);
+      _user = credential.user;
+      notifyListeners();
+      return _user;
     } catch (e) {
-      _setError(e.toString());
-      return false;
+      rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -120,9 +106,8 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signInWithGoogle() async {
     _setLoading(true);
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        clientId: _googleClientId.isEmpty ? null : _googleClientId,
-      );
+      const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
+      final GoogleSignIn googleSignIn = GoogleSignIn(clientId: googleClientId);
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         _setLoading(false);

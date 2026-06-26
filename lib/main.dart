@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -13,10 +14,6 @@ import 'view/survey_page.dart';
 import 'view/navigation_icon/glo_profile.dart';
 import 'view/dashboard_page.dart';
 import 'view/admin/admin_dashboard_page.dart';
-import 'view/navigation_icon/insight_page.dart';
-import 'view/dashboard_card/ovulation_period_page.dart';
-import 'view/dashboard_card/period_tracker.dart';
-import 'view/dashboard_card/log_symptoms_page.dart';
 
 // Repos
 import 'repo/user_repo_impl.dart';
@@ -39,23 +36,6 @@ import 'viewmodel/community_view_model.dart';
 import 'viewmodel/moderation_view_model.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
-import 'viewmodel/image_viewmodel.dart';
-
-// Repos
-import 'repo/user_repo_impl.dart';
-import 'repo/auth_repo_impl.dart';
-import 'repo/period_repo_impl.dart';
-import 'repo/ovulation_repo_impl.dart';
-import 'repo/insights_repo_impl.dart';
-import 'repo/community_repo_impl.dart';
-import 'repo/insights_moderation_repo_impl.dart';
-import 'repo/community_moderation_repo_impl.dart';
-import 'repo/acne_repo_impl.dart';
-import 'repo/Image_repo_impl.dart';
-
-// Additional views for dev menu
-import 'view/community/user/community_discussions_view.dart';
-import 'view/insight/user/insights_feed_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,7 +70,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
-        ChangeNotifierProvider(create: (_) => ImageViewModel(ImageRepoImpl())),
 
         // Insights Module ViewModels
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
@@ -119,7 +98,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const DevMenuPage(),
+        home: const SplashScreen(),
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/authWrapper': (context) => const AuthWrapper(),
@@ -136,48 +115,35 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class DevMenuPage extends StatelessWidget {
-  const DevMenuPage({super.key});
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      if (authVM.user != null) {
+        await authVM.checkUserProfile(context, authVM.user!.uid);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Developer Navigation Menu'),
-        backgroundColor: Colors.pink,
-      ),
-      body: ListView(
-        children: [
-          _buildMenuItem(context, 'Splash Screen', const SplashScreen()),
-          _buildMenuItem(context, 'Auth Wrapper (Default Flow)', const AuthWrapper()),
-          _buildMenuItem(context, 'Dashboard', const DashboardScreen()),
-          _buildMenuItem(context, 'Insight', const InsightsPage()),
-          _buildMenuItem(context, 'Profile', const GloProfileScreen()),
-          _buildMenuItem(context, 'Survey Page', const SurveyPage()),
-          _buildMenuItem(context, 'Ovulation Page', const OvulationPage()),
-          _buildMenuItem(context, 'Period Page', const PeriodTrackerView()),
-          _buildMenuItem(context, 'Log Symptoms Page', const LogSymptomsPage(isPeriod: false)),
-          _buildMenuItem(context, 'Admin Dashboard', const AdminDashboardPage()),
-          _buildMenuItem(context, 'Community Feed', const CommunityDiscussionsView()),
-          _buildMenuItem(context, 'Insights Feed', const InsightsFeedView()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(BuildContext context, String title, Widget page) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
-        },
-      ),
-    );
+    final authVM = Provider.of<AuthViewModel>(context);
+    if (authVM.user != null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    return const AuthenticationPage();
   }
 }

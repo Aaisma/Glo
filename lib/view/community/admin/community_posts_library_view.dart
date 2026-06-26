@@ -36,17 +36,11 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityLibraryViewModel>();
+    final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/admin_background.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF6F8),
       appBar: AppBar(
         title: const Text(
           "Community Library",
@@ -201,7 +195,6 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
               ),
             ],
           ),
-        ),
         ),
       ),
     );

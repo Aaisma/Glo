@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/insight_view_model.dart';
-import '../../../constants/ayd_colour.dart';
 import '../../../model/insight_models.dart';
 import 'create_insight_content_view.dart';
 import 'create_poll_view.dart';
@@ -29,15 +28,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
     final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/admin_background.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF6F8),
       appBar: AppBar(
         title: const Text(
           "Insights Library",
@@ -71,7 +63,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AydColors.adminPrimary,
+                        backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -91,8 +83,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AydColors.adminPrimary,
-                        side: BorderSide(color: AydColors.adminPrimary.withValues(alpha: 0.3)),
+                        foregroundColor: Colors.deepPurple,
+                        side: BorderSide(color: Colors.deepPurple.shade200),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -131,7 +123,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             // Table / Rows
             Expanded(
               child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AydColors.adminPrimary))
+                  ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
                   : viewModel.insights.isEmpty
                       ? const Center(child: Text("No articles found in this section 🌸", style: TextStyle(color: Colors.grey)))
                       : ListView.separated(
@@ -146,9 +138,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             ),
 
             // Pagination Controls
-            _buildPaginationBar(viewModel, AydColors.adminPrimary),
+            _buildPaginationBar(viewModel, Colors.deepPurple),
           ],
-        ),
         ),
       ),
     );
@@ -181,13 +172,13 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
               ),
               selected: isSelected,
               onSelected: (val) => viewModel.setTab(tab),
-              selectedColor: AydColors.adminPrimary,
+              selectedColor: Colors.deepPurple,
               backgroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? AydColors.adminPrimary : Colors.grey.shade300,
+                  color: isSelected ? Colors.deepPurple : Colors.grey.shade300,
                 ),
               ),
             ),
@@ -310,7 +301,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             onPressed: viewModel.currentPage > 1 ? viewModel.prevPage : null,
           ),
           const SizedBox(width: 8),
-          const Text("1", style: TextStyle(fontWeight: FontWeight.bold, color: AydColors.adminPrimary, fontSize: 12)),
+          const Text("1", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple, fontSize: 12)),
           const SizedBox(width: 8),
           const Text("2", style: TextStyle(color: Colors.grey, fontSize: 12)),
           const SizedBox(width: 8),

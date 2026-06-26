@@ -6,7 +6,6 @@ import '../../viewmodel/auth_view_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_pages/personal_info_page.dart';
 import 'package:image_picker/image_picker.dart';
-import '../components/top_navigation.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -112,24 +111,44 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/images/background.png"),
-          fit: BoxFit.cover,
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFE4EC), Color(0xFFFFF6F8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
+        child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const TopNavigation(),
+                // TOP HEADER
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Profile",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink,
+                      ),
+                    ),
+                    Row(
+                      children: const [
+                        Icon(Icons.calendar_today, color: Colors.pink),
+                        SizedBox(width: 12),
+                        Icon(Icons.notifications, color: Colors.pink),
+                      ],
+                    )
+                  ],
+                ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
                 // PROFILE CARD
                 Container(
@@ -142,27 +161,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                     children: [
                       Row(
                         children: [
-                          Consumer<ImageViewModel>(
-                            builder: (context, vm, child) {
-                              return Stack(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 25,
-                                    backgroundImage: vm.currentImage != null
-                                        ? NetworkImage(vm.currentImage!.url)
-                                        : const NetworkImage("https://i.pravatar.cc/150?img=47"),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.camera_alt, color: Colors.pink),
-                                      onPressed: () => _pickImage(context),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                          const CircleAvatar(
+                            radius: 25,
+                            backgroundImage: NetworkImage(
+                              "https://i.pravatar.cc/150?img=47",
+                            ),
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
