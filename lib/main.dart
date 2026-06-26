@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'viewmodel/wellness_viewmodel.dart';
+import 'view/wellness_dashboard_screen.dart';
 
+<<<<<<< Updated upstream
 import 'view/glo_splash_screen.dart';
 import 'view/authentication/auth_wrapper.dart';
 import 'view/authentication/authentication_page.dart';
@@ -58,21 +60,15 @@ import 'view/community/user/community_discussions_view.dart';
 import 'view/insight/user/insights_feed_view.dart';
 
 void main() async {
+=======
+Future<void> main() async {
+>>>>>>> Stashed changes
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Initialize Hive
-  await Hive.initFlutter();
-  await Hive.openBox('insights_box');
-  await Hive.openBox('community_box');
-  await Hive.openBox('insights_moderation_box');
-  await Hive.openBox('community_moderation_box');
-  await Hive.openBox('drafts_box');
-  await Hive.openBox('favorites_box');
-  await Hive.openBox('hidden_content_box');
-  await Hive.openBox('onboarding_box');
 
   runApp(const MyApp());
 }
@@ -84,6 +80,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+<<<<<<< Updated upstream
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
@@ -111,14 +108,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InsightsModerationDetailViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationQueueViewModel(CommunityModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationDetailViewModel(CommunityModerationRepoImpl())),
+=======
+        ChangeNotifierProvider(
+          create: (_) => WellnessViewModel(),
+        ),
+>>>>>>> Stashed changes
       ],
       child: MaterialApp(
+        title: 'Glo Wellness',
         debugShowCheckedModeBanner: false,
-        title: 'Glo Project',
         theme: ThemeData(
           primarySwatch: Colors.pink,
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+          fontFamily: 'Roboto',
         ),
+<<<<<<< Updated upstream
         home: const DevMenuPage(),
         routes: {
           '/splash': (context) => const SplashScreen(),
@@ -131,6 +135,9 @@ class MyApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardScreen(),
           '/adminDashboard': (context) => const AdminDashboardPage(),
         },
+=======
+        home: const WellnessDashboardScreen(),
+>>>>>>> Stashed changes
       ),
     );
   }
