@@ -11,10 +11,32 @@ class AydColors {
   static const Color warning = Color(0xFFD68B1F);
 
   // Survey, Insight, Community Feed, and Profile Pages Colors
-  static const Color primaryPink = Color(0xFFFF3E63);
-  static const Color accentLightPink = Color(0xFFFDECEF);
+  static const Color primaryPink = Color(0xFFF86A90);
+  static const Color ctaPink = Color(0xFFFF6F9E);
+  static const Color progressPink = Color(0xFFFF5C93);
+  static const Color appBackground = Color(0xFFFCF7F7);
+  static const Color cardBackground = Color(0xFFFFF9FA);
+  static const Color softSurface = Color(0xFFFBEAEC);
+  static const Color lightBlushSurface = Color(0xFFFDEFF2);
+  static const Color sectionBackground = Color(0xFFFFF5F7);
+  static const Color accentLightPink = Color(0xFFFDECEF); // Kept for backward compatibility
   static const Color borderPink = Color(0xFFFFD6E6);
   static const Color textDark = Color(0xFF332B2C);
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
+
+  // Admin Side Palette (Insight & Community)
+  static const Color adminPrimary = Color(0xFF8B6FF7);
+  static const Color adminSecondary = Color(0xFFF6A8C7);
+  static const Color adminTertiary = Color(0xFFB7E8FF);
+
+  // Insight Colors
+  static const Color insightButton = Color(0xFF8B6FF7);
+  static const Color insightTextPrimary = Color(0xFF332B2C);
+  static const Color insightTextSecondary = Colors.grey;
+
+  // Community Feed Colors
+  static const Color communityButton = Color(0xFF8B6FF7);
+  static const Color communityTextPrimary = Color(0xFF332B2C);
+  static const Color communityTextSecondary = Colors.grey;
 }

@@ -303,6 +303,15 @@ class CreateDiscussionViewModel extends ChangeNotifier {
 
   Future<void> loadCategories() async {
     _categories = await _repo.getCategories();
+    if (_categories.isEmpty) {
+      _categories = [
+        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true),
+        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true),
+        CommunityCategory(id: 'c3', name: 'Community', isActive: true),
+        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true),
+        CommunityCategory(id: 'c5', name: 'Trending', isActive: true),
+      ];
+    }
     if (_categories.isNotEmpty && _categoryId == null) {
       _categoryId = _categories.first.id;
     }
@@ -488,6 +497,15 @@ class CreatePollViewModel extends ChangeNotifier {
 
   Future<void> loadCategories() async {
     _categories = await _repo.getCategories();
+    if (_categories.isEmpty) {
+      _categories = [
+        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true),
+        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true),
+        CommunityCategory(id: 'c3', name: 'Community', isActive: true),
+        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true),
+        CommunityCategory(id: 'c5', name: 'Trending', isActive: true),
+      ];
+    }
     if (_categories.isNotEmpty && _categoryId == null) {
       _categoryId = _categories.first.id;
     }

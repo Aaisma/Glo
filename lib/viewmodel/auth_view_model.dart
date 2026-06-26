@@ -5,6 +5,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  static const String _googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
 
   String? _verificationId;
   bool _loading = false;
@@ -119,7 +120,9 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signInWithGoogle() async {
     _setLoading(true);
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: _googleClientId.isEmpty ? null : _googleClientId,
+      );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         _setLoading(false);

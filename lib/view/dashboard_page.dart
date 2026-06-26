@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloclone/view/wellness_dashboard_screen.dart';
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -8,8 +9,9 @@ import 'package:intl/intl.dart';
 import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
+import 'JournalEntryScreen.dart';
 import 'navigation_icon/glo_profile.dart';
-import 'navigation_icon/insight_page.dart';
+import 'insight/user/insights_feed_view.dart';
 import 'navigation_icon/history_page.dart';
 
 // Wellness pages
@@ -17,12 +19,10 @@ import '../../view/dashboard_card/log_symptoms_page.dart';
 import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
-import '../../view/cards/daily_journal_page.dart';
-import 'package:gloclone/view/water_tracker.dart';
+import 'water_tracker.dart';
 import '../../view/medication_screen.dart';
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
-import '../../view/cards/sleep_stress_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _pages = [
     const DashboardHome(),
-    const InsightsPage(),
+    const InsightsFeedView(),
     const HistoryPage(),
     const GloProfileScreen(),
   ];
@@ -202,7 +202,7 @@ class DashboardHome extends StatelessWidget {
                         onTap: () {
                           switch (item["title"]) {
                             case "Daily Journal":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyJournalPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const JournalEntryScreen()));
                               break;
                             case "Water Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
@@ -217,7 +217,7 @@ class DashboardHome extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
                               break;
                               case "Mood and Wellness":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const SleepStressPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WellnessDashboardScreen()));
                               break;
                           }
                         },

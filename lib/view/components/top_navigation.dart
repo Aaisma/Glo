@@ -22,7 +22,8 @@ class TopNavigation extends StatelessWidget {
           if (isLoggedIn) const SizedBox(width: 48), 
           Expanded(
             child: Text(
-              isLoggedIn ? "Good Morning ${userName ?? 'Victoria'} ❤️" : "Welcome to Glo ❤️",
+              isLoggedIn ? "Good Morning ${userName ?? 'User'} ❤︎"
+                  : " ⟡˙⋆Welcome to Glo⋆˙⟡",
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 22,
@@ -32,31 +33,28 @@ class TopNavigation extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (isLoggedIn)
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.calendar_today, color: Color(0xFF332B2C)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => CalendarScreen()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.notifications, color: Color(0xFF332B2C)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const NotificationsPage()),
-                    );
-                  },
-                ),
-              ],
-            )
-          else
-            const SizedBox(width: 0), // No icons when logged out
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.calendar_today, color: Color(0xFF332B2C)),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => CalendarScreen()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.notifications, color: Color(0xFF332B2C)),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );

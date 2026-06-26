@@ -38,8 +38,15 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
     final viewModel = context.watch<CommunityLibraryViewModel>();
     final accentColor = const Color(0xFFFF3E63);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/admin_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
           "Community Library",
@@ -194,6 +201,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

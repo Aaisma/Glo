@@ -4,6 +4,7 @@ import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
+import '../../../constants/ayd_colour.dart';
 import 'article_detail_view.dart';
 import '../../community/user/discussion_detail_view.dart';
 import 'poll_detail_view.dart';
@@ -61,19 +62,19 @@ class _FavoritesViewState extends State<FavoritesView> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: AydColors.appBackground,
       appBar: AppBar(
         title: const Text(
           "Favorites",
           style: TextStyle(
-            color: Color(0xFF332B2C),
+            color: AydColors.insightTextPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.insightTextPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

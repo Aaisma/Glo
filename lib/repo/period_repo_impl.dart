@@ -45,9 +45,10 @@ class PeriodRepoImpl implements PeriodRepo {
     final snapshot = await _firestore
         .collection('period')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) => PeriodLogModel.fromMap(doc.data())).toList();
+    final logs = snapshot.docs.map((doc) => PeriodLogModel.fromMap(doc.data())).toList();
+    logs.sort((a, b) => b.date.compareTo(a.date));
+    return logs;
   }
 }

@@ -6,6 +6,7 @@ import '../../viewmodel/auth_view_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_pages/personal_info_page.dart';
 import 'package:image_picker/image_picker.dart';
+import '../components/top_navigation.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -111,44 +112,24 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFE4EC), Color(0xFFFFF6F8)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/images/background.png"),
+          fit: BoxFit.cover,
         ),
-        child: SafeArea(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // TOP HEADER
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Profile",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.pink,
-                      ),
-                    ),
-                    Row(
-                      children: const [
-                        Icon(Icons.calendar_today, color: Colors.pink),
-                        SizedBox(width: 12),
-                        Icon(Icons.notifications, color: Colors.pink),
-                      ],
-                    )
-                  ],
-                ),
+                const TopNavigation(),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 // PROFILE CARD
                 Container(

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-const Color primaryPink = Color(0xFFFF3E63);
-const Color accentLightPink = Color(0xFFFDECEF);
+import '../../constants/ayd_colour.dart';
 
 class OnboardingPageScaffold extends StatelessWidget {
   final int currentStep;
@@ -26,7 +24,7 @@ class OnboardingPageScaffold extends StatelessWidget {
     final double progress = (currentStep + 1) / totalSteps;
 
     return Scaffold(
-      backgroundColor: accentLightPink,
+      backgroundColor: AydColors.appBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -61,7 +59,7 @@ class OnboardingPageScaffold extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           backgroundColor: Colors.white,
-                          color: primaryPink,
+                          color: AydColors.progressPink,
                           minHeight: 6,
                         ),
                       ),
@@ -103,7 +101,7 @@ class OnboardingPageScaffold extends StatelessWidget {
                           Text(
                             subtitle,
                             style: const TextStyle(
-                              color: primaryPink,
+                              color: AydColors.primaryPink,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -136,13 +134,13 @@ class QuestionCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AydColors.cardBackground,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AydColors.primaryPink.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -176,23 +174,116 @@ class OptionSelector extends StatelessWidget {
           label: Text(
             option,
             style: TextStyle(
-              color: isSelected ? primaryPink : Colors.black87,
+              color: isSelected ? AydColors.primaryPink : Colors.black87,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           selected: isSelected,
           onSelected: (val) => onSelected(option),
-          selectedColor: primaryPink.withValues(alpha: 0.15),
-          backgroundColor: Colors.white,
+          selectedColor: AydColors.softSurface,
+          backgroundColor: AydColors.cardBackground,
           side: BorderSide(
-            color: isSelected ? primaryPink : Colors.black12,
-            width: 1,
+            color: isSelected ? AydColors.primaryPink : AydColors.softSurface,
+            width: 1.5,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class SurveyOptionTile extends StatelessWidget {
+  final String title;
+  final String imagePath;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const SurveyOptionTile({
+    super.key,
+    required this.title,
+    required this.imagePath,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AydColors.softSurface : AydColors.cardBackground,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AydColors.primaryPink : AydColors.softSurface,
+            width: isSelected ? 2 : 1.5,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: AydColors.primaryPink.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Image(
+              image: AssetImage(imagePath),
+              width: 48,
+              height: 48,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? AydColors.primaryPink : Colors.black87,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: AydColors.primaryPink)
+            else
+              const Icon(Icons.circle_outlined, color: Colors.black12),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SurveyNoteCard extends StatelessWidget {
+  final String text;
+
+  const SurveyNoteCard({super.key, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AydColors.lightBlushSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AydColors.softSurface),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          height: 1.4,
+        ),
+      ),
     );
   }
 }
@@ -215,9 +306,16 @@ class DynamicTipCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
+        color: AydColors.cardBackground,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AydColors.softSurface, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AydColors.primaryPink.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,16 +331,16 @@ class DynamicTipCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: primaryPink,
+                    color: AydColors.primaryPink,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   text,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: Colors.black87,
                     height: 1.4,
                   ),
@@ -276,18 +374,18 @@ class PrimaryActionButton extends StatelessWidget {
       child: isSecondary
           ? OutlinedButton(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: primaryPink, width: 1.5),
+                side: const BorderSide(color: AydColors.primaryPink, width: 1.5),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: onPressed,
               child: Text(
                 text,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryPink),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AydColors.primaryPink),
               ),
             )
           : ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryPink,
+                backgroundColor: AydColors.ctaPink,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
@@ -328,12 +426,12 @@ class FeatureLaunchCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? primaryPink : Colors.black12,
+            color: isSelected ? AydColors.primaryPink : Colors.black12,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? primaryPink.withValues(alpha: 0.08)
+              color: isSelected ? AydColors.primaryPink.withValues(alpha: 0.08)
                   : Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 4),
@@ -365,7 +463,7 @@ class FeatureLaunchCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: Colors.black54,
                 height: 1.3,
@@ -421,20 +519,20 @@ class ReviewAnswerSection extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: primaryPink.withValues(alpha: 0.5)),
+                    border: Border.all(color: AydColors.primaryPink.withValues(alpha: 0.5)),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit, size: 12, color: primaryPink),
+                      Icon(Icons.edit, size: 12, color: AydColors.primaryPink),
                       SizedBox(width: 4),
                       Text(
                         "Edit",
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: primaryPink,
+                          color: AydColors.primaryPink,
                         ),
                       ),
                     ],

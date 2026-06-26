@@ -141,8 +141,8 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
             elevation: 0,
             centerTitle: false,
             leading: const BackButton(color: AydColors.textPrimary),
-            title: Row(
-              children: const [
+            title: const Row(
+              children: [
                 Text(
                   "Log Symptoms",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AydColors.textPrimary),
@@ -284,7 +284,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
                       style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AydColors.button,
+                      backgroundColor: const Color(0xFFFD8CA1),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       elevation: 0,
@@ -374,7 +374,7 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
 
     final notesCard = _buildNotesCard();
 
-    final otherLogsDivider = const Padding(
+    const otherLogsDivider = Padding(
       padding: EdgeInsets.only(top: 8.0, bottom: 12.0),
       child: Center(
         child: Row(
