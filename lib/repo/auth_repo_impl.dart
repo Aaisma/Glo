@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'auth_repo.dart';
 
@@ -19,7 +21,10 @@ class AuthRepoImpl implements AuthRepo {
   @override
   Future<UserCredential> signInWithGoogle() async {
     const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
-    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn(clientId: googleClientId);
+    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn(
+      clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
+      serverClientId: googleClientId,
+    );
     final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     if (googleUser == null) throw Exception("Google sign in cancelled");

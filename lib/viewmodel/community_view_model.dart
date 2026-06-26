@@ -305,11 +305,11 @@ class CreateDiscussionViewModel extends ChangeNotifier {
     _categories = await _repo.getCategories();
     if (_categories.isEmpty) {
       _categories = [
-        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true),
-        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true),
-        CommunityCategory(id: 'c3', name: 'Community', isActive: true),
-        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true),
-        CommunityCategory(id: 'c5', name: 'Trending', isActive: true),
+        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true, color: '#F0E6FF'),
+        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true, color: '#FFE5EC'),
+        CommunityCategory(id: 'c3', name: 'Community', isActive: true, color: '#F0E6FF'),
+        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true, color: '#FFE5EC'),
+        CommunityCategory(id: 'c5', name: 'Trending', isActive: true, color: '#F0E6FF'),
       ];
     }
     if (_categories.isNotEmpty && _categoryId == null) {
@@ -499,11 +499,11 @@ class CreatePollViewModel extends ChangeNotifier {
     _categories = await _repo.getCategories();
     if (_categories.isEmpty) {
       _categories = [
-        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true),
-        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true),
-        CommunityCategory(id: 'c3', name: 'Community', isActive: true),
-        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true),
-        CommunityCategory(id: 'c5', name: 'Trending', isActive: true),
+        CommunityCategory(id: 'c1', name: 'Health & Wellness', isActive: true, color: '#F0E6FF'),
+        CommunityCategory(id: 'c2', name: 'Lifestyle', isActive: true, color: '#FFE5EC'),
+        CommunityCategory(id: 'c3', name: 'Community', isActive: true, color: '#F0E6FF'),
+        CommunityCategory(id: 'c4', name: 'Expert Insights', isActive: true, color: '#FFE5EC'),
+        CommunityCategory(id: 'c5', name: 'Trending', isActive: true, color: '#F0E6FF'),
       ];
     }
     if (_categories.isNotEmpty && _categoryId == null) {

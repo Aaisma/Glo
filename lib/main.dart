@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
         ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
@@ -129,7 +129,7 @@ class _AuthGateState extends State<AuthGate> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authVM = Provider.of<AuthViewModel>(context, listen: false);
       if (authVM.user != null) {
-        await authVM.checkUserProfile(context, authVM.user!.uid);
+        // await authVM.checkUserProfile(context, authVM.user!.uid);
       }
     });
   }

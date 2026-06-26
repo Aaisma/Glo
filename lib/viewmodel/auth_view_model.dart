@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../repo/auth_repo.dart';
+import '../repo/user_repo.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepo _authRepo;
   final UserRepo _userRepo;
   
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _user;
   bool _loading = false;
   String? _error;
@@ -37,7 +42,7 @@ class AuthViewModel extends ChangeNotifier {
       _user = credential.user;
       notifyListeners();
       if (context.mounted) {
-        await checkUserProfile(context, _user!.uid);
+        // await checkUserProfile(context, _user!.uid);
       }
     } catch (e) {
       rethrow;
@@ -107,7 +112,10 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '777774276340-6jttcb8vt2ir2ifqeur2g31l2nv9987c.apps.googleusercontent.com');
-      final GoogleSignIn googleSignIn = GoogleSignIn(clientId: googleClientId);
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
+        serverClientId: googleClientId,
+      );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         _setLoading(false);

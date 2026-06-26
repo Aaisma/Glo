@@ -7,6 +7,9 @@ import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import 'components/onboarding_widgets.dart';
 
+const Color primaryPink = Color(0xFFFF3E63);
+const Color accentLightPink = Color(0xFFFDECEF);
+
 class SurveyPage extends StatefulWidget {
   const SurveyPage({super.key});
 
