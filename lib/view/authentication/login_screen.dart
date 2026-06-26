@@ -28,48 +28,75 @@ class _LoginScreenState extends State<LoginScreen> {
     final authVM = context.read<AuthViewModel>();
     final userVM = context.read<UserViewModel>();
 
-    final user = await authVM.signInWithEmail(email, password);
-    if (user != null) {
-      await userVM.fetchCurrentUser();
-      if (mounted) {
-        Navigator.popUntil(context, (route) => route.isFirst);
+    try {
+      final user = await authVM.signInWithEmail(email, password);
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.fetchCurrentUser();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Login failed")),
+        );
       }
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authVM.error ?? "Login failed")),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
   void loginWithGoogle() async {
     final authVM = context.read<AuthViewModel>();
     final userVM = context.read<UserViewModel>();
-    final user = await authVM.signInWithGoogle();
-    if (user != null) {
-      await userVM.createDefaultProfile(); // Validates and creates doc if missing
-      if (mounted) {
-        Navigator.popUntil(context, (route) => route.isFirst);
+    try {
+      final user = await authVM.signInWithGoogle();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
+        );
       }
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
   void loginWithFacebook() async {
     final authVM = context.read<AuthViewModel>();
     final userVM = context.read<UserViewModel>();
-    final user = await authVM.signInWithFacebook();
-    if (user != null) {
-      await userVM.createDefaultProfile(); // Validates and creates doc if missing
-      if (mounted) {
-        Navigator.popUntil(context, (route) => route.isFirst);
+    try {
+      final user = await authVM.signInWithFacebook();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
+        );
       }
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
