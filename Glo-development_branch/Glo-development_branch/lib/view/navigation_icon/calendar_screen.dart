@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:gloclone/view/navigation_icon/calendar_screen.dart';
-import 'package:gloclone/view/navigation_icon/notification_page.dart';
 
 
 class CalendarScreen extends StatefulWidget {
@@ -84,9 +81,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           const SizedBox(height: 12),
 
           // Weekday row
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
+            children: [
               Text("Sun", style: TextStyle(fontWeight: FontWeight.bold)),
               Text("Mon", style: TextStyle(fontWeight: FontWeight.bold)),
               Text("Tue", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -167,7 +164,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.pink.withOpacity(0.2),
+                    color: Colors.pink.withValues(alpha: 0.2),
                     blurRadius: 6,
                     offset: const Offset(2, 4),
                   ),
@@ -200,22 +197,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                   const SizedBox(height: 12),
                   // Example notes with icons
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Icon(Icons.favorite, color: Colors.red, size: 16),
                       SizedBox(width: 6),
                       Text("Cramps and fatigue today"),
                     ],
                   ),
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Icon(Icons.local_drink, color: Colors.blue, size: 16),
                       SizedBox(width: 6),
                       Text("Drank 2.5L of water"),
                     ],
                   ),
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Icon(Icons.spa, color: Colors.green, size: 16),
                       SizedBox(width: 6),
                       Text("Used new skincare product"),

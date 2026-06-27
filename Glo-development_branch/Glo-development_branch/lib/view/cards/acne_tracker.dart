@@ -231,12 +231,12 @@ class _AcneTrackerPageState extends State<AcneTrackerPage> {
               const SizedBox(height: 20),
 
               // Journal Section
-              Card(
+              const Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text("Daily Journal",
                           style: TextStyle(
                               fontSize: 18,

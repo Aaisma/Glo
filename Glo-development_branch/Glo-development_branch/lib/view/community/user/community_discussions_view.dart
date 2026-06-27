@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../model/community_models.dart';
-import '../../../repo/community_repo.dart';
 import '../../insight/user/poll_detail_view.dart';
 import 'discussion_detail_view.dart';
 import 'create_discussion_view.dart';
@@ -178,7 +177,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => CreateDiscussionView()),
+                    MaterialPageRoute(builder: (_) => const CreateDiscussionView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
@@ -195,7 +194,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => CreatePollView()),
+                    MaterialPageRoute(builder: (_) => const CreatePollView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
@@ -438,7 +437,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
 
                 if (item.options.length > 2)
                   Padding(

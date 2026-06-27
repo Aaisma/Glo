@@ -56,7 +56,7 @@ class _CreatePollViewState extends State<CreatePollView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreatePollViewModel>();
-    final accentColor = const Color(0xFFFF3E63);
+    const accentColor = Color(0xFFFF3E63);
 
     // Show draft recovery dialog if needed
     if (viewModel.showDraftRecovery) {
@@ -207,8 +207,8 @@ class _CreatePollViewState extends State<CreatePollView> {
               if (viewModel.canAddOption)
                 TextButton.icon(
                   onPressed: viewModel.addOptionField,
-                  icon: Icon(Icons.add, color: accentColor),
-                  label: Text("Add Option", style: TextStyle(color: accentColor)),
+                  icon: const Icon(Icons.add, color: accentColor),
+                  label: const Text("Add Option", style: TextStyle(color: accentColor)),
                 ),
 
               const SizedBox(height: 24),

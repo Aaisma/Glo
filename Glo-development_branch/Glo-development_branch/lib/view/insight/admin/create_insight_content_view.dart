@@ -63,7 +63,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateInsightViewModel>();
-    final themeColor = AydColors.adminPrimary;
+    const themeColor = AydColors.adminPrimary;
 
     // Trigger draft dialog after frame paint if flag set
     if (viewModel.showDraftRecovery) {
@@ -126,8 +126,8 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
                 index: viewModel.currentStep,
                 children: [
                   _buildStep1Content(viewModel, themeColor),
-                  CreateInsightDetailsView(activeColor: themeColor),
-                  CreateInsightPreviewView(activeColor: themeColor),
+                  const CreateInsightDetailsView(activeColor: themeColor),
+                  const CreateInsightPreviewView(activeColor: themeColor),
                 ],
               ),
             ),

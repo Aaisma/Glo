@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart' hide TextDirection;
 import 'package:fl_chart/fl_chart.dart';
 import '../../model/tracker_theme.dart';
 import '../../viewmodel/period_view_model.dart';
-import '../../viewmodel/ovulation_view_model.dart';
 import '../../model/cycle_analytics_engine.dart';
 
 class AnalyticsHistoryPage extends StatefulWidget {

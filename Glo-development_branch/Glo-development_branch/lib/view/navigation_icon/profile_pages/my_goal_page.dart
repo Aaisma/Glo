@@ -57,7 +57,7 @@ class _MyGoalPageState extends State<MyGoalPage> {
                       }
                     });
                   },
-                  selectedColor: primaryPink.withOpacity(0.2),
+                  selectedColor: primaryPink.withValues(alpha: 0.2),
                   labelStyle: TextStyle(color: isSelected ? primaryPink : Colors.black87),
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

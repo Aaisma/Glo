@@ -40,7 +40,7 @@ class TopNavigation extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => CalendarScreen()),
+                    MaterialPageRoute(builder: (_) => const CalendarScreen()),
                   );
                 },
               ),

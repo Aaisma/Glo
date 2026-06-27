@@ -72,8 +72,8 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DiscussionDetailViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.discussion == null) {
       return const Scaffold(
@@ -347,7 +347,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.send, color: accentColor),
+                    icon: const Icon(Icons.send, color: accentColor),
                     onPressed: () async {
                       final text = _commentController.text.trim();
                       if (text.isNotEmpty) {

@@ -36,7 +36,7 @@ class _FavoritesViewState extends State<FavoritesView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FavoritesViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
+    const pinkTheme = Color(0xFFFD8CA1);
 
     // Filter items locally based on search query
     final query = viewModel.searchQuery.toLowerCase();
@@ -225,7 +225,7 @@ class _FavoritesViewState extends State<FavoritesView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

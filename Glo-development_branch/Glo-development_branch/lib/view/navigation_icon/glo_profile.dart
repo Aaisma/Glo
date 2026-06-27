@@ -5,7 +5,6 @@ import '../../viewmodel/user_view_model.dart';
 import '../../viewmodel/auth_view_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_pages/personal_info_page.dart';
-import 'package:image_picker/image_picker.dart';
 import '../components/top_navigation.dart';
 
 class GloProfileScreen extends StatefulWidget {

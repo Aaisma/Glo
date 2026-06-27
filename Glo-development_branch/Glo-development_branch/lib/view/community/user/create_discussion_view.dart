@@ -22,8 +22,8 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateDiscussionViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),

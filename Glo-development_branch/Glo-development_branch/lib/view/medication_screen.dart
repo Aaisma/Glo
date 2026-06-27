@@ -59,9 +59,9 @@ class MedicationScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text("Today's Schedule",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18)),

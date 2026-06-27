@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../model/community_models.dart';
-import '../model/shared_models.dart';
 import '../repo/insights_moderation_repo.dart';
 import '../repo/community_moderation_repo.dart';
 

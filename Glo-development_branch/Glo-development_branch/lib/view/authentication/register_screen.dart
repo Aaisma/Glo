@@ -179,8 +179,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 25),
 
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Expanded(child: Divider(color: Colors.black26, thickness: 1)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),

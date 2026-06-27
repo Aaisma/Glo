@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../repo/period_repo_impl.dart';
-import '../../repo/ovulation_repo_impl.dart';
 import '../../viewmodel/tracker_navigation_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';

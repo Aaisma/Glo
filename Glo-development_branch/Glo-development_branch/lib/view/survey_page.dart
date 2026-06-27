@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../model/onboarding_survey_data.dart';
 import '../../viewmodel/user_view_model.dart';
-import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../constants/ayd_colour.dart';
 import 'components/onboarding_widgets.dart';

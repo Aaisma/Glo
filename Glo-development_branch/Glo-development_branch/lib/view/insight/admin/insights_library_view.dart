@@ -26,8 +26,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InsightsLibraryViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     return Container(
       decoration: const BoxDecoration(
@@ -114,10 +114,10 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             _buildLibraryTabs(viewModel),
 
             // Table Headers
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
               child: Row(
-                children: const [
+                children: [
                   SizedBox(width: 60, child: Text("Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),

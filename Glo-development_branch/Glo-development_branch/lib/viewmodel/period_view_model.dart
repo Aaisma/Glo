@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import '../model/period_log_model.dart';
 import '../model/ovulation_log_model.dart';
 import '../model/cycle_analytics_engine.dart';

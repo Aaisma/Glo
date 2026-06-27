@@ -11,7 +11,6 @@ class WellnessDashboardScreen extends StatefulWidget {
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
 
-  /// Helper to render the correct plant asset stage dynamically based on entry count from MVVM
   String _getGardenPlant(String moodKey, int count) {
     if (count == 0) return '🌱\n🪴'; // Seedling state if zero logs exist
     switch (moodKey) {
@@ -42,11 +41,9 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
             };
 
             // Safely iterate through the history once (O(N) instead of O(5N)) to avoid breakdown errors
-            if (viewModel.moodHistory != null) {
-              for (var mood in viewModel.moodHistory) {
-                if (liveMoodCounts.containsKey(mood.moodType)) {
-                  liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
-                }
+            for (var mood in viewModel.moodHistory) {
+              if (liveMoodCounts.containsKey(mood.moodType)) {
+                liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
               }
             }
 
@@ -114,7 +111,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF3E63).withOpacity(0.25),
+                            color: const Color(0xFFFF3E63).withValues(alpha: 0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           )
@@ -143,7 +140,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                                   ),
                                   Text(
                                     "Track how you're feeling today",
-                                    style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+                                    style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
                                   ),
                                 ],
                               ),
@@ -165,7 +162,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         )
@@ -368,7 +365,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           )
@@ -381,7 +378,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorTone.withOpacity(0.1),
+            color: colorTone.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: colorTone, size: 20),

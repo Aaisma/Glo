@@ -170,14 +170,14 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                               color: const Color(0xFFF7F2FE),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                const Text('✨', style: TextStyle(fontSize: 16)),
-                                const SizedBox(width: 10),
+                                Text('✨', style: TextStyle(fontSize: 16)),
+                                SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       Text(
                                         'You felt happy most of the time this week!',
                                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -227,7 +227,7 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                               builder: (context, constraints) {
                                 final double w = constraints.maxWidth;
                                 final double h = constraints.maxHeight;
-                                final double paddingBottom = 16.0;
+                                const double paddingBottom = 16.0;
                                 final double chartHeight = h - 36.0;
                                 final double stepX = w / (dailyJourney.length - 1);
 
@@ -327,9 +327,9 @@ class _MoodSummaryScreenState extends State<MoodSummaryScreen> {
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Text('“', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF6A4BBD), height: 0.5)),
                           Text(
                             'You\'re allowed to be both a masterpiece and a work in progress.',
@@ -421,7 +421,7 @@ class JourneyCurvePainter extends CustomPainter {
 
     final double w = size.width;
     final double h = size.height;
-    final double paddingBottom = 16.0;
+    const double paddingBottom = 16.0;
     final double chartHeight = h - 40.0;
     final double stepX = w / (journeyData.length - 1);
 

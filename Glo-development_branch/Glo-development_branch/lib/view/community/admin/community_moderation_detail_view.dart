@@ -24,8 +24,8 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityModerationDetailViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.moderationItem == null) {
       return const Scaffold(
@@ -96,7 +96,7 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -107,9 +107,9 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 16,
-                          backgroundColor: const Color(0xFFFFD6E6),
+                          backgroundColor: Color(0xFFFFD6E6),
                           child: Icon(Icons.person, size: 16, color: accentColor),
                         ),
                         const SizedBox(width: 10),
@@ -159,7 +159,7 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -194,7 +194,7 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
                             ),
                             child: Text(
                               "$count",
-                              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
+                              style: const TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                           ),
                         ],
@@ -212,7 +212,7 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: pinkTheme),
+                        side: const BorderSide(color: pinkTheme),
                         foregroundColor: accentColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -273,7 +273,7 @@ class _CommunityModerationDetailViewState extends State<CommunityModerationDetai
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),

@@ -14,13 +14,13 @@ class HistoryPage extends StatelessWidget {
           fit: BoxFit.cover,
         ),
       ),
-      child: Scaffold(
+      child: const Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              const TopNavigation(),
-              const Expanded(child: Center(child: Text("History Page"))),
+              TopNavigation(),
+              Expanded(child: Center(child: Text("History Page"))),
             ],
           ),
         ),

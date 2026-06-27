@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../../viewmodel/moderation_view_model.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
@@ -25,8 +24,8 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InsightsModerationQueueViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     final activeList = viewModel.selectedTab == 'Reported' ? viewModel.reportedItems : viewModel.hiddenItems;
 
@@ -99,10 +98,10 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
             const SizedBox(height: 16),
 
             // Table Headers
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
               child: Row(
-                children: const [
+                children: [
                   Expanded(flex: 3, child: Text("Content", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 1, child: Text("Type", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 2, child: Text("Reason/Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
@@ -160,7 +159,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
 
   Widget _buildTabChip(String label, int count, InsightsModerationQueueViewModel vm) {
     final isSelected = vm.selectedTab == label;
-    final accent = const Color(0xFFFF3E63);
+    const accent = Color(0xFFFF3E63);
 
     return FilterChip(
       label: Text(

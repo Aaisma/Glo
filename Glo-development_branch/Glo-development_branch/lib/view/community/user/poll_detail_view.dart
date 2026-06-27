@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../../viewmodel/community_view_model.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
 import '../../../repo/community_repo.dart';
@@ -101,8 +100,8 @@ class _PollDetailViewState extends State<PollDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     if (_isLoading || _poll == null) {
       return const Scaffold(
@@ -248,8 +247,8 @@ class _PollDetailViewState extends State<PollDetailView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? pinkTheme.withOpacity(0.3)
-                                    : Colors.pink.shade50.withOpacity(0.5),
+                                    ? pinkTheme.withValues(alpha: 0.3)
+                                    : Colors.pink.shade50.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
@@ -288,7 +287,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
 
               const SizedBox(height: 16),
 
@@ -300,13 +299,13 @@ class _PollDetailViewState extends State<PollDetailView> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF6F8),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: pinkTheme.withOpacity(0.5)),
+                    border: Border.all(color: pinkTheme.withValues(alpha: 0.5)),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
                       Icon(Icons.check_circle_outline, color: accentColor),
-                      const SizedBox(width: 12),
-                      const Text(
+                      SizedBox(width: 12),
+                      Text(
                         "You've voted for this poll",
                         style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
                       ),
@@ -340,7 +339,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.01),
+                            color: Colors.black.withValues(alpha: 0.01),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),

@@ -22,8 +22,8 @@ class PollPreviewView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreatePollViewModel>();
-    final accentColor = const Color(0xFFFF3E63);
-    final pinkTheme = const Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
 
     final selectedCategory = viewModel.categories.firstWhere(
       (c) => c.id == viewModel.categoryId,
@@ -67,11 +67,11 @@ class PollPreviewView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: accentColor.withValues(alpha: 0.2)),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(Icons.remove_red_eye_outlined, color: accentColor),
-                    const SizedBox(width: 12),
-                    const Expanded(
+                    SizedBox(width: 12),
+                    Expanded(
                       child: Text(
                         "This is a preview of your poll. Check all options before publishing! 🌸",
                         style: TextStyle(
@@ -241,13 +241,13 @@ class PollPreviewView extends StatelessWidget {
                       height: 52,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: accentColor),
+                          side: const BorderSide(color: accentColor),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
+                        child: const Text(
                           "Edit Poll",
                           style: TextStyle(
                             fontSize: 16,

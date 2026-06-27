@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
-import '../../../model/community_models.dart';
 import '../user/create_discussion_view.dart';
 import '../user/create_poll_view.dart';
 
@@ -36,7 +35,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityLibraryViewModel>();
-    final accentColor = const Color(0xFFFF3E63);
+    const accentColor = Color(0xFFFF3E63);
 
     return Container(
       decoration: const BoxDecoration(
@@ -121,7 +120,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: accentColor,
-                          side: BorderSide(color: accentColor),
+                          side: const BorderSide(color: accentColor),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () {
@@ -158,7 +157,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -175,8 +174,8 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                               decoration: BoxDecoration(
                                 border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
                               ),
-                              child: Row(
-                                children: const [
+                              child: const Row(
+                                children: [
                                   Expanded(flex: 1, child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 2, child: Text("Author", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
@@ -277,7 +276,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -385,7 +384,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

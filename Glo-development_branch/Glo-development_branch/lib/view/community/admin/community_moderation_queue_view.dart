@@ -34,7 +34,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityModerationQueueViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
+    const pinkTheme = Color(0xFFFD8CA1);
 
     final activeList = viewModel.selectedTab == 'Reported' ? viewModel.reportedItems : viewModel.hiddenItems;
     final filteredList = activeList.where((item) => item.title.toLowerCase().contains(_searchQuery)).toList();
@@ -115,7 +115,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -132,8 +132,8 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
                               decoration: BoxDecoration(
                                 border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
                               ),
-                              child: Row(
-                                children: const [
+                              child: const Row(
+                                children: [
                                   Expanded(flex: 1, child: Text("Type", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 2, child: Text("Stats", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
@@ -184,7 +184,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
 
   Widget _buildTabChip(String label, int count, CommunityModerationQueueViewModel vm) {
     final isSelected = vm.selectedTab == label;
-    final accent = const Color(0xFFFF3E63);
+    const accent = Color(0xFFFF3E63);
 
     return ChoiceChip(
       label: Text(
@@ -231,7 +231,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: typeColor.withOpacity(0.1),
+                color: typeColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

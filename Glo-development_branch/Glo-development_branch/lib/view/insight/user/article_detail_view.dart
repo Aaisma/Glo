@@ -73,8 +73,8 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ArticleDetailViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const pinkTheme = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.insight == null) {
       return const Scaffold(
@@ -262,8 +262,8 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                     const SizedBox(width: 24),
 
                     // Comments Placeholder/Mock Icon
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         Icon(Icons.chat_bubble_outline, color: Colors.grey, size: 22),
                         SizedBox(width: 6),
                         Text(
@@ -301,8 +301,8 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                           const SnackBar(content: Text("Link copied to clipboard! 🌸")),
                         );
                       },
-                      child: Row(
-                        children: const [
+                      child: const Row(
+                        children: [
                           Icon(Icons.share_outlined, color: Colors.grey, size: 24),
                           SizedBox(width: 6),
                           Text(
@@ -320,11 +320,11 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
 
               // Related Articles Section
               if (viewModel.relatedInsights.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text(
                         "Related Articles",
                         style: TextStyle(

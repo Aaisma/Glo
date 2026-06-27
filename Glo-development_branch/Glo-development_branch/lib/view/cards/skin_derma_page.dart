@@ -116,13 +116,13 @@ class SkinDermaPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
+                    child: const Padding(
+                      padding: EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children: const [
+                            children: [
                               Icon(Icons.lightbulb_outline, color: Colors.amber),
                               SizedBox(width: 8),
                               Text(
@@ -135,8 +135,8 @@ class SkinDermaPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
+                          SizedBox(height: 12),
+                          Text(
                             "• Regular check-ups help detect skin issues early.\n"
                             "• Always wear sunscreen with at least SPF 30 daily.\n"
                             "• Keep track of any changes in moles or skin spots.",

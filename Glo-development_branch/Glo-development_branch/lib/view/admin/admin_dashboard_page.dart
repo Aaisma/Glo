@@ -9,8 +9,8 @@ class AdminDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    const themeColor = Color(0xFFFD8CA1);
+    const accentColor = Color(0xFFFF3E63);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),
@@ -112,7 +112,7 @@ class AdminDashboardPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

@@ -177,9 +177,9 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2E3E33)),
               ),
               const SizedBox(height: 2),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
                     'Keep going! You\'re doing great ',
                     style: TextStyle(fontSize: 12, color: Colors.black45, fontWeight: FontWeight.w500),
@@ -479,9 +479,9 @@ class UnifiedGardenPlantPainter extends CustomPainter {
       double radius = isMiniature ? 8 : 17;
 
       Rect roseBounds = Rect.fromCircle(center: Offset(rx, ry), radius: radius);
-      paint.shader = RadialGradient(
-        colors: const [Color(0xFFFA8072), Color(0xFFE91E63), Color(0xFF880E4F)],
-        stops: const [0.2, 0.75, 1.0],
+      paint.shader = const RadialGradient(
+        colors: [Color(0xFFFA8072), Color(0xFFE91E63), Color(0xFF880E4F)],
+        stops: [0.2, 0.75, 1.0],
       ).createShader(roseBounds);
       canvas.drawCircle(Offset(rx, ry), radius, paint);
       paint.shader = null;
