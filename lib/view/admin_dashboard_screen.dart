@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'admin_skin_journal_screen.dart';
+import 'admin_hydration_hub_screen.dart';
 
 enum ChartView { bar, line, pie }
 
@@ -33,7 +35,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD7E8FB),
+      backgroundColor: const Color(0xFF2D5E78),
       drawer: _buildDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFFEAF3FD),
@@ -71,7 +73,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _statCard(Icons.person, const Color(0xFF4F8FE0), "Total Users", "8,450"),
                 _statCard(Icons.person_outline, const Color(0xFF7AC74F), "Active Users", "2,320"),
                 _statCard(Icons.chat_bubble, const Color(0xFF9B7FE8), "Posts Today", "135"),
-                _statCard(Icons.water_drop, const Color(0xFF6FC3F7), "Hydration Level", "72%"),
+                _statCard(Icons.person_add, const Color(0xFFFFB74D), "New Signups", "47"),
               ],
             ),
 
@@ -279,13 +281,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {"icon": Icons.favorite, "label": "Health Overview"},
       {"icon": Icons.spa, "label": "Wellness Journey"},
       {"icon": Icons.calendar_month, "label": "Monthly Tracking"},
-      {"icon": Icons.book, "label": "Skin Analytics"},
-      {"icon": Icons.water_drop, "label": "Fluid Stats"},
+      {"icon": Icons.book, "label": "Skin Journal"},
+      {"icon": Icons.water_drop, "label": "Hydration Hub"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
 
     return Drawer(
-      backgroundColor: const Color(0xFF5B96E0),
+      backgroundColor: const Color(0xFFF0FFFF),
       child: SafeArea(
         child: Column(
           children: [
@@ -294,9 +296,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Row(
                 children: [
                   SizedBox(width: 16),
-                  Icon(Icons.settings, color: Colors.white),
+                  Icon(Icons.settings, color: Color(0xFF4F8FE0)),
                   SizedBox(width: 10),
-                  Text("Admin Panel", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("Admin Panel", style: TextStyle(color: Color(0xFF4F8FE0), fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -306,11 +308,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   final isActive = entry.key == 0;
                   final item = entry.value;
                   return Container(
-                    color: isActive ? const Color(0xFF4F8FE0) : Colors.transparent,
+                    color: isActive ? const Color(0xFF4F8FE0).withOpacity(0.15) : Colors.transparent,
                     child: ListTile(
-                      leading: Icon(item["icon"] as IconData, color: Colors.white),
-                      title: Text(item["label"] as String, style: const TextStyle(color: Colors.white)),
-                      onTap: () => Navigator.pop(context),
+                      leading: Icon(item["icon"] as IconData, color: const Color(0xFF4F8FE0)),
+                      title: Text(item["label"] as String, style: const TextStyle(color: Color(0xFF2A2A2A))),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (item["label"] == "Skin Journal") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSkinJournalScreen()));
+                        } else if (item["label"] == "Hydration Hub") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
+                        }
+                      },
                     ),
                   );
                 }).toList(),
