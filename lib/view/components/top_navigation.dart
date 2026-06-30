@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../navigation_icon/calendar_screen.dart';
-import '../navigation_icon/notification_page.dart';
+import '../notification_screen.dart';
 
 class TopNavigation extends StatelessWidget {
   final bool isLoggedIn;
@@ -49,7 +49,7 @@ class TopNavigation extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                    MaterialPageRoute(builder: (_) => const NotificationScreen()),
                   );
                 },
               ),

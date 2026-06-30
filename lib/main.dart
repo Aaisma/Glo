@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:gloclone/repo/notification_repo.dart';
 import 'package:gloclone/viewmodel/notification_view_model.dart';
 import 'package:gloclone/view/notification_screen.dart';
 import 'firebase_options.dart';
@@ -32,8 +31,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _setupNotificationClickHandling();
-    _testFirestoreConnection(); // 🔥 Firestore test on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupNotificationClickHandling();
+      _testFirestoreConnection();
+    });
   }
 
   void _setupNotificationClickHandling() async {
@@ -56,18 +57,20 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  /// 🔥 Firestore test: writes a document to confirm connection
   Future<void> _testFirestoreConnection() async {
     try {
-      await FirebaseFirestore.instance
-          .collection('connection_test')
-          .add({'status': 'connected', 'time': DateTime.now()});
-      print("✅ Firestore write successful!");
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
+      await FirebaseFirestore.instance.collection('connection_test').add({
+        'status': 'connected',
+        'time': DateTime.now(),
       });
-      print("❌ Firestore error: $e");
+      debugPrint("✅ Firestore write successful!");
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+      }
+      debugPrint("❌ Firestore error: $e");
     }
   }
 
@@ -75,14 +78,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<NotificationRepo>(
-          create: (_) => NotificationRepo(),
-        ),
-        ChangeNotifierProxyProvider<NotificationRepo, NotificationViewModel>(
-          create: (context) => NotificationViewModel(
-              Provider.of<NotificationRepo>(context, listen: false)),
-          update: (context, repository, previousViewModel) =>
-          previousViewModel ?? NotificationViewModel(repository),
+        ChangeNotifierProvider<NotificationViewModel>(
+          create: (_) => NotificationViewModel(),
         ),
       ],
       child: MaterialApp(
@@ -99,10 +96,17 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Firebase Error: $_errorMessage",
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  "Firebase Error:\n$_errorMessage",
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ),

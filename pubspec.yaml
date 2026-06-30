@@ -30,6 +30,8 @@ dependencies:
   google_sign_in: ^7.2.0
   flutter_facebook_auth: ^7.1.1
   lucide_icons: ^0.257.0
+
+
   nepali_utils: ^3.0.6
   firebase_messaging: ^16.4.1
 

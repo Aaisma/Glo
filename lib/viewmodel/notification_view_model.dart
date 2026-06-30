@@ -3,48 +3,80 @@ import 'package:gloclone/model/notification_model.dart';
 import 'package:gloclone/repo/notification_repo.dart';
 
 class NotificationViewModel extends ChangeNotifier {
-  final NotificationRepo _repository;
+  final NotificationRepo _repo = NotificationRepo();
 
-  String _selectedTab = "All";
   List<NotificationModel> _allNotifications = [];
+  List<NotificationModel> _filteredNotifications = [];
+  String _selectedTab = "All";
   bool _isLoading = false;
 
-  NotificationViewModel(this._repository);
-
+  List<NotificationModel> get filteredNotifications => _filteredNotifications;
   String get selectedTab => _selectedTab;
   bool get isLoading => _isLoading;
-
-  List<NotificationModel> get filteredNotifications {
-    if (_selectedTab == "Unread") {
-      return _allNotifications.where((item) => item.unread == true).toList();
-    }
-    if (_selectedTab == "Read") {
-      return _allNotifications.where((item) => item.unread == false).toList();
-    }
-    return List.from(_allNotifications);
-  }
 
   Future<void> loadNotifications() async {
     _isLoading = true;
     notifyListeners();
+
     try {
-      _allNotifications = await _repository.fetchNotifications();
-    } catch (_) {}
-    _isLoading = false;
-    notifyListeners();
-  }
+      List<NotificationModel> remoteNotes = await _repo.fetchNotifications();
 
-  void setSelectedTab(String tab) {
-    _selectedTab = tab;
-    notifyListeners();
-  }
+      if (remoteNotes.isEmpty) {
+        await seedWelcomeNotifications();
+        remoteNotes = await _repo.fetchNotifications();
+      }
 
-  Future<void> markAsRead(String id) async {
-    final index = _allNotifications.indexWhere((element) => element.id == id);
-    if (index != -1 && _allNotifications[index].unread) {
-      _allNotifications[index].unread = false;
+      _allNotifications = remoteNotes;
+      _filterNotifications();
+    } catch (e) {
+      debugPrint("Error loading notifications: $e");
+    } finally {
+      _isLoading = false;
       notifyListeners();
-      await _repository.updateReadStatus(id, true);
+    }
+  }
+
+  Future<void> seedWelcomeNotifications() async {
+    final welcomeItems = [
+      {
+        "title": "Ovulation in 2 days",
+        "desc": "Your fertile window is starting soon. Take care! 🌸",
+        "badge": "Ovulation",
+        "icon": "🌸",
+      },
+      {
+        "title": "Time to take Iron Supplement",
+        "desc": "Consistency is the key to better health. 💊",
+        "badge": "Medication",
+        "icon": "💊",
+      },
+      {
+        "title": "Don't forget to log your mood",
+        "desc": "How are you feeling today? Your Mood Garden misses you! 🌼",
+        "badge": "Mood Tracker",
+        "icon": "😊",
+      },
+      {
+        "title": "Derma Visit Tomorrow",
+        "desc": "You have a dermatology appointment tomorrow at 10:00 AM.",
+        "badge": "Derma Visit",
+        "icon": "👩‍⚕️",
+      },
+      {
+        "title": "Period expected in 3 days",
+        "desc": "Your period is expected on April 06, 2026.",
+        "badge": "Period",
+        "icon": "🩸",
+      }
+    ];
+
+    for (var note in welcomeItems) {
+      await _repo.addNotification(
+        title: note["title"]!,
+        desc: note["desc"]!,
+        badge: note["badge"]!,
+        icon: note["icon"]!,
+      );
     }
   }
 
@@ -54,19 +86,58 @@ class NotificationViewModel extends ChangeNotifier {
     required String badge,
     required String icon,
   }) async {
-    final newNotification = NotificationModel(
-      id: "",
-      title: title,
-      desc: desc,
-      time: "Just Now",
-      day: "Today",
-      badge: badge,
-      icon: icon,
-      unread: true,
-    );
+    try {
+      await _repo.addNotification(
+        title: title,
+        desc: desc,
+        badge: badge,
+        icon: icon,
+      );
 
-    _allNotifications.insert(0, newNotification);
+      _allNotifications = await _repo.fetchNotifications();
+      _filterNotifications();
+    } catch (e) {
+      debugPrint("Error creating notification: $e");
+    }
+  }
+
+  Future<void> markAsRead(String id) async {
+    final index = _allNotifications.indexWhere((note) => note.id == id);
+    if (index != -1 && _allNotifications[index].unread) {
+      try {
+        await _repo.updateNotificationReadStatus(id, true);
+
+        _allNotifications[index] = NotificationModel(
+          id: _allNotifications[index].id,
+          title: _allNotifications[index].title,
+          desc: _allNotifications[index].desc,
+          badge: _allNotifications[index].badge,
+          icon: _allNotifications[index].icon,
+          unread: false,
+          day: _allNotifications[index].day,
+          time: _allNotifications[index].time,
+          createdAt: _allNotifications[index].createdAt,
+        );
+        _filterNotifications();
+      } catch (e) {
+        debugPrint("Error marking notification as read: $e");
+      }
+    }
+  }
+
+  void setSelectedTab(String tab) {
+    _selectedTab = tab;
+    _filterNotifications();
+  }
+
+  void _filterNotifications() {
+    if (_selectedTab == "All") {
+      _filteredNotifications = List.from(_allNotifications);
+    } else if (_selectedTab == "Unread") {
+      _filteredNotifications = _allNotifications.where((note) => note.unread).toList();
+    } else {
+      _filteredNotifications = _allNotifications.where((note) => !note.unread).toList();
+    }
     notifyListeners();
-    await _repository.saveNotification(newNotification);
   }
 }

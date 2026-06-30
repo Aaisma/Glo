@@ -19,6 +19,14 @@ class _LoginScreenState extends State<LoginScreen> {
   // Main Theme Color
   final Color primaryPink = const Color(0xFFFF3E63);
 
+  @override
+  void dispose() {
+    // Clean up controllers to prevent memory leaks
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   void loginUser() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -227,11 +235,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // Forgot Password
+                // Forgot Password -> Pointing to OTP Screen
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, '/forgotPasswordOTP');
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: TextStyle(
@@ -271,6 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 22),
 
+                // Registration Navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -281,12 +292,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    Text(
-                      "Join the 'Glow'",
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text(
+                        "Join the 'Glow'",
+                        style: TextStyle(
+                          color: primaryPink,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -294,6 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 25),
 
+                // Options, Darling! Divider
                 Row(
                   children: [
                     const Expanded(
@@ -303,8 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
                         "Options, Darling!",
                         style: TextStyle(
@@ -374,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           side: BorderSide(
-            color: primaryPink.withOpacity(0.5),
+            color: primaryPink.withValues(alpha: 0.5),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),

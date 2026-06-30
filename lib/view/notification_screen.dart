@@ -11,13 +11,12 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  String selectedTab = "All";
-
-  final Color primaryPink = const Color(0xFFF472B6);
-  final Color lightPinkBg = const Color(0xFFFFEBF0);
-  final Color backgroundLight = const Color(0xFFFFFBFB);
-  final Color textDark = const Color(0xFF262626);
-  final Color textGray = const Color(0xFF71717A);
+  static const Color primaryPink = Color(0xFFF472B6);
+  static const Color appBackground = Color(0xFFFFF5F7);
+  static const Color tabUnselectedBg = Color(0xFFF4F4F5);
+  static const Color textDark = Color(0xFF3F3F46);
+  static const Color textMuted = Color(0xFF71717A);
+  static const Color badgeBg = Color(0xFFFFEBF0);
 
   @override
   void initState() {
@@ -29,172 +28,321 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<NotificationViewModel>(context);
-    final List<NotificationModel> filteredList = viewModel.filteredNotifications;
+    final viewModel = context.watch<NotificationViewModel>();
+
+    final now = DateTime.now();
+    final oneWeekAgo = now.subtract(const Duration(days: 7));
+    final filteredList = viewModel.filteredNotifications
+        .where((item) => item.createdAt.isAfter(oneWeekAgo))
+        .toList();
 
     return Scaffold(
-      backgroundColor: backgroundLight,
+      backgroundColor: appBackground,
+      appBar: AppBar(
+        backgroundColor: appBackground,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEBF0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: primaryPink, size: 16),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        title: const Text(
+          "Notifications",
+          style: TextStyle(color: textDark, fontWeight: FontWeight.w700, fontSize: 20),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBF0),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.tune_rounded, color: primaryPink, size: 20),
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // --- Header Toolbar ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios, color: textDark, size: 20),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+            _buildSegmentedControl(viewModel),
+            Expanded(
+              child: viewModel.isLoading
+                  ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2))
+                  : filteredList.isEmpty
+                  ? _buildEmptyState(viewModel.selectedTab)
+                  : _buildNotificationList(filteredList, viewModel),
+            ),
+            _buildBottomActionBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSegmentedControl(NotificationViewModel viewModel) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(4.0),
+      decoration: BoxDecoration(
+        color: tabUnselectedBg,
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      child: Row(
+        children: ["All", "Unread", "Read"].map((tab) {
+          final isSelected = viewModel.selectedTab == tab;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => viewModel.setSelectedTab(tab),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                decoration: BoxDecoration(
+                  color: isSelected ? primaryPink : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                child: Text(
+                  tab,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : textMuted,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
-                  Text(
-                    "Notifications",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textDark),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.tune, color: primaryPink),
-                    onPressed: () {},
-                  ),
-                ],
+                ),
               ),
             ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
-            // --- Interactive Sub-Tabs ---
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              padding: const EdgeInsets.all(4.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F4F5),
-                borderRadius: BorderRadius.circular(24.0),
+  Widget _buildEmptyState(String selectedTab) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("🌸", style: TextStyle(fontSize: 44)),
+          const SizedBox(height: 12),
+          const Text(
+            "Your notification center is clear",
+            style: TextStyle(color: textDark, fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "No $selectedTab alerts recorded for this week.",
+            style: const TextStyle(color: textMuted, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationList(List<NotificationModel> list, NotificationViewModel viewModel) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final item = list[index];
+        final bool showDayHeader = index == 0 || list[index - 1].day != item.day;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showDayHeader)
+              Padding(
+                padding: const EdgeInsets.only(top: 14.0, bottom: 8.0, left: 4.0),
+                child: Text(
+                  item.day,
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
               ),
-              child: Row(
-                children: ["All", "Unread", "Read"].map((tab) {
-                  bool isSelected = viewModel.selectedTab == tab;
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        viewModel.setSelectedTab(tab);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        decoration: BoxDecoration(
-                          color: isSelected ? primaryPink : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
+            NotificationCard(
+              item: item,
+              onTap: () => viewModel.markAsRead(item.id),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomActionBar() {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEBF0),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.delete_outline, color: primaryPink, size: 18),
+              label: const Text("Clear all", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w600)),
+            ),
+          ),
+          Container(height: 24, width: 1, color: primaryPink.withOpacity(0.3)),
+          Expanded(
+            child: TextButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.done_all, color: primaryPink, size: 18),
+              label: const Text("Mark all as read", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NotificationCard extends StatelessWidget {
+  final NotificationModel item;
+  final VoidCallback onTap;
+
+  const NotificationCard({
+    Key? key,
+    required this.item,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10.0),
+        padding: const EdgeInsets.all(14.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              alignment: Alignment.center,
+              width: 14,
+              height: 48,
+              child: item.unread
+                  ? Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: Colors.redAccent,
+                  shape: BoxShape.circle,
+                ),
+              )
+                  : const SizedBox.shrink(),
+            ),
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: const Color(0xFFFFEBF0),
+              child: Text(item.icon, style: const TextStyle(fontSize: 22)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
                         child: Text(
-                          tab,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : textGray,
-                            fontWeight: FontWeight.w500,
+                          item.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
                             fontSize: 14,
+                            color: Color(0xFF262626),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            // --- Dynamic Scrollable List Layout ---
-            Expanded(
-              child: viewModel.isLoading
-                  ? Center(child: CircularProgressIndicator(color: primaryPink))
-                  : filteredList.isEmpty
-                  ? Center(child: Text("No alerts present under ${viewModel.selectedTab}", style: TextStyle(color: textGray)))
-                  : ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: filteredList.length,
-                itemBuilder: (context, index) {
-                  final item = filteredList[index];
-                  bool showDayHeader = index == 0 || filteredList[index - 1].day != item.day;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showDayHeader) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10.0, bottom: 12.0),
-                          child: Text(
-                            item.day,
-                            style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 14),
+                      const SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            item.time,
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF98989A)),
                           ),
-                        ),
-                      ],
-                      GestureDetector(
-                        onTap: () {
-                          viewModel.markAsRead(item.id);
-                        },
-                        child: Card(
-                          margin: const EdgeInsets.only(bottom: 12.0),
-                          elevation: 0.5,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-                          color: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (item.unread) ...[
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 18.0, right: 8.0),
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(color: primaryPink, shape: BoxShape.circle),
-                                  ),
-                                ],
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: const BoxDecoration(color: Color(0xFFFFF0F3), shape: BoxShape.circle),
-                                  child: Center(child: Text(item.icon, style: const TextStyle(fontSize: 22))),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            item.title,
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
-                                          ),
-                                          Text(item.time, style: TextStyle(fontSize: 11, color: textGray)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(4)),
-                                        child: Text(
-                                          item.badge,
-                                          style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        item.desc,
-                                        style: TextStyle(color: Colors.grey[700], fontSize: 13, height: 1.35),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(Icons.chevron_right, color: primaryPink, size: 20),
-                              ],
+                          const SizedBox(height: 8),
+                          if (item.unread)
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                              ),
                             ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBF0),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          item.badge,
+                          style: const TextStyle(
+                            color: Color(0xFFF472B6),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.desc,
+                    style: const TextStyle(
+                      color: Color(0xFF52525B),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(width: 6),
+            const Padding(
+              padding: EdgeInsets.only(top: 14.0),
+              child: Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFC0D3), size: 14),
             ),
           ],
         ),
