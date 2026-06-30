@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/history_model.dart';
 
+
 class HistoryRepo {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:glo/model/medication_model.dart';
-import '../viewmodel/medication_viewmodel.dart';
+import 'package:glo/viewmodel/medication_viewmodel.dart';
 import 'medication_history_screen.dart';
 import 'add_medication_screen.dart';
 
@@ -55,7 +55,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     const Text(
                       "Medications",
                       style: TextStyle(
-                          fontSize: 32, fontWeight: FontWeight.bold),
+                          fontFamily: 'Serif',
+                          fontSize: 35,  fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

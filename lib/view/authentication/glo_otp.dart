@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_viewmodel.dart';
 
 void main() {
-  runApp(const GloOtpScreen());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AuthViewModel(),
+      child: const GloOtpScreen(),
+    ),
+  );
 }
 
 class GloOtpScreen extends StatelessWidget {
@@ -9,19 +16,49 @@ class GloOtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'GLO OTP Screen',
-      home: const OtpPage(),
+      home: OtpPage(),
     );
   }
 }
 
-class OtpPage extends StatelessWidget {
+class OtpPage extends StatefulWidget {
   const OtpPage({super.key});
 
   @override
+  State<OtpPage> createState() => _OtpPageState();
+}
+
+class _OtpPageState extends State<OtpPage> {
+  final List<TextEditingController> _controllers =
+  List.generate(6, (_) => TextEditingController());
+
+  String get _enteredOtp => _controllers.map((c) => c.text).join();
+
+  final String phone = '+9779800000000';
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthViewModel>().sendOtp(phone);
+    });
+  }
+
+  @override
+  void dispose() {
+    for (var c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authVM = context.watch<AuthViewModel>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF2F5),
       body: SafeArea(
@@ -32,32 +69,22 @@ class OtpPage extends StatelessWidget {
             children: [
               const SizedBox(height: 15),
 
-              // Back Button
               GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
+                onTap: () => Navigator.pop(context),
                 child: const Row(
                   children: [
-                    Icon(
-                      Icons.arrow_back_ios,
-                      size: 18,
-                      color: Colors.black54,
-                    ),
-                    Text(
-                      "Back",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
-                    ),
+                    Icon(Icons.arrow_back_ios,
+                        size: 18, color: Colors.black54),
+                    SizedBox(width: 5),
+                    Text("Back",
+                        style:
+                        TextStyle(fontSize: 16, color: Colors.black54)),
                   ],
                 ),
               ),
 
               const SizedBox(height: 80),
 
-              // Top Icon
               Center(
                 child: Container(
                   height: 80,
@@ -76,34 +103,25 @@ class OtpPage extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // Title
               const Center(
                 child: Text(
                   "Enter OTP",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              // Subtitle
               const Center(
                 child: Text(
-                  "A 6-digit code has been sent to your e-mail.",
+                  "A 6-digit code has been sent to your phone.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
               ),
 
               const SizedBox(height: 40),
 
-              // OTP Boxes
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(
@@ -112,6 +130,7 @@ class OtpPage extends StatelessWidget {
                     width: 45,
                     height: 55,
                     child: TextField(
+                      controller: _controllers[index],
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       maxLength: 1,
@@ -129,33 +148,8 @@ class OtpPage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              // Resend Code
-              Center(
-                child: RichText(
-                  text: TextSpan(
-                    text: "Didn't receive the code? ",
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: "Resend Code",
-                        style: TextStyle(
-                          color: Colors.pink,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 35),
 
-              // Verify Button
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -166,15 +160,25 @@ class OtpPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SuccessScreen(),
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+
+                    final success =
+                    await authVM.verifyOtp(_enteredOtp);
+
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? "OTP Verified!"
+                              : (authVM.error ?? "Invalid OTP"),
+                        ),
                       ),
                     );
                   },
-                  child: const Text(
+                  child: authVM.loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
                     "Verify and Continue",
                     style: TextStyle(
                       fontSize: 18,
@@ -187,66 +191,22 @@ class OtpPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Change Email
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Change Email Clicked"),
-                      ),
-                    );
+                    context.read<AuthViewModel>().sendOtp(phone);
                   },
                   child: const Text(
-                    "Change Email address",
+                    "Resend Code",
                     style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      fontSize: 15,
-                      color: Colors.black87,
+                      color: Colors.pink,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// Success Screen
-class SuccessScreen extends StatelessWidget {
-  const SuccessScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.check_circle,
-              size: 100,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "OTP Verified Successfully!",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Go Back"),
-            ),
-          ],
         ),
       ),
     );

@@ -3,68 +3,104 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 // ViewModels
-import 'viewmodel/auth_viewmodel.dart';
-import 'viewmodel/medication_viewmodel.dart';
-import 'viewmodel/visit_viewmodel.dart';
-import 'viewmodel/health_viewmodel.dart';
+import 'package:glo/viewmodel/auth_viewmodel.dart';
+import 'package:glo/viewmodel/health_viewmodel.dart';
+import 'package:glo/viewmodel/medication_viewmodel.dart';
+import 'package:glo/viewmodel/visit_viewmodel.dart';
 
-// Views
-import 'view/glo_splash_screen.dart';
-import 'view/glo_profile.dart';
-import 'view/medication_screen.dart';
-import 'view/add_medication_screen.dart';
-import 'view/medication_history_screen.dart';
-import 'view/dermavisit.dart';
-import 'view/visit_log.dart';
-import 'view/follow_up_reminder.dart';
-import 'view/prescription.dart';
-import 'view/skin_tips.dart';
-import 'view/treatment_tracker.dart';
-import 'view/about_us_screen.dart';
-import 'view/glo_otp.dart';
+// Screens
+import 'package:glo/view/glo_profile/glo_profile.dart';
+import 'package:glo/view/glo_history/history_screen.dart';
+
+import 'package:glo/view/glo_medication/medication_screen.dart';
+import 'package:glo/view/glo_medication/add_medication_screen.dart';
+import 'package:glo/view/glo_medication/medication_history_screen.dart';
+
+import 'package:glo/view/glo_derma_visit/derma_visit.dart';
+import 'package:glo/view/glo_derma_visit/visit_log.dart';
+import 'package:glo/view/glo_derma_visit/follow_up_reminder.dart';
+import 'package:glo/view/glo_derma_visit/prescription.dart';
+import 'package:glo/view/glo_derma_visit/skin_tips.dart';
+import 'package:glo/view/glo_derma_visit/treatment_tracker.dart';
+
+import 'package:glo/view/glo_profile/glo_about_us_screen.dart';
+import 'package:glo/view/authentication/glo_otp.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   runApp(const GloApp());
 }
 
 class GloApp extends StatelessWidget {
   const GloApp({super.key});
 
+  static const String userId = "testUser123";
+
   @override
   Widget build(BuildContext context) {
-    const String userId = "testUser123";
-
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ChangeNotifierProvider(create: (_) => MedicationViewModel()),
-        ChangeNotifierProvider(create: (_) => VisitViewModel()),
-        ChangeNotifierProvider(create: (_) => HealthViewModel()),
+        ChangeNotifierProvider<AuthViewModel>(
+          create: (_) => AuthViewModel(),
+        ),
+        ChangeNotifierProvider<MedicationViewModel>(
+          create: (_) => MedicationViewModel(),
+        ),
+        ChangeNotifierProvider<VisitViewModel>(
+          create: (_) => VisitViewModel(),
+        ),
+        ChangeNotifierProvider<HealthViewModel>(
+          create: (_) => HealthViewModel(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Glo App',
+        title: "Glo App",
         theme: ThemeData(
-          primarySwatch: Colors.pink,
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.pink,
+          ),
           scaffoldBackgroundColor: const Color(0xFFFFF7F8),
         ),
-        home: const SplashScreen(),
+
+        // Initial Screen
+        home: const HistoryScreen(),
+
         routes: {
-          '/profile': (context) => const GloProfileScreen(),
-          '/medications': (context) => MedicationScreen(userId: userId),
-          '/addMedication': (context) => AddMedicationScreen(userId: userId),
-          '/medicationHistory': (context) =>
-              MedicationHistoryScreen(userId: userId),
-          '/dermaVisit': (context) => const DermaVisitScreen(),
-          '/visitLog': (context) => const LogVisitScreen(),
-          '/followUpReminder': (context) => const ReminderScreen(),
-          '/prescription': (context) => const PrescriptionScreen(),
-          '/skinTips': (context) => const SkinHealthTipsScreen(),
-          '/treatmentTracker': (context) => const TreatmentTrackerScreen(),
-          '/about': (context) => const AboutUsScreen(),
-          '/otp': (context) => const GloOtpScreen(),
+          // Bottom Navigation Routes
+          // Replace these with your actual Home/Insights pages later
+          '/home': (_) => const GloProfileScreen(),
+          '/insights': (_) => const DermaVisitScreen(),
+          '/history': (_) => const HistoryScreen(),
+          '/profile': (_) => const GloProfileScreen(),
+
+          // Medication
+          '/medications': (_) => const MedicationScreen(
+            userId: userId,
+          ),
+          '/addMedication': (_) => const AddMedicationScreen(
+            userId: userId,
+          ),
+          '/medicationHistory': (_) => const MedicationHistoryScreen(
+            userId: userId,
+          ),
+
+          // Derma Visit
+          '/dermaVisit': (_) => const DermaVisitScreen(),
+          '/visitLog': (_) => const LogVisitScreen(),
+          '/followUpReminder': (_) => const FollowUpReminderScreen(),
+          '/prescription': (_) => const PrescriptionScreen(),
+          '/skinTips': (_) => const SkinHealthTipsScreen(),
+          '/treatmentTracker': (_) => const TreatmentTrackerScreen(),
+
+          // Profile
+          '/about': (_) => const GloAboutUsScreen(),
+
+          // Authentication
+          '/otp': (_) => const GloOtpScreen(),
         },
       ),
     );

@@ -22,6 +22,11 @@ dependencies:
   image_picker: ^1.2.2
   cloudinary_public: ^0.23.1
   flutter_animated_splash: ^0.0.10
+  pdf: ^3.10.7
+  path_provider: ^2.0.15
+  share_plus: ^7.0.2
+  intl: ^0.19.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -48,4 +53,12 @@ flutter:
     - assets/images/prescription.png
     - assets/images/skintips.png
     - assets/images/background1.png
+    - assets/images/history-background.png
+    - assets/images/skinderma.png
+    - assets/images/fruits_bowl.png
+    - assets/images/cleanser.png
+    - assets/images/hydrated.png
+    - assets/images/sunscreen_face.png
+    - assets/images/glow.png
+    - assets/images/glow1.png
 
