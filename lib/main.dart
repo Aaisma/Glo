@@ -1,82 +1,118 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:glo/firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Repositories
-import 'package:glo/repo/notification_repository_impl.dart';
-import 'package:glo/repo/mood_repository.dart';
-import 'package:glo/repo/mood_repository_impl.dart';
+import 'package:gloclone/viewmodel/notification_view_model.dart';
+import 'package:gloclone/view/notification_screen.dart';
+import 'firebase_options.dart';
 
-// Services
-import 'package:glo/services/firebase_notification_service.dart';
-import 'package:glo/services/local_notification_service.dart';
-
-// ViewModels / Providers
-import 'package:glo/providers/notification_provider.dart';
-import 'package:glo/viewmodel/wellness_viewmodel.dart';
-
-// Screens
-import 'package:glo/view/notification_screen.dart';
-import 'package:glo/view/wellness_dashboard_screen.dart';
-import 'package:glo/view/mood_log_screen.dart';
-import 'package:glo/view/mood_garden_screen.dart';
-import 'package:glo/view/mood_calendar_screen.dart';
-import 'package:glo/view/mood_summary_screen.dart';
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupNotificationClickHandling();
+      _testFirestoreConnection();
+    });
+  }
+
+  void _setupNotificationClickHandling() async {
+    RemoteMessage? initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      _navigateToNotificationScreen();
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      _navigateToNotificationScreen();
+    });
+  }
+
+  void _navigateToNotificationScreen() {
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (context) => const NotificationScreen(),
+      ),
+    );
+  }
+
+  Future<void> _testFirestoreConnection() async {
+    try {
+      await FirebaseFirestore.instance.collection('connection_test').add({
+        'status': 'connected',
+        'time': DateTime.now(),
+      });
+      debugPrint("✅ Firestore write successful!");
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+      }
+      debugPrint("❌ Firestore error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Notification Providers
-        Provider<NotificationRepository>(
-          create: (_) => NotificationRepositoryImpl(
-            firebaseService: FirebaseNotificationService(),
-            localService: LocalNotificationService(),
-          ),
-        ),
-        ChangeNotifierProvider<NotificationProvider>(
-          create: (context) => NotificationProvider(
-            context.read<NotificationRepository>(),
-          ),
-        ),
-        // Wellness MVVM Provider
-        ChangeNotifierProvider<WellnessViewModel>(
-          create: (_) => WellnessViewModel(),
+        ChangeNotifierProvider<NotificationViewModel>(
+          create: (_) => NotificationViewModel(),
         ),
       ],
       child: MaterialApp(
-        title: 'Glo Wellness',
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.pink,
-          scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-          fontFamily: 'Roboto',
-        ),
-        home: const WellnessDashboardScreen(),
-        routes: {
-          '/notifications': (context) => const NotificationScreen(),
-          '/wellness': (context) => const WellnessDashboardScreen(),
-          '/mood_log': (context) => const MoodLogScreen(),
-          '/mood_garden': (context) => const MoodGardenScreen(),
-          '/mood_calendar': (context) => const MoodCalendarScreen(),
-          '/mood_summary': (context) => const MoodSummaryScreen(),
-        },
+        home: _buildHomeScreen(),
       ),
     );
+  }
+
+  Widget _buildHomeScreen() {
+    if (_errorMessage != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  "Firebase Error:\n$_errorMessage",
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const NotificationScreen();
   }
 }

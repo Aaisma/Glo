@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../repo/user_repo_impl.dart';
-import 'register.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +20,95 @@ class _LoginScreenState extends State<LoginScreen> {
   final Color primaryPink = const Color(0xFFFF3E63);
 
   @override
+  void dispose() {
+    // Clean up controllers to prevent memory leaks
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void loginUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) return;
+
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+
+    try {
+      final user = await authVM.signInWithEmail(email, password);
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.fetchCurrentUser();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Login failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  void loginWithGoogle() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    try {
+      final user = await authVM.signInWithGoogle();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  void loginWithFacebook() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    try {
+      final user = await authVM.signInWithFacebook();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDECEF),
@@ -35,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: Colors.black54,
@@ -145,11 +235,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // Forgot Password
+                // Forgot Password -> Pointing to OTP Screen
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, '/forgotPasswordOTP');
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: TextStyle(
@@ -175,19 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: () {
-                      String email = emailController.text.trim();
-                      String password =
-                      passwordController.text.trim();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Email: $email\nPassword: $password",
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: loginUser,
                     child: const Text(
                       "Login",
                       style: TextStyle(
@@ -201,6 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 22),
 
+                // Registration Navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -211,12 +292,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    Text(
-                      "Join the 'Glow'",
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text(
+                        "Join the 'Glow'",
+                        style: TextStyle(
+                          color: primaryPink,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -224,6 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 25),
 
+                // Options, Darling! Divider
                 Row(
                   children: [
                     const Expanded(
@@ -233,8 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
                         "Options, Darling!",
                         style: TextStyle(
@@ -270,7 +356,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 socialButton(
                   icon: Icons.g_mobiledata,
                   text: "Login with Google",
-                  onTap: () {},
+                  onTap: loginWithGoogle,
                 ),
 
                 const SizedBox(height: 14),
@@ -279,7 +365,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 socialButton(
                   icon: Icons.facebook,
                   text: "Login with Facebook",
-                  onTap: () {},
+                  onTap: loginWithFacebook,
                 ),
 
                 const SizedBox(height: 30),
@@ -304,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           side: BorderSide(
-            color: primaryPink.withOpacity(0.5),
+            color: primaryPink.withValues(alpha: 0.5),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
