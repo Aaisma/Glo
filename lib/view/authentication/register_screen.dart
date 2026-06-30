@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/user_view_model.dart';
 import '../components/social_button.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -16,10 +19,89 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool obscurePassword = true;
   final Color primaryPink = const Color(0xFFFF3E63);
 
-  void registerUser() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Registered successfully ✅")),
-    );
+  void registerUser() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) return;
+
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    
+    userVM.setSignupCredentials(name, email, password);
+
+    try {
+      final user = await authVM.signUpWithEmail(email, password);
+      if (user != null) {
+        await user.updateDisplayName(name);
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Registration failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  void registerWithGoogle() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    try {
+      final user = await authVM.signInWithGoogle();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  void registerWithFacebook() async {
+    final authVM = context.read<AuthViewModel>();
+    final userVM = context.read<UserViewModel>();
+    try {
+      final user = await authVM.signInWithFacebook();
+      if (user != null) {
+        userVM.setUserId(user.uid);
+        await userVM.createDefaultProfile();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 
   @override
@@ -138,9 +220,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 24),
 
               // Social Buttons
-              SocialButton(icon: Icons.g_mobiledata, text: "Register with Google", color: primaryPink, onTap: () {}),
+              SocialButton(icon: Icons.g_mobiledata, text: "Register with Google", color: primaryPink, onTap: registerWithGoogle),
               const SizedBox(height: 14),
-              SocialButton(icon: Icons.facebook, text: "Register with Facebook", color: primaryPink, onTap: () {}),
+              SocialButton(icon: Icons.facebook, text: "Register with Facebook", color: primaryPink, onTap: registerWithFacebook),
             ],
           ),
         ),

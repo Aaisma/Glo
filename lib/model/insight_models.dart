@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum InsightStatus { draft, published, scheduled, archived }
 
@@ -101,15 +102,15 @@ class Insight {
       'status': status.name,
       'isFeatured': isFeatured,
       'isTrending': isTrending,
-      'createdAt': createdAt.toIso8601String(),
-      'publishedAt': publishedAt?.toIso8601String(),
+      'createdAt': createdAt,
+      'publishedAt': publishedAt,
       'authorId': authorId,
       'views': views,
       'likes': likes,
       'saves': saves,
       'shares': shares,
       'isDeleted': isDeleted,
-      'deletedAt': deletedAt?.toIso8601String(),
+      'deletedAt': deletedAt,
     };
   }
 
@@ -128,15 +129,21 @@ class Insight {
       ),
       isFeatured: map['isFeatured'] ?? false,
       isTrending: map['isTrending'] ?? false,
-      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
-      publishedAt: map['publishedAt'] != null ? DateTime.parse(map['publishedAt']) : null,
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      publishedAt: map['publishedAt'] != null 
+          ? (map['publishedAt'] is Timestamp ? (map['publishedAt'] as Timestamp).toDate() : DateTime.parse(map['publishedAt'])) 
+          : null,
       authorId: map['authorId'] ?? '',
       views: map['views'] ?? 0,
       likes: map['likes'] ?? 0,
       saves: map['saves'] ?? 0,
       shares: map['shares'] ?? 0,
       isDeleted: map['isDeleted'] ?? false,
-      deletedAt: map['deletedAt'] != null ? DateTime.parse(map['deletedAt']) : null,
+      deletedAt: map['deletedAt'] != null 
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          : null,
     );
   }
 

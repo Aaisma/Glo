@@ -205,6 +205,22 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
 
               const SizedBox(height: 20),
 
+              // Article Summary (Subtitle)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  insight.summary,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF332B2C),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 12),
+
               // Article Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -259,23 +275,42 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                     const Spacer(),
 
                     // Save Button
-                    IconButton(
-                      icon: Icon(
-                        viewModel.isSaved ? Icons.bookmark : Icons.bookmark_border,
-                        color: viewModel.isSaved ? accentColor : Colors.grey,
-                        size: 24,
+                    GestureDetector(
+                      onTap: viewModel.save,
+                      child: Row(
+                        children: [
+                          Icon(
+                            viewModel.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                            color: viewModel.isSaved ? accentColor : Colors.grey,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            "Save",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ],
                       ),
-                      onPressed: viewModel.save,
                     ),
+                    const SizedBox(width: 24),
 
                     // Share Button
-                    IconButton(
-                      icon: const Icon(Icons.share_outlined, color: Colors.grey, size: 24),
-                      onPressed: () {
+                    GestureDetector(
+                      onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Link copied to clipboard! 🌸")),
                         );
                       },
+                      child: Row(
+                        children: const [
+                          Icon(Icons.share_outlined, color: Colors.grey, size: 24),
+                          SizedBox(width: 6),
+                          Text(
+                            "Share",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -336,7 +371,7 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),

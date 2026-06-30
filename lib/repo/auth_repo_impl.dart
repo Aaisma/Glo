@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'auth_repo.dart';
 
@@ -18,17 +20,19 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   Future<UserCredential> signInWithGoogle() async {
-    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn.instance;
-    await googleSignIn.initialize();
-    final gsi.GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
+    const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '714010295460-brtm8b47nffm381uje37pkkbr7bvuenj.apps.googleusercontent.com');
+    final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn(
+      clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
+      serverClientId: googleClientId,
+    );
+    final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     if (googleUser == null) throw Exception("Google sign in cancelled");
 
-    final gsi.GoogleSignInAuthentication googleAuth = googleUser.authentication;
-    final authz = await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+    final gsi.GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: authz?.accessToken,
+      accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
@@ -50,7 +54,7 @@ class AuthRepoImpl implements AuthRepo {
   @override
   Future<void> signOut() async {
     await _auth.signOut();
-    await gsi.GoogleSignIn.instance.signOut();
+    await gsi.GoogleSignIn().signOut();
     await FacebookAuth.instance.logOut();
   }
 

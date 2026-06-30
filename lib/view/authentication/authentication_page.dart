@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../components/top_navigation.dart';
 import 'login_screen.dart';
-import 'register.dart';
-import 'package:gloclone/view/navigation_icon/profile_pages/help_support_page.dart';
-import 'package:gloclone/view/navigation_icon/profile_pages/about_us_page.dart';
+import 'register_screen.dart';
+import '../navigation_icon/profile_pages/help_support_page.dart';
+import '../navigation_icon/profile_pages/about_us_page.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});
@@ -67,14 +67,14 @@ class AuthenticationPage extends StatelessWidget {
                       "Log In",
                       const Color(0xFFFA4E6F
                       ),
-                      () => Navigator.pushNamed(context, '/login'),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
                     ),
                     const SizedBox(height: 8),
                     _authButton(
                       context,
                       "Register",
                       const Color(0xFFFA4E6F),
-                      () => Navigator.pushNamed(context, '/register'),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
                     ),
                   ],
                 ),

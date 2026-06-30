@@ -48,6 +48,11 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/survey/
+    - assets/images/survey/acne_type/
+    - assets/images/survey/last_page/
+    - assets/images/survey/skin_type/
+    - assets/images/survey/tips/
     - assets/videos/
     - assets/animations/
     - assets/ml/model_unquant.tflite

@@ -98,6 +98,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         name: _nameController.text.trim(),
         actualAge: int.tryParse(_ageController.text.trim()),
         waterGoal: double.tryParse(_waterGoalController.text.trim()),
+        profileCompleted: true,
       );
       await viewModel.editProfile(updatedUser);
       if (mounted) {

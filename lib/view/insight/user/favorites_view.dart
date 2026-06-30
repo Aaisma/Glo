@@ -4,6 +4,7 @@ import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
+import '../../../constants/ayd_colour.dart';
 import 'article_detail_view.dart';
 import '../../community/user/discussion_detail_view.dart';
 import 'poll_detail_view.dart';
@@ -61,19 +62,19 @@ class _FavoritesViewState extends State<FavoritesView> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: AydColors.appBackground,
       appBar: AppBar(
         title: const Text(
           "Favorites",
           style: TextStyle(
-            color: Color(0xFF332B2C),
+            color: AydColors.insightTextPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.insightTextPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -89,7 +90,7 @@ class _FavoritesViewState extends State<FavoritesView> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
+                      color: Colors.black.withValues(alpha: 0.01),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -230,41 +231,55 @@ class _FavoritesViewState extends State<FavoritesView> {
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset(
-            item.coverImage,
-            width: 60,
-            height: 60,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: const Color(0xFFFFE5EC)),
-          ),
-        ),
-        title: Text(
-          item.title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C)),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6.0),
-          child: Text(
-            "${item.category} • ${item.readTime}",
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.bookmark, color: Color(0xFFFF3E63)),
-          onPressed: () => vm.removeFavorite(item.id, ContentType.article),
-        ),
+      child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => ArticleDetailView(insightId: item.id)),
           );
         },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  item.coverImage,
+                  width: 70,
+                  height: 70,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(width: 70, height: 70, color: const Color(0xFFFFE5EC)),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C), height: 1.2),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "${item.category} • ${item.readTime}",
+                      style: const TextStyle(fontSize: 11, color: Color(0xFFFF3E63), fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.bookmark_outline, color: Color(0xFFFF3E63)),
+                onPressed: () => vm.removeFavorite(item.id, ContentType.article),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -277,7 +292,7 @@ class _FavoritesViewState extends State<FavoritesView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -328,7 +343,7 @@ class _FavoritesViewState extends State<FavoritesView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

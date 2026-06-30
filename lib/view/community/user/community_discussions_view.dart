@@ -97,7 +97,9 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                 ),
               ),
             ),
-
+            // Filter Tabs
+            _buildFilterTabs(viewModel),
+            const SizedBox(height: 8),
             // Feed List
             Expanded(
               child: RefreshIndicator(
@@ -176,7 +178,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreateDiscussionView()),
+                    MaterialPageRoute(builder: (_) => CreateDiscussionView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
@@ -193,7 +195,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreatePollView()),
+                    MaterialPageRoute(builder: (_) => CreatePollView()),
                   ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
                 },
               ),
@@ -453,4 +455,45 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
       ),
     );
   }
+
+  Widget _buildFilterTabs(CommunityFeedViewModel viewModel) {
+    final filters = ['Trending', 'Recent', 'Unanswered', 'Following'];
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final isSelected = viewModel.selectedFilter == filter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ChoiceChip(
+              label: Text(
+                filter,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF332B2C),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (val) => viewModel.setFilter(filter),
+              selectedColor: const Color(0xFFFF3E63),
+              backgroundColor: Colors.white,
+              elevation: isSelected ? 2 : 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
+

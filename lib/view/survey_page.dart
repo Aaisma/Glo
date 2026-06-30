@@ -7,6 +7,9 @@ import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import 'components/onboarding_widgets.dart';
 
+const Color primaryPink = Color(0xFFFF3E63);
+const Color accentLightPink = Color(0xFFFDECEF);
+
 class SurveyPage extends StatefulWidget {
   const SurveyPage({super.key});
 
@@ -149,7 +152,6 @@ class _SurveyPageState extends State<SurveyPage> {
 
   Future<void> _finalizeRegistration() async {
     final userVM = Provider.of<UserViewModel>(context, listen: false);
-    final authVM = Provider.of<AuthViewModel>(context, listen: false);
     final periodVM = Provider.of<PeriodViewModel>(context, listen: false);
 
     try {
@@ -161,11 +163,10 @@ class _SurveyPageState extends State<SurveyPage> {
         ),
       );
 
-      await userVM.finalizeOnboarding(authVM: authVM, periodVM: periodVM);
+      await userVM.finalizeOnboarding(periodVM: periodVM);
 
       if (mounted) {
         Navigator.pop(context); // Pop loading
-        Navigator.of(context).pushReplacementNamed('/dashboard');
       }
     } catch (e) {
       if (mounted) {
@@ -301,7 +302,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     hintText: "Age",
                     suffixText: "years",
                     filled: true,
-                    fillColor: accentLightPink.withValues(alpha: 0.3),
+                    fillColor: accentLightPink.withOpacity(0.3),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
@@ -344,7 +345,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Weight",
                           filled: true,
-                          fillColor: accentLightPink.withValues(alpha: 0.3),
+                          fillColor: accentLightPink.withOpacity(0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -403,7 +404,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     decoration: InputDecoration(
                       hintText: "Height in cm",
                       filled: true,
-                      fillColor: accentLightPink.withValues(alpha: 0.3),
+                      fillColor: accentLightPink.withOpacity(0.3),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     ),
                   )
@@ -417,7 +418,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Feet",
                             filled: true,
-                            fillColor: accentLightPink.withValues(alpha: 0.3),
+                            fillColor: accentLightPink.withOpacity(0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -430,7 +431,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Inches",
                             filled: true,
-                            fillColor: accentLightPink.withValues(alpha: 0.3),
+                            fillColor: accentLightPink.withOpacity(0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -455,7 +456,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Water Goal",
                           filled: true,
-                          fillColor: accentLightPink.withValues(alpha: 0.3),
+                          fillColor: accentLightPink.withOpacity(0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -636,9 +637,9 @@ class _SurveyPageState extends State<SurveyPage> {
             text: "Tracking your cycle regularly helps improve period and ovulation predictions over time.",
             icon: Image(image: AssetImage("assets/images/survey/tips/cute_calender.png"), width: 40, height: 40),
           ),
-          const QuestionCard(
+          QuestionCard(
             child: Row(
-              children: [
+              children: const [
                 Icon(Icons.edit_note, color: primaryPink),
                 SizedBox(width: 12),
                 Expanded(
@@ -1026,7 +1027,7 @@ class _SurveyPageState extends State<SurveyPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1178,7 +1179,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         runSpacing: 6,
                         children: data.acneTypes.map((c) => Chip(
                           label: Text(c, style: const TextStyle(fontSize: 11, color: primaryPink)),
-                          backgroundColor: primaryPink.withValues(alpha: 0.1),
+                          backgroundColor: primaryPink.withOpacity(0.1),
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

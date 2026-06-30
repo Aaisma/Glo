@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
+import '../../../model/community_models.dart';
+import '../user/create_discussion_view.dart';
+import '../user/create_poll_view.dart';
 
 class CommunityPostsLibraryView extends StatefulWidget {
   const CommunityPostsLibraryView({super.key});
@@ -11,6 +14,11 @@ class CommunityPostsLibraryView extends StatefulWidget {
 }
 
 class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+  int _currentPage = 1;
+  final int _itemsPerPage = 10;
+
   @override
   void initState() {
     super.initState();
@@ -20,8 +28,15 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityLibraryViewModel>();
+    final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
     return Scaffold(
@@ -39,22 +54,147 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Filter Selector Tabs
-            _buildLibraryTabs(viewModel),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar & Filter Button Row
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val.toLowerCase();
+                            _currentPage = 1;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: "Search posts...",
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.filter_list, color: Color(0xFF332B2C)),
+                      onPressed: () {
+                        // Show filter bottom sheet
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            const SizedBox(height: 12),
+              // Tabs & Action Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildLibraryTabs(viewModel),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: accentColor,
+                          side: BorderSide(color: accentColor),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollView()));
+                        },
+                        icon: const Icon(Icons.poll_outlined, size: 18),
+                        label: const Text("Create Poll", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateDiscussionView()));
+                        },
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text("Create Discussion", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            // Content Table list
-            Expanded(
-              child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
-                  : viewModel.selectedTab == 'Discussions'
-                      ? _buildDiscussionsList(context, viewModel, accentColor)
-                      : _buildPollsList(context, viewModel, accentColor),
-            ),
-          ],
+              // Content Table
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Table Header
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                              ),
+                              child: Row(
+                                children: const [
+                                  Expanded(flex: 1, child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 2, child: Text("Author", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  Expanded(flex: 2, child: Text("Date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
+                                  SizedBox(width: 60, child: Text("Actions", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12), textAlign: TextAlign.center)),
+                                ],
+                              ),
+                            ),
+                            
+                            // Table Body
+                            Expanded(
+                              child: viewModel.selectedTab == 'Discussions'
+                                  ? _buildDiscussionsTable(viewModel)
+                                  : _buildPollsTable(viewModel),
+                            ),
+
+                            // Pagination Controls
+                            _buildPaginationBar(),
+                          ],
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -63,86 +203,87 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   Widget _buildLibraryTabs(CommunityLibraryViewModel viewModel) {
     final tabs = ["Discussions", "Polls"];
 
-    return Container(
-      height: 38,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: tabs.map((tab) {
-          final isSelected = viewModel.selectedTab == tab;
+    return Row(
+      children: tabs.map((tab) {
+        final isSelected = viewModel.selectedTab == tab;
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6.0),
-            child: ChoiceChip(
-              label: Text(
-                tab,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF332B2C),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              selected: isSelected,
-              onSelected: (val) => viewModel.setTab(tab),
-              selectedColor: const Color(0xFFFF3E63),
-              backgroundColor: Colors.white,
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
-                ),
+        return Padding(
+          padding: const EdgeInsets.only(right: 12.0),
+          child: ChoiceChip(
+            label: Text(
+              tab,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF332B2C),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
             ),
-          );
-        }).toList(),
-      ),
+            selected: isSelected,
+            onSelected: (val) {
+              setState(() => _currentPage = 1);
+              viewModel.setTab(tab);
+            },
+            selectedColor: const Color(0xFFFF3E63),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildDiscussionsList(BuildContext context, CommunityLibraryViewModel vm, Color accent) {
-    if (vm.discussions.isEmpty) {
+  Widget _buildDiscussionsTable(CommunityLibraryViewModel vm) {
+    var filtered = vm.discussions.where((d) => d.title.toLowerCase().contains(_searchQuery)).toList();
+    if (filtered.isEmpty) {
       return const Center(child: Text("No discussions found 🌸", style: TextStyle(color: Colors.grey)));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      itemCount: vm.discussions.length,
+    int totalPages = (filtered.length / _itemsPerPage).ceil();
+    if (_currentPage > totalPages) _currentPage = totalPages;
+    int startIndex = (_currentPage - 1) * _itemsPerPage;
+    int endIndex = startIndex + _itemsPerPage;
+    if (endIndex > filtered.length) endIndex = filtered.length;
+    var paginated = filtered.sublist(startIndex, endIndex);
+
+    return ListView.separated(
+      itemCount: paginated.length,
+      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
       itemBuilder: (context, index) {
-        final item = vm.discussions[index];
+        final item = paginated[index];
         final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);
         final statusText = item.isDeleted ? "DELETED" : "ACTIVE";
         final statusColor = item.isDeleted ? Colors.red : Colors.green;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.01),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.01),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+              // Status
+              Expanded(
+                flex: 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
+              // Title
               Expanded(
+                flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -152,26 +293,52 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      "By @${item.username} • $formattedDate • ${item.repliesCount} replies • ${item.views} views",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      "${item.repliesCount} replies • ${item.views} views",
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
-              if (!item.isDeleted)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                  onPressed: () async {
-                    await vm.deleteDiscussion(item.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Discussion soft-deleted! 🌸")),
-                      );
-                    }
-                  },
+              const SizedBox(width: 16),
+              // Author
+              Expanded(
+                flex: 2,
+                child: Text(
+                  "@${item.username}",
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF332B2C)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              const SizedBox(width: 16),
+              // Date
+              Expanded(
+                flex: 2,
+                child: Text(
+                  formattedDate,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Actions
+              SizedBox(
+                width: 60,
+                child: item.isDeleted
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        onPressed: () async {
+                          await vm.deleteDiscussion(item.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Discussion soft-deleted! 🌸")),
+                            );
+                          }
+                        },
+                      ),
+              ),
             ],
           ),
         );
@@ -179,49 +346,52 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
     );
   }
 
-  Widget _buildPollsList(BuildContext context, CommunityLibraryViewModel vm, Color accent) {
-    if (vm.polls.isEmpty) {
+  Widget _buildPollsTable(CommunityLibraryViewModel vm) {
+    var filtered = vm.polls.where((p) => p.question.toLowerCase().contains(_searchQuery)).toList();
+    if (filtered.isEmpty) {
       return const Center(child: Text("No polls found 🌸", style: TextStyle(color: Colors.grey)));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      itemCount: vm.polls.length,
+    int totalPages = (filtered.length / _itemsPerPage).ceil();
+    if (_currentPage > totalPages) _currentPage = totalPages;
+    int startIndex = (_currentPage - 1) * _itemsPerPage;
+    int endIndex = startIndex + _itemsPerPage;
+    if (endIndex > filtered.length) endIndex = filtered.length;
+    var paginated = filtered.sublist(startIndex, endIndex);
+
+    return ListView.separated(
+      itemCount: paginated.length,
+      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
       itemBuilder: (context, index) {
-        final item = vm.polls[index];
+        final item = paginated[index];
         final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);
         final statusText = item.isDeleted ? "DELETED" : "ACTIVE";
         final statusColor = item.isDeleted ? Colors.red : Colors.green;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.01),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.01),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+              // Status
+              Expanded(
+                flex: 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
+              // Title
               Expanded(
+                flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -231,30 +401,89 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      "By @${item.createdBy} • $formattedDate • ${item.totalVotes} votes • ${item.views} views",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      "${item.totalVotes} votes • ${item.views} views",
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
-              if (!item.isDeleted)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                  onPressed: () async {
-                    await vm.deletePoll(item.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Poll soft-deleted! 🌸")),
-                      );
-                    }
-                  },
+              const SizedBox(width: 16),
+              // Author
+              Expanded(
+                flex: 2,
+                child: Text(
+                  "@${item.createdBy}",
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF332B2C)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              const SizedBox(width: 16),
+              // Date
+              Expanded(
+                flex: 2,
+                child: Text(
+                  formattedDate,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Actions
+              SizedBox(
+                width: 60,
+                child: item.isDeleted
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        onPressed: () async {
+                          await vm.deletePoll(item.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Poll soft-deleted! 🌸")),
+                            );
+                          }
+                        },
+                      ),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPaginationBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.grey.shade100)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 14),
+            onPressed: _currentPage > 1 ? () {
+              setState(() => _currentPage--);
+            } : null,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            "Page $_currentPage",
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+          ),
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_ios, size: 14),
+            onPressed: () {
+              // Real logic would check if hasMore, here just simple increment for local UI pagination
+              setState(() => _currentPage++);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

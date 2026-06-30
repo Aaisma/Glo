@@ -59,18 +59,21 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
+                  const Icon(Icons.menu, color: Color(0xFF332B2C), size: 28),
                   const Expanded(
-                    child: Text(
-                      "Insights Feed",
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF332B2C),
+                    child: Center(
+                      child: Text(
+                        "Insights Feed",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF3E63),
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.bookmark_border, color: Color(0xFFFF3E63), size: 28),
+                    icon: const Icon(Icons.bookmark_border, color: Color(0xFF332B2C), size: 28),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -91,7 +94,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -244,40 +247,53 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
   }
 
   Widget _buildCategorySection(InsightsFeedViewModel viewModel, Color activeColor) {
-    final categories = ["Health & Wellness", "Lifestyle", "Community", "Expert Insights", "Trending"];
+    final categoriesData = [
+      {'name': 'Health &\nWellness', 'icon': Icons.health_and_safety_outlined, 'color': const Color(0xFFFF3E63), 'bg': const Color(0xFFFFF0F3)},
+      {'name': 'Lifestyle', 'icon': Icons.eco_outlined, 'color': const Color(0xFF22C55E), 'bg': const Color(0xFFF0FDF4)},
+      {'name': 'Community', 'icon': Icons.people_outline, 'color': const Color(0xFFA855F7), 'bg': const Color(0xFFF3E8FF)},
+      {'name': 'Expert\nInsights', 'icon': Icons.lightbulb_outline, 'color': const Color(0xFFF97316), 'bg': const Color(0xFFFFF7ED)},
+      {'name': 'Trending', 'icon': Icons.local_fire_department_outlined, 'color': const Color(0xFFEAB308), 'bg': const Color(0xFFFEFCE8)},
+    ];
 
     return Container(
-      height: 48,
+      height: 90,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length,
+        itemCount: categoriesData.length,
         itemBuilder: (context, index) {
-          final cat = categories[index];
-          final isSelected = viewModel.selectedCategory == cat;
+          final cat = categoriesData[index];
+          final String catName = cat['name'] as String;
+          final String queryName = catName.replaceAll('\n', ' ');
+          final bool isSelected = viewModel.selectedCategory == queryName;
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ChoiceChip(
-              label: Text(
-                cat,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF332B2C),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
+          return GestureDetector(
+            onTap: () => viewModel.setCategory(queryName),
+            child: Container(
+              width: 76,
+              margin: const EdgeInsets.symmetric(horizontal: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? (cat['color'] as Color).withValues(alpha: 0.15) : cat['bg'] as Color,
+                borderRadius: BorderRadius.circular(16),
+                border: isSelected ? Border.all(color: cat['color'] as Color, width: 1.5) : Border.all(color: Colors.transparent),
               ),
-              selected: isSelected,
-              onSelected: (val) => viewModel.setCategory(cat),
-              selectedColor: const Color(0xFFFF3E63),
-              backgroundColor: Colors.white,
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(cat['icon'] as IconData, color: cat['color'] as Color, size: 28),
+                  const SizedBox(height: 6),
+                  Text(
+                    catName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: cat['color'] as Color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -293,85 +309,113 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipRRect(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ArticleDetailView(insightId: insight.id),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ArticleDetailView(insightId: insight.id),
-              ),
-            );
-          },
-          child: Column(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                insight.coverImage,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 180,
-                  color: const Color(0xFFFFE5EC),
-                  child: const Icon(Icons.image, size: 50, color: Colors.pink),
-                ),
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      insight.coverImage,
+                      height: 120,
+                      width: 110,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 120,
+                        width: 110,
+                        color: const Color(0xFFFFE5EC),
+                        child: const Icon(Icons.image, size: 40, color: Colors.pink),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3E63),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        "New",
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const SizedBox(width: 14),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE5EC),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            insight.category,
-                            style: const TextStyle(
-                              color: Color(0xFFFF3E63),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          insight.readTime,
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
                     Text(
                       insight.title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF332B2C),
+                        height: 1.2,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       insight.summary,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         color: Colors.grey,
-                        height: 1.4,
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${insight.category} • ${insight.readTime}",
+                            style: const TextStyle(
+                              color: Color(0xFFFF3E63),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.bookmark_border, color: Colors.grey, size: 20),
+                          onPressed: () {
+                            context.read<FavoritesViewModel>().removeFavorite(insight.id, ContentType.article);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -391,7 +435,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -410,21 +454,41 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  insight.coverImage,
-                  height: 80,
-                  width: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 80,
-                    width: 80,
-                    color: const Color(0xFFFFE5EC),
-                    child: const Icon(Icons.image, size: 24, color: Colors.pink),
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      insight.coverImage,
+                      height: 100,
+                      width: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 100,
+                        width: 90,
+                        color: const Color(0xFFFFE5EC),
+                        child: const Icon(Icons.image, size: 30, color: Colors.pink),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3E63),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        "New",
+                        style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -432,40 +496,55 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      insight.category,
-                      style: const TextStyle(
-                        color: Color(0xFFFF3E63),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
                       insight.title,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF332B2C),
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
-                      insight.readTime,
-                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                      insight.summary,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${insight.category} • ${insight.readTime}",
+                            style: const TextStyle(
+                              color: Color(0xFF22C55E), // Making it match Lifestyle category dynamically would be better, but hardcoding green or keeping it pink for now. Using primary for consistency with mockup unless specified.
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.bookmark_outline, color: Colors.grey, size: 18),
+                          onPressed: () {
+                            context.read<FavoritesViewModel>().removeFavorite(insight.id, ContentType.article);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.bookmark_outline, color: Color(0xFFFF3E63), size: 20),
-                onPressed: () {
-                  context.read<FavoritesViewModel>().removeFavorite(insight.id, ContentType.article);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Toggled Favorite status! 🌸")),
-                  );
-                },
               ),
             ],
           ),
@@ -514,7 +593,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),

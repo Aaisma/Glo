@@ -22,56 +22,56 @@ class CreateInsightDetailsView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-            child: RadioGroup<String>(
-              groupValue: viewModel.publishType,
-              onChanged: (val) async {
-                if (val == null) return;
-                viewModel.setPublishType(val);
-                if (val == "Schedule") {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 30)),
-                  );
-                  if (date != null && context.mounted) {
-                    final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                    if (time != null) {
-                      viewModel.setScheduleDate(
-                        DateTime(date.year, date.month, date.day, time.hour, time.minute),
-                      );
+            child: Column(
+              children: [
+                RadioListTile<String>(
+                  title: const Text("Publish Now", style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text("Make it live immediately"),
+                  value: "Publish Now",
+                  groupValue: viewModel.publishType,
+                  onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
+                  activeColor: Colors.deepPurple,
+                ),
+                const Divider(),
+                RadioListTile<String>(
+                  title: const Text("Schedule", style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    viewModel.scheduleDate == null
+                        ? "Choose date & time"
+                        : DateFormat('yyyy-MM-dd HH:mm').format(viewModel.scheduleDate!),
+                  ),
+                  value: "Schedule",
+                  groupValue: viewModel.publishType,
+                  onChanged: (val) async {
+                    if (val == null) return;
+                    viewModel.setPublishType(val);
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 30)),
+                    );
+                    if (date != null && context.mounted) {
+                      final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                      if (time != null) {
+                        viewModel.setScheduleDate(
+                          DateTime(date.year, date.month, date.day, time.hour, time.minute),
+                        );
+                      }
                     }
-                  }
-                }
-              },
-              child: Column(
-                children: [
-                  const RadioListTile<String>(
-                    title: Text("Publish Now", style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Make it live immediately"),
-                    value: "Publish Now",
-                    activeColor: Color(0xFFFF3E63),
-                  ),
-                  const Divider(),
-                  RadioListTile<String>(
-                    title: const Text("Schedule", style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      viewModel.scheduleDate == null
-                          ? "Choose date & time"
-                          : DateFormat('yyyy-MM-dd HH:mm').format(viewModel.scheduleDate!),
-                    ),
-                    value: "Schedule",
-                    activeColor: const Color(0xFFFF3E63),
-                  ),
-                  const Divider(),
-                  const RadioListTile<String>(
-                    title: Text("Save as Draft", style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Continue editing later"),
-                    value: "Save as Draft",
-                    activeColor: Color(0xFFFF3E63),
-                  ),
-                ],
-              ),
+                  },
+                  activeColor: Colors.deepPurple,
+                ),
+                const Divider(),
+                RadioListTile<String>(
+                  title: const Text("Save as Draft", style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text("Continue editing later"),
+                  value: "Save as Draft",
+                  groupValue: viewModel.publishType,
+                  onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
+                  activeColor: Colors.deepPurple,
+                ),
+              ],
             ),
           ),
 
@@ -87,9 +87,9 @@ class CreateInsightDetailsView extends StatelessWidget {
               children: [
                 CheckboxListTile(
                   title: const Text("Featured Insight", style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text("Show in featured header section"),
+                  subtitle: const Text("Show in featured section"),
                   value: viewModel.isFeatured,
-                  activeColor: const Color(0xFFFF3E63),
+                  activeColor: Colors.deepPurple,
                   onChanged: (val) => viewModel.setFeatured(val!),
                 ),
                 const Divider(),
@@ -97,7 +97,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   title: const Text("Trending", style: TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text("Show in trending section"),
                   value: viewModel.isTrending,
-                  activeColor: const Color(0xFFFF3E63),
+                  activeColor: Colors.deepPurple,
                   onChanged: (val) => viewModel.setTrending(val!),
                 ),
               ],

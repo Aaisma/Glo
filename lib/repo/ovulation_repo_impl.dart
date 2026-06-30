@@ -45,9 +45,10 @@ class OvulationRepoImpl implements OvulationRepo {
     final snapshot = await _firestore
         .collection('ovulation')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
+    final logs = snapshot.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
+    logs.sort((a, b) => b.date.compareTo(a.date));
+    return logs;
   }
 }
