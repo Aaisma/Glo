@@ -38,7 +38,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2D5E78),
+      backgroundColor: const Color(0xFFF0FFFF),
       appBar: AppBar(
         backgroundColor: const Color(0xFFEAF3FD),
         elevation: 0,
@@ -86,6 +86,8 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 _statCard(Icons.warning_amber, const Color(0xFFFF7D7D), "Severe Cases", "${vm.severityDistribution["Severe"]}"),
                 _statCard(Icons.trending_up, const Color(0xFFFFB74D), "Most Common", mostCommon),
                 _statCard(Icons.checklist, const Color(0xFFEF8FA8), "Avg Routine", "${vm.averageChecklistCompletion.toStringAsFixed(0)}%"),
+                _statCard(Icons.camera_alt, const Color(0xFF6FC3F7), "Photo Attached", "${vm.photoAttachmentRate.toStringAsFixed(0)}%"),
+                _statCard(Icons.shopping_bag, const Color(0xFFFFB74D), "Avg Products", vm.averageProductsPerEntry.toStringAsFixed(1)),
               ],
             ),
 
@@ -271,7 +273,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
+          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)), textAlign: TextAlign.center),
           Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey), textAlign: TextAlign.center),
         ],
       ),

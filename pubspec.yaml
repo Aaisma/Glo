@@ -52,6 +52,7 @@ flutter:
     - assets/animations/
     - assets/ml/model_unquant.tflite
     - assets/ml/labels.txt
+    - assets/images/bgflower.png
     - assets/images/background.png
     - assets/images/whiteheads.png
     - assets/images/blackheads.png

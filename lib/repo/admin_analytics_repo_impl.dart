@@ -261,4 +261,155 @@ class AdminAnalyticsRepoImpl {
     }
     return count;
   }
+
+  Future<int> getTotalMealEntries() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    return snapshot.docs.length;
+  }
+
+  Future<int> getDistinctMealUsers() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final ids = snapshot.docs.map((d) => d.reference.parent.parent?.id ?? '').toSet();
+    return ids.length;
+  }
+
+  Future<int> getTodayMealEntries() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    return snapshot.docs.where((d) => d.data()['date'] == _todayKey()).length;
+  }
+
+  Future<Map<String, int>> getTagFrequency() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final Map<String, int> counts = {};
+    for (final doc in snapshot.docs) {
+      final meals = doc.data()['meals'] as List<dynamic>? ?? [];
+      for (final m in meals) {
+        final tags = (m as Map<String, dynamic>)['tags'] as List<dynamic>? ?? [];
+        for (final t in tags) {
+          final tag = t.toString();
+          counts[tag] = (counts[tag] ?? 0) + 1;
+        }
+      }
+    }
+    return counts;
+  }
+
+  Future<Map<String, int>> getMealTypeDistribution() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final Map<String, int> counts = {"Breakfast": 0, "Lunch": 0, "Dinner": 0, "Snack": 0};
+    for (final doc in snapshot.docs) {
+      final meals = doc.data()['meals'] as List<dynamic>? ?? [];
+      for (final m in meals) {
+        final type = (m as Map<String, dynamic>)['type'] as String?;
+        if (type != null && counts.containsKey(type)) {
+          counts[type] = counts[type]! + 1;
+        }
+      }
+    }
+    return counts;
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentMealEntries({int limit = 5}) async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final docs = snapshot.docs.toList()
+      ..sort((a, b) => ((b.data()['date'] as String?) ?? '').compareTo((a.data()['date'] as String?) ?? ''));
+    return docs.take(limit).map((doc) {
+      final userId = doc.reference.parent.parent?.id ?? "unknown";
+      final meals = doc.data()['meals'] as List<dynamic>? ?? [];
+      return {
+        "userId": userId,
+        "date": doc.data()['date'],
+        "mealCount": meals.length,
+      };
+    }).toList();
+  }
+
+  Future<Map<String, double>> getMealsLoggedTrendLast7Days() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final Map<String, int> byDate = {};
+    final today = DateTime.now();
+
+    for (int i = 6; i >= 0; i--) {
+      final d = today.subtract(Duration(days: i));
+      final key = "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+      byDate[key] = 0;
+    }
+
+    for (final doc in snapshot.docs) {
+      final date = doc.data()['date'] as String?;
+      if (date != null && byDate.containsKey(date)) {
+        final meals = doc.data()['meals'] as List<dynamic>? ?? [];
+        byDate[date] = byDate[date]! + meals.length;
+      }
+    }
+
+    return byDate.map((k, v) => MapEntry(k, v.toDouble()));
+  }
+
+  Future<double> getPhotoAttachmentRate() async {
+    final snapshot = await _firestore.collectionGroup('acne_tracker').get();
+    if (snapshot.docs.isEmpty) return 0;
+    int withPhoto = 0;
+    for (final doc in snapshot.docs) {
+      final imagePath = doc.data()['imagePath'] as String? ?? '';
+      if (imagePath.isNotEmpty) withPhoto++;
+    }
+    return (withPhoto / snapshot.docs.length) * 100;
+  }
+
+  Future<double> getAverageProductsPerEntry() async {
+    final snapshot = await _firestore.collectionGroup('acne_tracker').get();
+    if (snapshot.docs.isEmpty) return 0;
+    int total = 0;
+    for (final doc in snapshot.docs) {
+      final products = doc.data()['products'] as List<dynamic>? ?? [];
+      total += products.length;
+    }
+    return total / snapshot.docs.length;
+  }
+
+  Future<Map<String, dynamic>?> getHighestIntakeUser() async {
+    final snapshot = await _firestore.collectionGroup('water_history').get();
+    final Map<String, List<double>> byUser = {};
+    for (final doc in snapshot.docs) {
+      final userId = doc.reference.parent.parent?.id ?? "unknown";
+      final intake = (doc.data()['intake'] as num?)?.toDouble();
+      if (intake != null) byUser.putIfAbsent(userId, () => []).add(intake);
+    }
+    if (byUser.isEmpty) return null;
+    final averages = byUser.entries.map((e) => {"userId": e.key, "avgIntake": e.value.reduce((a, b) => a + b) / e.value.length}).toList();
+    averages.sort((a, b) => (b["avgIntake"] as double).compareTo(a["avgIntake"] as double));
+    return averages.first;
+  }
+
+  Future<double> getDehydrationRiskRate() async {
+    final snapshot = await _firestore.collectionGroup('water_history').get();
+    if (snapshot.docs.isEmpty) return 0;
+    int risky = 0;
+    int total = 0;
+    for (final doc in snapshot.docs) {
+      final intake = (doc.data()['intake'] as num?)?.toDouble();
+      final goal = (doc.data()['goal'] as num?)?.toDouble();
+      if (intake != null && goal != null && goal > 0) {
+        total++;
+        if (intake < goal * 0.5) risky++;
+      }
+    }
+    return total == 0 ? 0 : (risky / total) * 100;
+  }
+
+  Future<double> getMealLoggingConsistency() async {
+    final snapshot = await _firestore.collectionGroup('meal_tracker').get();
+    final today = DateTime.now();
+    final Set<String> daysWithEntries = {};
+
+    for (int i = 0; i < 7; i++) {
+      final d = today.subtract(Duration(days: i));
+      final key = "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+      final hasEntry = snapshot.docs.any((doc) => doc.data()['date'] == key);
+      if (hasEntry) daysWithEntries.add(key);
+    }
+
+    return (daysWithEntries.length / 7) * 100;
+  }
 }

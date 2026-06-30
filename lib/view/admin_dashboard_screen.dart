@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';
+import 'admin_meal_tracker_screen.dart';
 
 enum ChartView { bar, line, pie }
 
@@ -35,7 +36,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2D5E78),
+      backgroundColor: const Color(0xFFF0FFFF),
       drawer: _buildDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFFEAF3FD),
@@ -283,6 +284,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {"icon": Icons.calendar_month, "label": "Monthly Tracking"},
       {"icon": Icons.book, "label": "Skin Journal"},
       {"icon": Icons.water_drop, "label": "Hydration Hub"},
+      {"icon": Icons.restaurant_menu, "label": "Meal Tracker"},
+      {"icon": Icons.feedback, "label": "Feedback"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
 
@@ -318,7 +321,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSkinJournalScreen()));
                         } else if (item["label"] == "Hydration Hub") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
+                        } else if (item["label"] == "Meal Tracker") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMealTrackerScreen()));
                         }
+                        // Feedback: your friend will wire her own screen into this case later
                       },
                     ),
                   );

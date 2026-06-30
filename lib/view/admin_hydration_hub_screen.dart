@@ -25,7 +25,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
         : vm.waterIntakeTrend.values.reduce((a, b) => a > b ? a : b);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2D5E78),
+      backgroundColor: const Color(0xFFF0FFFF),
       appBar: AppBar(
         backgroundColor: const Color(0xFFEAF3FD),
         elevation: 0,
@@ -45,6 +45,25 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                 child: Text(vm.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
               ),
 
+            if (vm.dehydrationRiskRate > 0)
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber, color: Color(0xFFFF7D7D), size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "${vm.dehydrationRiskRate.toStringAsFixed(0)}% of logged entries are below half the user's daily goal.",
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF2A2A2A)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
@@ -59,6 +78,9 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                 _statCard(Icons.people, const Color(0xFFFFB74D), "Active Users", "${vm.distinctWaterUsers}"),
                 _statCard(Icons.today, const Color(0xFF4F8FE0), "Logged Today", "${vm.todayWaterEntries}"),
                 _statCard(Icons.emoji_events, const Color(0xFFEF8FA8), "Met Goal Today", "${vm.usersMetGoalToday}"),
+                _statCard(Icons.local_fire_department, const Color(0xFF6FC3F7), "Top Drinker",
+                    vm.highestIntakeUser != null ? vm.maskId(vm.highestIntakeUser!["userId"]) : "—"),
+                _statCard(Icons.warning_amber, const Color(0xFFFF7D7D), "Dehydration Risk", "${vm.dehydrationRiskRate.toStringAsFixed(0)}%"),
               ],
             ),
 
@@ -201,7 +223,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
+          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)), textAlign: TextAlign.center),
           Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey), textAlign: TextAlign.center),
         ],
       ),
