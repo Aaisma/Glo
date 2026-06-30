@@ -1,37 +1,31 @@
 class WaterTrackerModel {
   final String userId;
+  final String date;
   final double intake;
   final double goal;
-  final String date;
-
-  // 🆕 ADD THIS
-  final String note;
 
   WaterTrackerModel({
     required this.userId,
+    required this.date,
     required this.intake,
     required this.goal,
-    required this.date,
-    this.note = "",
   });
 
   Map<String, dynamic> toMap() {
     return {
       "userId": userId,
+      "date": date,
       "intake": intake,
       "goal": goal,
-      "date": date,
-      "note": note,
     };
   }
 
-  factory WaterTrackerModel.fromMap(String id, Map<String, dynamic> map) {
+  factory WaterTrackerModel.fromMap(Map<String, dynamic> map) {
     return WaterTrackerModel(
       userId: map["userId"] ?? "",
-      intake: (map["intake"] ?? 0).toDouble(),
-      goal: (map["goal"] ?? 2.5).toDouble(),
       date: map["date"] ?? "",
-      note: map["note"] ?? "",
+      intake: (map["intake"] as num?)?.toDouble() ?? 0,
+      goal: (map["goal"] as num?)?.toDouble() ?? 3.0,
     );
   }
 }

@@ -1,94 +1,117 @@
+import 'package:flutter/material.dart';
 import '../model/water_tracker_model.dart';
-import '../model/water_history_model.dart';
-import '../repo/water_tracker_repo_impl.dart';
+import '../repo/water_tracker_repo.dart';
 
-class WaterTrackerViewModel {
-  final WaterTrackerRepoImpl repo;
+class WaterTrackerViewModel extends ChangeNotifier {
+  final WaterTrackerRepo _repo;
 
-  double currentIntake = 0;
-  double goal = 2.5;
-  String noteText = "";
+  WaterTrackerViewModel(this._repo);
 
-  String reminderInterval = "";
+  bool isLoading = false;
+  String? errorMessage;
 
-  WaterTrackerViewModel(this.repo);
+  double intake = 0;
+  double goal = 3.0;
 
-  // Load latest saved data
-  Future<void> load(String userId) async {
-    final data = await repo.getData(userId);
+  TimeOfDay? reminderTime;
 
-    if (data != null) {
-      currentIntake = data.intake;
-      goal = data.goal;
-      noteText = data.note;
+  // tracks which thresholds we've already shown motivation for today,
+  // so the same message doesn't repeat every time intake updates
+  final Set<int> _celebratedThresholds = {};
+  String? motivationMessage;
+
+  String _todayDate() => DateTime.now().toIso8601String().split("T")[0];
+
+  Future<void> loadToday(String userId) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final entry = await _repo.getEntry(userId, _todayDate());
+      if (entry != null) {
+        intake = entry.intake;
+        goal = entry.goal;
+      }
+    } catch (e) {
+      errorMessage = "Failed to load today's data: $e";
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
-  // Add water intake
-  Future<void> addWater(double amount, String userId) async {
-    currentIntake += amount;
+  double get progress => goal <= 0 ? 0 : (intake / goal).clamp(0.0, 1.0);
+  double get percent => progress * 100;
+  double get remaining => (goal - intake) < 0 ? 0 : (goal - intake);
 
-    if (currentIntake > goal) {
-      currentIntake = goal;
+  void addIntake(double amount) {
+    intake += amount;
+    if (intake < 0) intake = 0;
+    _checkMotivation();
+    notifyListeners();
+  }
+
+  void subtractIntake(double amount) {
+    intake -= amount;
+    if (intake < 0) intake = 0;
+    notifyListeners();
+  }
+
+  void setCustomIntake(double value) {
+    intake = value < 0 ? 0 : value;
+    _checkMotivation();
+    notifyListeners();
+  }
+
+  void setGoal(double newGoal) {
+    goal = newGoal <= 0 ? 0.5 : newGoal;
+    _celebratedThresholds.clear();
+    notifyListeners();
+  }
+
+  void setReminderTime(TimeOfDay time) {
+    reminderTime = time;
+    notifyListeners();
+  }
+
+  void _checkMotivation() {
+    final pct = percent;
+    final thresholds = [25, 50, 75, 100];
+    for (final t in thresholds) {
+      if (pct >= t && !_celebratedThresholds.contains(t)) {
+        _celebratedThresholds.add(t);
+        if (t == 100) {
+          motivationMessage = "🎉 Goal reached! Amazing hydration today!";
+        } else {
+          motivationMessage = "Great job! You're $t% of the way to your goal 💧";
+        }
+      }
     }
-
-    await repo.saveData(
-      WaterTrackerModel(
-        userId: userId,
-        intake: currentIntake,
-        goal: goal,
-        date: DateTime.now().toString(),
-        note: noteText,
-      ),
-    );
-
-    await _saveHistory(userId);
   }
 
-  // Set daily goal
-  Future<void> setGoal(double newGoal, String userId) async {
-    goal = newGoal;
-
-    await repo.saveData(
-      WaterTrackerModel(
-        userId: userId,
-        intake: currentIntake,
-        goal: goal,
-        date: DateTime.now().toString(),
-        note: noteText,
-      ),
-    );
-
-    await _saveHistory(userId);
+  void clearMotivationMessage() {
+    motivationMessage = null;
   }
 
-  // Update note
-  Future<void> updateNote(String newNote, String userId) async {
-    noteText = newNote;
+  Future<void> saveToday(String userId) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
 
-    await repo.saveData(
-      WaterTrackerModel(
+    try {
+      final entry = WaterTrackerModel(
         userId: userId,
-        intake: currentIntake,
+        date: _todayDate(),
+        intake: intake,
         goal: goal,
-        date: DateTime.now().toString(),
-        note: noteText,
-      ),
-    );
-
-    await _saveHistory(userId);
-  }
-
-  // SAVE HISTORY (internal helper)
-  Future<void> _saveHistory(String userId) async {
-    await repo.saveHistory(
-      userId,
-      WaterHistoryModel(
-        date: DateTime.now().toIso8601String().split("T")[0],
-        intake: currentIntake,
-        goal: goal,
-        note: noteText,
-      ),
-    );
+      );
+      await _repo.saveEntry(entry);
+    } catch (e) {
+      errorMessage = "Failed to save: $e";
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

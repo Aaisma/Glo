@@ -3,8 +3,8 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 
 class CloudinaryService {
   final cloudinary = CloudinaryPublic(
-    'your_cloud_name',      // from Cloudinary dashboard
-    'your_upload_preset',   // configured in Cloudinary settings
+    'dkhtl3a4i',  // your Cloudinary cloud name
+    'Asap_glo',     // your upload preset name
     cache: false,
   );
 
