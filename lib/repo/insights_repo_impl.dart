@@ -19,8 +19,7 @@ class InsightsRepoImpl implements InsightsRepo {
   }) async {
     Query q = _firestore.collection('insights')
         .where('isDeleted', isEqualTo: false)
-        .where('status', isEqualTo: InsightStatus.published.name)
-        .orderBy('createdAt', descending: true);
+        .where('status', isEqualTo: InsightStatus.published.name);
 
     if (category != null && category.trim().isNotEmpty && category != 'Trending') {
       q = q.where('category', isEqualTo: category);
@@ -45,6 +44,9 @@ class InsightsRepoImpl implements InsightsRepo {
           item.summary.toLowerCase().contains(queryLower) ||
           item.content.toLowerCase().contains(queryLower)).toList();
     }
+    
+    // Sort locally to avoid Firestore composite index requirement
+    allItems.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= allItems.length) {
@@ -60,14 +62,18 @@ class InsightsRepoImpl implements InsightsRepo {
         .where('isDeleted', isEqualTo: false)
         .where('status', isEqualTo: InsightStatus.published.name)
         .where('isFeatured', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
-        .limit(1)
         .get();
 
     if (snapshot.docs.isEmpty) return null;
-    final map = snapshot.docs.first.data();
-    map['id'] = snapshot.docs.first.id;
-    return Insight.fromMap(map);
+    
+    var allFeatured = snapshot.docs.map((d) {
+      final map = d.data();
+      map['id'] = d.id;
+      return Insight.fromMap(map);
+    }).toList();
+    
+    allFeatured.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return allFeatured.first;
   }
 
   @override

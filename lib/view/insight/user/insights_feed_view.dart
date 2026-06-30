@@ -59,7 +59,6 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  const Icon(Icons.menu, color: Color(0xFF332B2C), size: 28),
                   const Expanded(
                     child: Center(
                       child: Text(
@@ -210,7 +209,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF332B2C),
+                                        color: Color(0xFF8B5CF6),
                                       ),
                                     ),
                                     GestureDetector(
@@ -221,10 +220,10 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                         );
                                       },
                                       child: const Text(
-                                        "See all",
+                                        "See all >",
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFFFF3E63),
+                                          color: Color(0xFF8B5CF6),
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -248,11 +247,11 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
 
   Widget _buildCategorySection(InsightsFeedViewModel viewModel, Color activeColor) {
     final categoriesData = [
+      {'name': 'Trending', 'icon': Icons.local_fire_department_outlined, 'color': const Color(0xFFEAB308), 'bg': const Color(0xFFFEFCE8)},
       {'name': 'Health &\nWellness', 'icon': Icons.health_and_safety_outlined, 'color': const Color(0xFFFF3E63), 'bg': const Color(0xFFFFF0F3)},
       {'name': 'Lifestyle', 'icon': Icons.eco_outlined, 'color': const Color(0xFF22C55E), 'bg': const Color(0xFFF0FDF4)},
       {'name': 'Community', 'icon': Icons.people_outline, 'color': const Color(0xFFA855F7), 'bg': const Color(0xFFF3E8FF)},
       {'name': 'Expert\nInsights', 'icon': Icons.lightbulb_outline, 'color': const Color(0xFFF97316), 'bg': const Color(0xFFFFF7ED)},
-      {'name': 'Trending', 'icon': Icons.local_fire_department_outlined, 'color': const Color(0xFFEAB308), 'bg': const Color(0xFFFEFCE8)},
     ];
 
     return Container(
@@ -576,18 +575,18 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
         discussions.sort((a, b) => (b.views + b.likes + b.repliesCount).compareTo(a.views + a.likes + a.repliesCount));
 
         return SizedBox(
-          height: 125,
+          height: 140,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: discussions.length.clamp(0, 5),
             itemBuilder: (context, index) {
               final item = discussions[index];
-              final badgeText = index == 0 ? "Trending" : "Hot";
+              final badgeText = index == 0 ? "Trending" : "Recent";
 
               return Container(
-                width: MediaQuery.of(context).size.width * 0.45,
+                width: MediaQuery.of(context).size.width * 0.6,
                 margin: const EdgeInsets.only(right: 12, bottom: 4),
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -610,49 +609,49 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.chat_bubble_outline, size: 10, color: Colors.deepPurple),
-                              SizedBox(width: 4),
-                              Text(
-                                "Discussion",
-                                style: TextStyle(fontSize: 9, color: Colors.deepPurple, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF0E6FF),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              badgeText,
-                              style: const TextStyle(fontSize: 8, color: Colors.deepPurple, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       Expanded(
-                        child: Text(
-                          item.title,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF332B2C),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF3E8FF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble_rounded,
+                                size: 16,
+                                color: Color(0xFF8B5CF6),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.title,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF332B2C),
+                                  height: 1.3,
+                                ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "${item.repliesCount} replies",
-                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Text(
+                          "${item.repliesCount} replies  •  $badgeText",
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ],
                   ),

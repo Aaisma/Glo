@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
-import '../../../model/community_models.dart';
 import '../user/create_discussion_view.dart';
 import '../user/create_poll_view.dart';
+import '../../../constants/ayd_colour.dart';
 
 class CommunityPostsLibraryView extends StatefulWidget {
   const CommunityPostsLibraryView({super.key});
@@ -36,11 +36,16 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityLibraryViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/admin_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
           "Community Library",
@@ -114,8 +119,8 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                     children: [
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: accentColor,
-                          side: BorderSide(color: accentColor),
+                          foregroundColor: AydColors.adminBackground,
+                          side: const BorderSide(color: AydColors.adminBackground),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () {
@@ -127,7 +132,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                       const SizedBox(width: 12),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accentColor,
+                          backgroundColor: AydColors.adminBackground,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -152,7 +157,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -169,8 +174,8 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                               decoration: BoxDecoration(
                                 border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
                               ),
-                              child: Row(
-                                children: const [
+                              child: const Row(
+                                children: [
                                   Expanded(flex: 1, child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
                                   Expanded(flex: 2, child: Text("Author", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
@@ -197,7 +202,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildLibraryTabs(CommunityLibraryViewModel viewModel) {
@@ -270,7 +275,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -378,7 +383,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
