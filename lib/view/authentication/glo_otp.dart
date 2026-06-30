@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../viewmodel/auth_view_model.dart'; //Change to opt viewmodel.
-//import '../../viewmodel/otp_viewmodel.dart';
+import '../../viewmodel/auth_viewmodel.dart';
 
 void main() {
   runApp(
