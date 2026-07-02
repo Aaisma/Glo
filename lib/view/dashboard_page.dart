@@ -13,6 +13,7 @@ import 'JournalEntryScreen.dart';
 import 'navigation_icon/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'navigation_icon/history_page.dart';
+import 'navigation_icon/calendar_screen.dart';
 
 // Wellness pages
 import '../../view/dashboard_card/log_symptoms_page.dart';
@@ -37,6 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _pages = [
     const DashboardHome(),
     const InsightsFeedView(),
+    const CalendarScreen(),
     const HistoryPage(),
     const GloProfileScreen(),
   ];

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 import 'view/glo_splash_screen.dart';
@@ -13,11 +14,6 @@ import 'view/survey_page.dart';
 import 'view/navigation_icon/glo_profile.dart';
 import 'view/dashboard_page.dart';
 import 'view/admin/admin_dashboard_page.dart';
-
-// Additional screens
-import 'view/navigation_icon/insight_page.dart';
-import 'view/community/user/community_discussions_view.dart';
-import 'view/dashboard_card/ovulation_period_page.dart';
 
 // Repos
 import 'repo/user_repo_impl.dart';
@@ -40,8 +36,6 @@ import 'viewmodel/community_view_model.dart';
 import 'viewmodel/moderation_view_model.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
-import 'viewmodel/wellness_viewmodel.dart';
-import 'viewmodel/medication_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,8 +70,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
-        ChangeNotifierProvider(create: (_) => WellnessViewModel()),
-        ChangeNotifierProvider(create: (_) => MedicationViewModel()),
 
         // Insights Module ViewModels
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
@@ -106,7 +98,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const MainHub(),
+        home: const SplashScreen(),
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/authWrapper': (context) => const AuthWrapper(),
@@ -123,69 +115,35 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainHub extends StatefulWidget {
-  const MainHub({super.key});
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
 
   @override
-  State<MainHub> createState() => _MainHubState();
+  State<AuthGate> createState() => _AuthGateState();
 }
 
-class _MainHubState extends State<MainHub> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = [
-    const InsightsPage(),
-    const CommunityDiscussionsView(),
-    const SurveyPage(),
-    const OvulationPage(),
-    const AdminDashboardPage(),
-  ];
+class _AuthGateState extends State<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      if (authVM.user != null) {
+        // await authVM.checkUserProfile(context, authVM.user!.uid);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFFF3E63),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            activeIcon: Icon(Icons.article),
-            label: 'Insight',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum_outlined),
-            activeIcon: Icon(Icons.forum),
-            label: 'Community',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            activeIcon: Icon(Icons.assignment),
-            label: 'Survey',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Ovulation',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.admin_panel_settings_outlined),
-            activeIcon: Icon(Icons.admin_panel_settings),
-            label: 'Admin',
-          ),
-        ],
-      ),
-    );
+    final authVM = Provider.of<AuthViewModel>(context);
+    if (authVM.user != null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    return const AuthenticationPage();
   }
 }
