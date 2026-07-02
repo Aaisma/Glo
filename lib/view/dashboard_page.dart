@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:gloclone/view/wellness_dashboard_screen.dart';
 
-import '../../../view/components/dashboard_card.dart';
-import '../../../view/components/top_navigation.dart';
-import '../../../view/components/bottom_navigation.dart';
+import '../../view/components/dashboard_card.dart';
+import '../../view/components/top_navigation.dart';
+import '../../view/components/bottom_navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/period_view_model.dart';
+import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
-<<<<<<< HEAD:lib/view/navigation_icon/dashboard_page.dart
-import 'profile_page.dart';
-import 'insight_page.dart';
-import 'history_page.dart';
-=======
 import 'JournalEntryScreen.dart';
 import 'navigation_icon/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'navigation_icon/history_page.dart';
 import 'navigation_icon/calendar_screen.dart';
->>>>>>> 833f232 (Updated top and bottom navigation to modify calender placement.):lib/view/dashboard_page.dart
 
 // Wellness pages
-import '../../../view/dashboard_card/log_symptoms_page.dart';
-import '../dashboard_card/ovulation_period_page.dart';
+import '../../view/dashboard_card/log_symptoms_page.dart';
+import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
-import '../../../view/cards/daily_journal_page.dart';
-import '../../../view/cards/water_tracker.dart';
-import '../../../view/cards/medication_page.dart';
-import '../../../view/cards/skin_tracker_page.dart';
-import '../../../view/cards/skin_derma_page.dart';
-import '../../../view/cards/sleep_stress_page.dart';
+import 'water_tracker.dart';
+import '../../view/medication_screen.dart';
+import 'acne_tracker.dart';
+import '../../view/cards/skin_derma_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -44,14 +37,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _pages = [
     const DashboardHome(),
-<<<<<<< HEAD:lib/view/navigation_icon/dashboard_page.dart
-    const InsightsPage(),
-=======
     const InsightsFeedView(),
     const CalendarScreen(),
->>>>>>> 833f232 (Updated top and bottom navigation to modify calender placement.):lib/view/dashboard_page.dart
     const HistoryPage(),
-    const ProfilePage(),
+    const GloProfileScreen(),
   ];
 
   void _onNavTap(int index) {
@@ -85,8 +74,8 @@ class DashboardHome extends StatelessWidget {
       {"title": "Water Tracker", "image": "assets/images/watertracker.png"},
       {"title": "Medications", "image": "assets/images/medication.png"},
       {"title": "Skin Tracker", "image": "assets/images/acnetracker.png"},
-      {"title": "Skin Derma", "image": "assets/images/skinderma.png"},
-      {"title": "Mood and stress", "image": "assets/images/stressandsleep.png"},
+      {"title": "Visit Derma", "image": "assets/images/skinderma.png"},
+      {"title": "Mood and Wellness", "image": "assets/images/stressandsleep.png"},
     ];
 
     return Container(
@@ -109,10 +98,10 @@ class DashboardHome extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text("You’re in your",
                               style: TextStyle(fontSize: 18, color: Color(0xFF332B2C))),
                           Text("GLO....",
@@ -215,22 +204,22 @@ class DashboardHome extends StatelessWidget {
                         onTap: () {
                           switch (item["title"]) {
                             case "Daily Journal":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyJournalPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const JournalEntryScreen()));
                               break;
                             case "Water Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
                               break;
                             case "Medications":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationsPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationScreen(userId: '',)));
                               break;
                             case "Skin Tracker":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinTrackerPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const AcneTrackerPage()));
                               break;
                             case "Skin Derma":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
                               break;
                               case "Mood and Wellness":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const SleepStressPage()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const WellnessDashboardScreen()));
                               break;
                           }
                         },
@@ -252,8 +241,8 @@ class DashboardHome extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         Icon(Icons.local_florist, color: Color(0xFFFD8CA1)),
                         SizedBox(width: 8),
                         Text(
