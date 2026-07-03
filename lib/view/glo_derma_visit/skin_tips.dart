@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class SkinHealthTipsScreen extends StatelessWidget {
-  const SkinHealthTipsScreen({super.key});
+  final String userId;
+
+  const SkinHealthTipsScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   static const pink = Color(0xffef5f8f);
   static const lightPink = Color(0xffffeef4);
@@ -169,7 +174,10 @@ class _FeaturedCard extends StatelessWidget {
   final SkinTip tip;
   final VoidCallback onTap;
 
-  const _FeaturedCard({required this.tip, required this.onTap});
+  const _FeaturedCard({
+    required this.tip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +220,10 @@ class _TipTile extends StatelessWidget {
   final SkinTip tip;
   final VoidCallback onTap;
 
-  const _TipTile({required this.tip, required this.onTap});
+  const _TipTile({
+    required this.tip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -388,7 +399,10 @@ class _TipSheet extends StatelessWidget {
                 ),
                 child: const Text(
                   "Got it",
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -496,7 +510,10 @@ class _ImageBox extends StatelessWidget {
   final String asset;
   final IconData icon;
 
-  const _ImageBox({required this.asset, required this.icon});
+  const _ImageBox({
+    required this.asset,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -541,7 +558,10 @@ class _SoftIcon extends StatelessWidget {
   final IconData icon;
   final double size;
 
-  const _SoftIcon({required this.icon, required this.size});
+  const _SoftIcon({
+    required this.icon,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {

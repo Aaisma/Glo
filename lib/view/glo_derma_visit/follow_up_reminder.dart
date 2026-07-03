@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:glo/model/health_model.dart';
+import 'package:glo/viewmodel/health_viewmodel.dart';
 
 class FollowUpReminderScreen extends StatefulWidget {
-  const FollowUpReminderScreen({super.key});
+  final String userId;
+
+  const FollowUpReminderScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   @override
   State<FollowUpReminderScreen> createState() => _FollowUpReminderScreenState();
@@ -50,6 +59,22 @@ class _FollowUpReminderScreenState extends State<FollowUpReminderScreen> {
     ];
 
     return "${months[_selectedDate.month - 1]} ${_selectedDate.day}, ${_selectedDate.year} at $_selectedTime";
+  }
+
+  Future<void> _saveReminderToFirebase(HealthViewModel viewModel) async {
+    final item = HealthModel(
+      userId: widget.userId,
+      title: "Follow-Up Reminder",
+      description: _appointmentDate,
+      doctorName: "Dr. Sarah Khan",
+      notes: _selectedReminder,
+      followUpDate: _selectedDate,
+    );
+
+    await viewModel.addHealthItem(
+      item,
+      widget.userId,
+    );
   }
 
   @override
@@ -107,11 +132,20 @@ class _FollowUpReminderScreenState extends State<FollowUpReminderScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          _visitTile("Dr. Ahmed Ali", "April 28, 2026 • 2:00 PM"),
+                          _visitTile(
+                            "Dr. Ahmed Ali",
+                            "April 28, 2026 • 2:00 PM",
+                          ),
                           const SizedBox(height: 14),
-                          _visitTile("Dr. Seema Patel", "May 8, 2026 • 11:30 AM"),
+                          _visitTile(
+                            "Dr. Seema Patel",
+                            "May 8, 2026 • 11:30 AM",
+                          ),
                           const SizedBox(height: 14),
-                          _visitTile("Dr. Sameer Roy", "May 18, 2026 • 3:00 PM"),
+                          _visitTile(
+                            "Dr. Sameer Roy",
+                            "May 18, 2026 • 3:00 PM",
+                          ),
                           const SizedBox(height: 30),
                           _calendarButton(),
                           const SizedBox(height: 25),
@@ -434,7 +468,7 @@ class _FollowUpReminderScreenState extends State<FollowUpReminderScreen> {
       context: context,
       builder: (_) {
         return StatefulBuilder(
-          builder: (context, modalSetState) {
+          builder: (dialogContext, modalSetState) {
             return AlertDialog(
               backgroundColor: _pageBg,
               shape: RoundedRectangleBorder(
@@ -546,23 +580,31 @@ class _FollowUpReminderScreenState extends State<FollowUpReminderScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: const Text(
                     "Cancel",
                     style: TextStyle(color: _pink),
                   ),
                 ),
                 FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final navigator = Navigator.of(dialogContext);
+                    final messenger = ScaffoldMessenger.of(dialogContext);
+                    final viewModel = context.read<HealthViewModel>();
+
                     setState(() {
                       _selectedDate = tempDate;
                       _selectedTime = tempTime;
                       _selectedReminder = tempReminder;
                     });
 
-                    Navigator.pop(context);
+                    await _saveReminderToFirebase(viewModel);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (!mounted) return;
+
+                    navigator.pop();
+
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           "Appointment updated. Reminder set $_selectedReminder.",

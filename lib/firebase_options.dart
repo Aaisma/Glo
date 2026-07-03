@@ -56,13 +56,12 @@ class DefaultFirebaseOptions {
     projectId: 'gloo-5dd46',
     storageBucket: 'gloo-5dd46.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCkjW1eLA9gJKgsObhhFYIP0Ju6CtF85HE',
-    appId: '1:714010295460:ios:458c6084eb87602acb7a31',
-    messagingSenderId: '714010295460',
-    projectId: 'gloo-5dd46',
-    storageBucket: 'gloo-5dd46.firebasestorage.app',
+    apiKey: 'AIzaSyAtOgJxPLFi9plBqIMhHqaB6hG3Y8i-7iQ',
+    appId: '1:945185357757:ios:f27f604ef77c0151339cd4',
+    messagingSenderId: '945185357757',
+    projectId: 'gloo-ayusha',
+    storageBucket: 'gloo-ayusha.firebasestorage.app',
     iosBundleId: 'com.example.glo.glo',
   );
 }

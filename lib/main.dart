@@ -2,11 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_options.dart';
+
 // ViewModels
-import 'package:glo/viewmodel/auth_viewmodel.dart';
 import 'package:glo/viewmodel/health_viewmodel.dart';
+import 'package:glo/viewmodel/history_viewmodel.dart';
+import 'package:glo/viewmodel/image_viewmodel.dart';
 import 'package:glo/viewmodel/medication_viewmodel.dart';
+import 'package:glo/viewmodel/otp_viewmodel.dart';
+import 'package:glo/viewmodel/profile_viewmodel.dart';
 import 'package:glo/viewmodel/visit_viewmodel.dart';
+
+// Repos
+import 'package:glo/repo/history_repo_impl.dart';
+import 'package:glo/repo/image_repo_impl.dart';
+
+// Services
+import 'package:glo/services/history_service.dart';
 
 // Screens
 import 'package:glo/view/glo_profile/glo_profile.dart';
@@ -26,9 +38,15 @@ import 'package:glo/view/glo_derma_visit/treatment_tracker.dart';
 import 'package:glo/view/glo_profile/glo_about_us_screen.dart';
 import 'package:glo/view/authentication/glo_otp.dart';
 
+// Admin
+import 'package:glo/view/health_overview_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(const GloApp());
 }
@@ -36,15 +54,99 @@ Future<void> main() async {
 class GloApp extends StatelessWidget {
   const GloApp({super.key});
 
-  static const String userId = "testUser123";
+  static const String testUserId = "test-user-001";
+  static const String testPhone = "+9779800000000";
+
+  String _getUserIdFromRoute(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is String && args.trim().isNotEmpty) {
+      return args;
+    }
+
+    if (args is Map && args['userId'] is String) {
+      final userId = args['userId'] as String;
+
+      if (userId.trim().isNotEmpty) {
+        return userId;
+      }
+    }
+
+    return testUserId;
+  }
+
+  String _getPhoneFromRoute(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is String && args.trim().isNotEmpty) {
+      return args;
+    }
+
+    if (args is Map && args['phone'] is String) {
+      final phone = args['phone'] as String;
+
+      if (phone.trim().isNotEmpty) {
+        return phone;
+      }
+    }
+
+    return testPhone;
+  }
+
+  Widget _medicationScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return MedicationScreen(userId: userId);
+  }
+
+  Widget _addMedicationScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return AddMedicationScreen(userId: userId);
+  }
+
+  Widget _medicationHistoryScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return MedicationHistoryScreen(userId: userId);
+  }
+
+  Widget _dermaVisitScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return DermaVisitScreen(userId: userId);
+  }
+
+  Widget _visitLogScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return LogVisitScreen(userId: userId);
+  }
+
+  Widget _followUpReminderScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return FollowUpReminderScreen(userId: userId);
+  }
+
+  Widget _prescriptionScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return PrescriptionScreen(userId: userId);
+  }
+
+  Widget _skinTipsScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return SkinHealthTipsScreen(userId: userId);
+  }
+
+  Widget _treatmentTrackerScreen(BuildContext context) {
+    final userId = _getUserIdFromRoute(context);
+    return TreatmentTrackerScreen(userId: userId);
+  }
+
+  Widget _otpScreen(BuildContext context) {
+    final phone = _getPhoneFromRoute(context);
+    return GloOtpScreen(phone: phone);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthViewModel>(
-          create: (_) => AuthViewModel(),
-        ),
         ChangeNotifierProvider<MedicationViewModel>(
           create: (_) => MedicationViewModel(),
         ),
@@ -54,6 +156,24 @@ class GloApp extends StatelessWidget {
         ChangeNotifierProvider<HealthViewModel>(
           create: (_) => HealthViewModel(),
         ),
+        ChangeNotifierProvider<OtpViewModel>(
+          create: (_) => OtpViewModel(),
+        ),
+        ChangeNotifierProvider<ImageViewModel>(
+          create: (_) => ImageViewModel(
+            ImageRepoImpl(),
+          ),
+        ),
+        ChangeNotifierProvider<ProfileViewModel>(
+          create: (_) => ProfileViewModel(),
+        ),
+        ChangeNotifierProvider<HistoryViewModel>(
+          create: (_) => HistoryViewModel(
+            HistoryRepoImpl(
+              HistoryService(),
+            ),
+          ),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -61,46 +181,42 @@ class GloApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.pink,
+            seedColor: const Color(0xFF9BD8FA),
           ),
-          scaffoldBackgroundColor: const Color(0xFFFFF7F8),
+          scaffoldBackgroundColor: const Color(0xFFF4FBFF),
         ),
 
-        // Initial Screen
-        home: const HistoryScreen(),
+        // Testing OTP directly.
+        home: const GloOtpScreen(
+          phone: testPhone,
+        ),
+
+        // To test Derma Visit instead, replace home above with:
+        // home: const DermaVisitScreen(
+        //   userId: testUserId,
+        // ),
 
         routes: {
-          // Bottom Navigation Routes
-          // Replace these with your actual Home/Insights pages later
           '/home': (_) => const GloProfileScreen(),
-          '/insights': (_) => const DermaVisitScreen(),
           '/history': (_) => const HistoryScreen(),
           '/profile': (_) => const GloProfileScreen(),
 
-          // Medication
-          '/medications': (_) => const MedicationScreen(
-            userId: userId,
-          ),
-          '/addMedication': (_) => const AddMedicationScreen(
-            userId: userId,
-          ),
-          '/medicationHistory': (_) => const MedicationHistoryScreen(
-            userId: userId,
-          ),
+          '/adminOverview': (_) => const HealthOverviewScreen(),
 
-          // Derma Visit
-          '/dermaVisit': (_) => const DermaVisitScreen(),
-          '/visitLog': (_) => const LogVisitScreen(),
-          '/followUpReminder': (_) => const FollowUpReminderScreen(),
-          '/prescription': (_) => const PrescriptionScreen(),
-          '/skinTips': (_) => const SkinHealthTipsScreen(),
-          '/treatmentTracker': (_) => const TreatmentTrackerScreen(),
+          '/medications': (context) => _medicationScreen(context),
+          '/addMedication': (context) => _addMedicationScreen(context),
+          '/medicationHistory': (context) => _medicationHistoryScreen(context),
 
-          // Profile
+          '/insights': (context) => _dermaVisitScreen(context),
+          '/dermaVisit': (context) => _dermaVisitScreen(context),
+          '/visitLog': (context) => _visitLogScreen(context),
+          '/followUpReminder': (context) => _followUpReminderScreen(context),
+          '/prescription': (context) => _prescriptionScreen(context),
+          '/skinTips': (context) => _skinTipsScreen(context),
+          '/treatmentTracker': (context) => _treatmentTrackerScreen(context),
+
           '/about': (_) => const GloAboutUsScreen(),
-
-          // Authentication
-          '/otp': (_) => const GloOtpScreen(),
+          '/otp': (context) => _otpScreen(context),
         },
       ),
     );

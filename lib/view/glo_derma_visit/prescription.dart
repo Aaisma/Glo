@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import 'package:glo/model/health_model.dart';
+import 'package:glo/viewmodel/health_viewmodel.dart';
 
 class PrescriptionScreen extends StatefulWidget {
-  const PrescriptionScreen({super.key});
+  final String userId;
+
+  const PrescriptionScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   @override
   State<PrescriptionScreen> createState() => _PrescriptionScreenState();
@@ -171,34 +179,37 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Widget _prescriptionList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("prescriptions")
-          .orderBy("createdAt", descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: pink),
-          );
-        }
+    return Consumer<HealthViewModel>(
+      builder: (context, viewModel, _) {
+        return StreamBuilder<List<HealthModel>>(
+          stream: viewModel.fetchHealthItemsStream(widget.userId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: pink),
+              );
+            }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return _emptyState();
-        }
+            final prescriptions = (snapshot.data ?? [])
+                .where((item) => item.title == "Prescription")
+                .toList();
 
-        return ListView(
-          padding: EdgeInsets.zero,
-          children: snapshot.data!.docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
+            if (prescriptions.isEmpty) {
+              return _emptyState();
+            }
 
-            return _prescriptionCard(
-              medicine: data["medicineName"] ?? "",
-              dosage: data["dosage"] ?? "",
-              frequency: data["frequency"] ?? "",
-              doctor: data["doctor"] ?? "",
+            return ListView(
+              padding: EdgeInsets.zero,
+              children: prescriptions.map((item) {
+                return _prescriptionCard(
+                  medicine: item.prescription ?? "",
+                  dosage: item.treatment ?? "",
+                  frequency: item.notes ?? "",
+                  doctor: item.doctorName ?? "",
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         );
       },
     );
@@ -334,6 +345,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   void _showAddBox(BuildContext context) {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final viewModel = context.read<HealthViewModel>();
 
     showModalBottomSheet(
       context: context,
@@ -394,15 +406,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       return;
                     }
 
-                    await FirebaseFirestore.instance
-                        .collection("prescriptions")
-                        .add({
-                      "medicineName": _medicine.text.trim(),
-                      "dosage": _dosage.text.trim(),
-                      "frequency": _frequency.text.trim(),
-                      "doctor": _doctor.text.trim(),
-                      "createdAt": FieldValue.serverTimestamp(),
-                    });
+                    final item = HealthModel(
+                      userId: widget.userId,
+                      title: "Prescription",
+                      prescription: _medicine.text.trim(),
+                      treatment: _dosage.text.trim(),
+                      notes: _frequency.text.trim(),
+                      doctorName: _doctor.text.trim(),
+                    );
+
+                    await viewModel.addHealthItem(item, widget.userId);
 
                     navigator.pop();
 

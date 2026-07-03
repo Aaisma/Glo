@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import 'package:glo/model/health_model.dart';
+import 'package:glo/viewmodel/health_viewmodel.dart';
 
 class LogVisitScreen extends StatefulWidget {
-  const LogVisitScreen({super.key});
+  final String userId;
+
+  const LogVisitScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   @override
   State<LogVisitScreen> createState() => _LogVisitScreenState();
@@ -15,8 +23,8 @@ class _LogVisitScreenState extends State<LogVisitScreen>
   final TextEditingController _doctorController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isSaving = false;
+  DateTime? _selectedVisitDate;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -25,13 +33,27 @@ class _LogVisitScreenState extends State<LogVisitScreen>
   @override
   void initState() {
     super.initState();
-    _animController =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
-    _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeIn);
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
-          CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-        );
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeIn,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: Curves.easeOut,
+      ),
+    );
+
     _animController.forward();
   }
 
@@ -47,23 +69,33 @@ class _LogVisitScreenState extends State<LogVisitScreen>
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedVisitDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null) {
-      setState(() {
-        _dateController.text = DateFormat('MMMM d, yyyy').format(picked);
-      });
-    }
+
+    if (picked == null || !mounted) return;
+
+    setState(() {
+      _selectedVisitDate = picked;
+      _dateController.text = DateFormat('MMMM d, yyyy').format(picked);
+    });
   }
 
   Future<void> _saveVisit() async {
     final messenger = ScaffoldMessenger.of(context);
+    final viewModel = context.read<HealthViewModel>();
 
-    if (_dateController.text.isEmpty ||
-        _doctorController.text.isEmpty ||
-        _notesController.text.isEmpty) {
+    if (widget.userId.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("User ID is required.")),
+      );
+      return;
+    }
+
+    if (_selectedVisitDate == null ||
+        _doctorController.text.trim().isEmpty ||
+        _notesController.text.trim().isEmpty) {
       messenger.showSnackBar(
         const SnackBar(content: Text("Please fill all fields.")),
       );
@@ -72,24 +104,53 @@ class _LogVisitScreenState extends State<LogVisitScreen>
 
     setState(() => _isSaving = true);
 
-    await _firestore.collection("visits").add({
-      "date": _dateController.text,
-      "doctorName": _doctorController.text,
-      "notes": _notesController.text,
-      "createdAt": FieldValue.serverTimestamp(),
-    });
-
-    if (!mounted) return;
-
-    messenger.showSnackBar(
-      const SnackBar(content: Text("Visit saved successfully 🌸")),
+    final visit = HealthModel(
+      userId: widget.userId,
+      title: "Derma Visit",
+      description: _notesController.text.trim(),
+      concern: "Doctor Visit",
+      doctorName: _doctorController.text.trim(),
+      notes: _notesController.text.trim(),
+      visitDate: _selectedVisitDate,
     );
 
-    _dateController.clear();
-    _doctorController.clear();
-    _notesController.clear();
+    try {
+      await viewModel.addHealthItem(
+        visit,
+        widget.userId,
+      );
 
-    setState(() => _isSaving = false);
+      if (!mounted) return;
+
+      if (viewModel.error != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(viewModel.error!)),
+        );
+        return;
+      }
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Visit saved successfully 🌸")),
+      );
+
+      _dateController.clear();
+      _doctorController.clear();
+      _notesController.clear();
+
+      setState(() {
+        _selectedVisitDate = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text("Failed to save visit: $e")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -108,7 +169,10 @@ class _LogVisitScreenState extends State<LogVisitScreen>
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -121,8 +185,10 @@ class _LogVisitScreenState extends State<LogVisitScreen>
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                            color: Color(0xFFFF7DA4)),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Color(0xFFFF7DA4),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
@@ -197,7 +263,10 @@ class _LogVisitScreenState extends State<LogVisitScreen>
                           duration: const Duration(milliseconds: 200),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFF97B8), Color(0xFFFF7DA4)],
+                              colors: [
+                                Color(0xFFFF97B8),
+                                Color(0xFFFF7DA4),
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -267,9 +336,13 @@ class _LogVisitScreenState extends State<LogVisitScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w700, fontSize: 14)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: controller,
@@ -278,8 +351,14 @@ class _LogVisitScreenState extends State<LogVisitScreen>
             onTap: onTap,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
-              suffixIcon: Icon(icon, color: const Color(0xFFFF7DA4)),
+              hintStyle: const TextStyle(
+                color: Colors.black38,
+                fontSize: 13,
+              ),
+              suffixIcon: Icon(
+                icon,
+                color: const Color(0xFFFF7DA4),
+              ),
               border: InputBorder.none,
             ),
           ),

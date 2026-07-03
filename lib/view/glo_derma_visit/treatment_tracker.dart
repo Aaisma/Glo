@@ -1,9 +1,19 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import 'package:glo/model/health_model.dart';
+import 'package:glo/viewmodel/health_viewmodel.dart';
 
 class TreatmentTrackerScreen extends StatefulWidget {
-  const TreatmentTrackerScreen({super.key});
+  final String userId;
+
+  const TreatmentTrackerScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   @override
   State<TreatmentTrackerScreen> createState() => _TreatmentTrackerScreenState();
@@ -19,8 +29,9 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
 
   File? _photo;
   double _progress = .45;
+  bool _isSaving = false;
 
-  final List<TreatmentLog> _logs = const [
+  final List<TreatmentLog> _defaultLogs = const [
     TreatmentLog(
       date: "April 24, 2026",
       title: "Sunscreen",
@@ -132,24 +143,18 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
             SizedBox(
               width: double.infinity,
               child: _primaryButton(
-                "Save",
+                _isSaving ? "Saving..." : "Save",
                 Icons.check,
-                    () {
+                _isSaving
+                    ? () {}
+                    : () async {
                   final value = controller.text.trim();
+
                   if (value.isEmpty) return;
 
-                  setState(() {
-                    _logs.insert(
-                      0,
-                      TreatmentLog(
-                        date: "Today",
-                        title: value,
-                        subtitle: "New Routine",
-                        icon: Icons.spa_outlined,
-                      ),
-                    );
-                    _progress = (_progress + .08).clamp(0, 1);
-                  });
+                  await _saveTreatment(value);
+
+                  if (!mounted) return;
 
                   Navigator.pop(context);
                 },
@@ -158,7 +163,66 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
           ],
         ),
       ),
+    ).then((_) => controller.dispose());
+  }
+
+  Future<void> _saveTreatment(String treatmentName) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final viewModel = context.read<HealthViewModel>();
+
+    if (widget.userId.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("User ID is required.")),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    final newProgress = ((_progress + .08) * 100).round().clamp(0, 100);
+
+    final item = HealthModel(
+      userId: widget.userId,
+      title: "Treatment Tracker",
+      description: "New Routine",
+      treatmentName: treatmentName,
+      progress: newProgress,
+      startDate: DateTime.now(),
     );
+
+    try {
+      await viewModel.addHealthItem(
+        item,
+        widget.userId,
+      );
+
+      if (!mounted) return;
+
+      if (viewModel.error != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(viewModel.error!)),
+        );
+        return;
+      }
+
+      setState(() {
+        _progress = (_progress + .08).clamp(0, 1);
+      });
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Treatment saved successfully 🌸")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text("Failed to save treatment: $e")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   void _showLogDetail(TreatmentLog log) {
@@ -200,8 +264,49 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
     );
   }
 
+  List<TreatmentLog> _convertHealthItemsToLogs(List<HealthModel> items) {
+    return items
+        .where((item) =>
+    item.treatmentName != null &&
+        item.treatmentName!.trim().isNotEmpty)
+        .map(
+          (item) => TreatmentLog(
+        date: _formatDate(item.startDate ?? item.createdAt),
+        title: item.treatmentName ?? "Treatment",
+        subtitle: item.description ?? "Treatment Routine",
+        icon: Icons.spa_outlined,
+      ),
+    )
+        .toList();
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return "Today";
+
+    final localDate = date.toLocal();
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    return "${months[localDate.month - 1]} ${localDate.day}, ${localDate.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
+    final healthViewModel = context.watch<HealthViewModel>();
+
     return Scaffold(
       backgroundColor: _pageBg,
       body: Stack(
@@ -259,7 +364,43 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              ..._logs.map(_logTile),
+                              StreamBuilder<List<HealthModel>>(
+                                stream: healthViewModel.fetchHealthItemsStream(
+                                  widget.userId,
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(20),
+                                        child: CircularProgressIndicator(
+                                          color: _pink,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  if (snapshot.hasError) {
+                                    return _emptyMessage(
+                                      "Error loading treatments",
+                                    );
+                                  }
+
+                                  final firestoreLogs =
+                                  _convertHealthItemsToLogs(
+                                    snapshot.data ?? [],
+                                  );
+
+                                  final logs = firestoreLogs.isEmpty
+                                      ? _defaultLogs
+                                      : firestoreLogs;
+
+                                  return Column(
+                                    children: logs.map(_logTile).toList(),
+                                  );
+                                },
+                              ),
                               const SizedBox(height: 25),
                             ],
                           ),
@@ -278,6 +419,22 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _emptyMessage(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: _cardDecoration(),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.black54,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
