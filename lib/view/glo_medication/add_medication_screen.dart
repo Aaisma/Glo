@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:glo/model/medication_model.dart';
 import 'package:glo/viewmodel/medication_viewmodel.dart';
 
 class AddMedicationScreen extends StatefulWidget {
   final String userId;
 
-  const AddMedicationScreen({super.key, required this.userId});
+  const AddMedicationScreen({
+    super.key,
+    required this.userId,
+  });
 
   @override
   State<AddMedicationScreen> createState() => _AddMedicationScreenState();
@@ -39,13 +43,67 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     super.dispose();
   }
 
+  Future<void> _saveMedication() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final viewModel = context.read<MedicationViewModel>();
+
+    if (nameController.text.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Please enter medication name")),
+      );
+      return;
+    }
+
+    if (selectedType == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Please select medication type")),
+      );
+      return;
+    }
+
+    final newMedication = MedicationModel(
+      userId: widget.userId,
+      name: nameController.text.trim(),
+      type: selectedType,
+      dosage: dosageController.text.trim(),
+      schedule: scheduleController.text.trim(),
+      doctorName: doctorController.text.trim(),
+      instructions: scheduleController.text.trim(),
+      startDate: startDate,
+      endDate: endDate,
+      issuedDate: DateTime.now(),
+    );
+
+    final success = await viewModel.addMedication(
+      newMedication,
+      widget.userId,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Medication saved successfully")),
+      );
+      navigator.pop();
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(viewModel.error ?? "Failed to save medication"),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<MedicationViewModel>().loading;
+
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("assets/images/background"
-              ".png"),
+          image: AssetImage("assets/images/background.png"),
           fit: BoxFit.cover,
         ),
       ),
@@ -69,7 +127,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 const SizedBox(height: 20),
                 _formCard(),
                 const SizedBox(height: 24),
-                _saveButton(context),
+                _saveButton(isLoading),
               ],
             ),
           ),
@@ -125,14 +183,12 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           _label("🟣 Medication Type"),
           DropdownButtonFormField<String>(
             initialValue: selectedType,
-            items: types
-                .map(
-                  (type) => DropdownMenuItem<String>(
+            items: types.map((type) {
+              return DropdownMenuItem<String>(
                 value: type,
                 child: Text(type),
-              ),
-            )
-                .toList(),
+              );
+            }).toList(),
             onChanged: (value) => setState(() => selectedType = value),
             decoration: _inputDecoration("Select type"),
           ),
@@ -157,14 +213,15 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           const SizedBox(height: 20),
           _label("📅 Start Date"),
           _dateButton(
-            text:
-            startDate != null ? _formatDate(startDate!) : "Select start date",
+            text: startDate == null
+                ? "Select start date"
+                : _formatDate(startDate!),
             onTap: () => _pickDate(isStartDate: true),
           ),
           const SizedBox(height: 20),
           _label("📅 End Date"),
           _dateButton(
-            text: endDate != null ? _formatDate(endDate!) : "Select end date",
+            text: endDate == null ? "Select end date" : _formatDate(endDate!),
             onTap: () => _pickDate(isStartDate: false),
           ),
         ],
@@ -239,7 +296,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     );
   }
 
-  Widget _saveButton(BuildContext context) {
+  Widget _saveButton(bool isLoading) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xffF8A5B8),
@@ -250,28 +307,17 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         ),
         elevation: 4,
       ),
-      onPressed: () async {
-        final newMedication = MedicationModel(
-          name: nameController.text.trim(),
-          type: selectedType,
-          dosage: dosageController.text.trim(),
-          schedule: scheduleController.text.trim(),
-          doctorName: doctorController.text.trim(),
-          instructions: scheduleController.text.trim(),
-          startDate: startDate,
-          endDate: endDate,
-          issuedDate: DateTime.now(),
-        );
-
-        final viewModel =
-        Provider.of<MedicationViewModel>(context, listen: false);
-        final navigator = Navigator.of(context);
-
-        await viewModel.addMedication(newMedication, widget.userId);
-
-        navigator.pop();
-      },
-      child: const Text(
+      onPressed: isLoading ? null : _saveMedication,
+      child: isLoading
+          ? const SizedBox(
+        height: 22,
+        width: 22,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      )
+          : const Text(
         "💊 Save Medication",
         style: TextStyle(
           fontWeight: FontWeight.bold,
@@ -291,7 +337,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       lastDate: DateTime(2030),
     );
 
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
 
     setState(() {
       if (isStartDate) {
@@ -306,9 +352,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     return date.toLocal().toString().split(' ').first;
   }
 
-  BoxDecoration _cardDecoration({Color color = Colors.white}) {
+  BoxDecoration _cardDecoration() {
     return BoxDecoration(
-      color: color,
+      color: Colors.white,
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(

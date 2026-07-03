@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:glo/model/medication_model.dart';
 import 'package:glo/viewmodel/medication_viewmodel.dart';
 
@@ -19,33 +20,6 @@ class MedicationHistoryScreen extends StatefulWidget {
 class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
   String searchQuery = "";
   String selectedFilter = "All";
-
-  final List<MedicationModel> fallbackMeds = [
-    MedicationModel(
-      id: "1",
-      name: "Amoxicillin 500mg",
-      type: "Antibiotic",
-      dosage: "1 capsule • 3 times a day",
-      startDate: DateTime(2022, 4, 1),
-      endDate: DateTime(2022, 4, 10),
-    ),
-    MedicationModel(
-      id: "2",
-      name: "Calcium Supplement",
-      type: "Tablet",
-      dosage: "1 tablet • Daily",
-      startDate: DateTime(2022, 1, 15),
-      endDate: DateTime(2022, 2, 15),
-    ),
-    MedicationModel(
-      id: "3",
-      name: "Hydrocortisone Cream",
-      type: "Topical",
-      dosage: "Apply to affected area",
-      startDate: DateTime(2021, 11, 5),
-      endDate: DateTime(2021, 11, 15),
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -79,26 +53,60 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
                     return StreamBuilder<List<MedicationModel>>(
                       stream: viewModel.fetchMedicationsStream(widget.userId),
                       builder: (context, snapshot) {
-                        final meds =
-                        snapshot.hasData && snapshot.data!.isNotEmpty
-                            ? snapshot.data!
-                            : fallbackMeds;
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.pink,
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Text(
+                                "Error: ${snapshot.error}",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final meds = snapshot.data ?? [];
 
                         final filtered = meds.where((med) {
                           final medName = med.name ?? "";
-                          final medType = med.type ?? "";
+                          final medType = _cleanType(med.type);
 
                           final matchesFilter = selectedFilter == "All" ||
                               (selectedFilter == "Antibiotics" &&
-                                  medType == "Antibiotic");
+                                  medType.toLowerCase().contains(
+                                    "antibiotic",
+                                  ));
 
                           final matchesSearch = searchQuery.isEmpty ||
-                              medName
-                                  .toLowerCase()
-                                  .contains(searchQuery.toLowerCase());
+                              medName.toLowerCase().contains(
+                                searchQuery.toLowerCase(),
+                              );
 
                           return matchesFilter && matchesSearch;
                         }).toList();
+
+                        if (filtered.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "No medication history found 💊",
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
+                        }
 
                         return ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -184,11 +192,11 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
   }
 
   void _showSearchDialog(BuildContext context) {
+    final searchController = TextEditingController(text: searchQuery);
+
     showDialog(
       context: context,
-      builder: (context) {
-        String tempQuery = searchQuery;
-
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -202,6 +210,7 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
             ),
           ),
           content: TextField(
+            controller: searchController,
             decoration: InputDecoration(
               hintText: "Enter medication name",
               filled: true,
@@ -219,13 +228,12 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
                 borderSide: const BorderSide(color: Colors.pink, width: 1.4),
               ),
             ),
-            onChanged: (value) => tempQuery = value,
           ),
           actions: [
             TextButton(
               onPressed: () {
-                setState(() => searchQuery = tempQuery);
-                Navigator.pop(context);
+                setState(() => searchQuery = searchController.text.trim());
+                Navigator.pop(dialogContext);
               },
               child: const Text(
                 "Search",
@@ -233,16 +241,19 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                setState(() => searchQuery = "");
+                Navigator.pop(dialogContext);
+              },
               child: const Text(
-                "Close",
+                "Clear",
                 style: TextStyle(color: Colors.pink),
               ),
             ),
           ],
         );
       },
-    );
+    ).then((_) => searchController.dispose());
   }
 
   Widget _buildFilterChip(String label) {
@@ -288,7 +299,18 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
       decoration: _cardDecoration(),
       child: Row(
         children: [
-          Image.asset(image, height: 50, width: 50),
+          Image.asset(
+            image,
+            height: 50,
+            width: 50,
+            errorBuilder: (_, _, _) {
+              return const Icon(
+                Icons.medication_outlined,
+                color: Colors.pink,
+                size: 45,
+              );
+            },
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -306,8 +328,10 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
                 const SizedBox(height: 6),
                 if (tag.isNotEmpty)
                   Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.pink.shade50,
                       borderRadius: BorderRadius.circular(20),
@@ -338,17 +362,33 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
     );
   }
 
+  String _cleanType(String? type) {
+    if (type == null) return "";
+
+    return type
+        .replaceAll("💊", "")
+        .replaceAll("🟣", "")
+        .replaceAll("🧴", "")
+        .replaceAll("💉", "")
+        .trim();
+  }
+
   String _getMedicationImage(String? type) {
-    switch (type) {
-      case "Tablet":
-        return "assets/images/tablet.png";
-      case "Capsule":
-        return "assets/images/pill.png";
-      case "Topical":
-        return "assets/images/creamtube.png";
-      default:
-        return "assets/images/prescription.png";
+    final cleanType = _cleanType(type).toLowerCase();
+
+    if (cleanType.contains("tablet")) {
+      return "assets/images/tablet.png";
     }
+
+    if (cleanType.contains("capsule")) {
+      return "assets/images/pill.png";
+    }
+
+    if (cleanType.contains("topical")) {
+      return "assets/images/creamtube.png";
+    }
+
+    return "assets/images/prescription.png";
   }
 
   String _formatDate(DateTime? date) {
