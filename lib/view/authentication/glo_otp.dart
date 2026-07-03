@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/auth_viewmodel.dart';
+import 'package:glo/repo/auth_repo_impl.dart';
+import 'package:glo/repo/user_repo_impl.dart';
+import 'package:glo/viewmodel/auth_view_model.dart';
+import 'package:glo/viewmodel/user_view_model.dart';
+
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthViewModel(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(
+            authRepo: AuthRepoImpl(),
+            userRepo: UserRepoImpl(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => UserViewModel(
+            userRepo: UserRepoImpl(),
+          ),
+        ),
+      ],
       child: const GloOtpScreen(),
     ),
   );
@@ -163,8 +179,7 @@ class _OtpPageState extends State<OtpPage> {
                   onPressed: () async {
                     final messenger = ScaffoldMessenger.of(context);
 
-                    final success =
-                    await authVM.verifyOtp(_enteredOtp);
+                    final success = await authVM.verifyOtp(_enteredOtp);
 
                     messenger.showSnackBar(
                       SnackBar(

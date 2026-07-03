@@ -20,7 +20,7 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
-import '../../view/medication_screen.dart';
+import 'medication_screen.dart';
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
 
@@ -208,7 +208,8 @@ class DashboardHome extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
                               break;
                             case "Medications":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationScreen(userId: '',)));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationScreen(userId: '123'
+                                  ,)));
                               break;
                             case "Skin Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const AcneTrackerPage()));

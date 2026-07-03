@@ -1,4 +1,4 @@
-name: gloclone
+name: glo
 description: A new Flutter project.
 
 # Prevent accidental publishing to pub.dev
@@ -28,9 +28,8 @@ dependencies:
   table_calendar: ^3.1.2
   intl: ^0.20.3
   google_sign_in: ^7.2.0
-  flutter_facebook_auth: ^7.1.1
+  flutter_facebook_auth: ^7.1.7
   lucide_icons: ^0.257.0
-
   tflite_flutter: ^0.11.0
   image: ^4.3.0
   nepali_utils: ^3.0.6

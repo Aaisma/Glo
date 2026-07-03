@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:gloclone/viewmodel/notification_view_model.dart';
-import 'package:gloclone/model/notification_model.dart';
+import 'package:glo/viewmodel/notification_view_model.dart';
+import 'package:glo/model/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -33,7 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
     final filteredList = viewModel.filteredNotifications
-        .where((item) => item.createdAt.isAfter(oneWeekAgo))
+        .where((item) => item?.createdAt.isAfter(oneWeekAgo))
         .toList();
 
     return Scaffold(

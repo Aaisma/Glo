@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:gloclone/viewmodel/wellness_viewmodel.dart';
+import 'package:glo/viewmodel/wellness_viewmodel.dart';
 
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
