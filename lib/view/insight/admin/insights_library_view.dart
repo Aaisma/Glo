@@ -152,7 +152,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                       : ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                           itemCount: viewModel.insights.length,
-                          separatorBuilder: (_, __) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
+                          separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
                           itemBuilder: (context, index) {
                             final insight = viewModel.insights[index];
                             return _buildInsightRow(context, insight, viewModel);

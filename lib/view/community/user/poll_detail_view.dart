@@ -73,6 +73,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                       reason: reason,
                     );
                   }
+                  if (!context.mounted) return;
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Thank you for your report. The content has been sent for moderation. 🌸")),
@@ -140,12 +141,11 @@ class _PollDetailViewState extends State<PollDetailView> {
                   type: ContentType.poll,
                 );
                 await hiddenBox.put(_poll!.id, hc.toMap());
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Poll hidden. 🌸")),
                   );
-                }
               } else if (value == 'report') {
                 _showReportDialog(context);
               }
@@ -248,8 +248,8 @@ class _PollDetailViewState extends State<PollDetailView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? pinkTheme.withOpacity(0.3)
-                                    : Colors.pink.shade50.withOpacity(0.5),
+                                    ? pinkTheme.withValues(alpha: 0.3)
+                                    : Colors.pink.shade50.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
@@ -288,7 +288,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
 
               const SizedBox(height: 16),
 
@@ -300,7 +300,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF6F8),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: pinkTheme.withOpacity(0.5)),
+                    border: Border.all(color: pinkTheme.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [

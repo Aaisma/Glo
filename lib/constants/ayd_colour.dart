@@ -30,4 +30,5 @@ class AydColors {
 
   // Insight Module - Admin (Blue Theme)
   static const Color primaryAdmin = Color(0xFF2D5E78);
+  static const Color adminBackground = Color(0xFF2D5E78);
 }

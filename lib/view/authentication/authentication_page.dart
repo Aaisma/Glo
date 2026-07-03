@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../components/top_navigation.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
-import '../navigation_icon/profile_pages/help_support_page.dart';
-import '../navigation_icon/profile_pages/about_us_page.dart';
+import '../glo_profile/help_support_page.dart';
+import '../glo_profile/glo_about_us_screen.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});
@@ -168,7 +168,7 @@ class AuthenticationPage extends StatelessWidget {
               Icons.info_outline,
               "About Us",
               "App version and info",
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage())),
+              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GloAboutUsScreen())),
             ),
           ],
         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart' hide TextDirection;
 import 'package:fl_chart/fl_chart.dart';
 import '../../model/tracker_theme.dart';
 import '../../viewmodel/period_view_model.dart';
@@ -18,7 +17,7 @@ class AnalyticsHistoryPage extends StatefulWidget {
 class _AnalyticsHistoryPageState extends State<AnalyticsHistoryPage> {
   @override
   Widget build(BuildContext context) {
-    // Both viewmodels provide equivalent calculations since they both run CycleAnalyticsEngine
+    // Both viewmodel provide equivalent calculations since they both run CycleAnalyticsEngine
     final periodViewModel = context.watch<PeriodViewModel>();
     final analytics = periodViewModel.analyticsResult;
 
@@ -414,7 +413,7 @@ class CustomLineChart extends StatelessWidget {
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
                 return SideTitleWidget(
-                  axisSide: meta.axisSide,
+                  meta: meta,
                   child: Text(
                     value.toStringAsFixed(0),
                     style: const TextStyle(
@@ -434,7 +433,7 @@ class CustomLineChart extends StatelessWidget {
                 final index = value.toInt();
                 if (index >= 0 && index < labels.length) {
                   return SideTitleWidget(
-                    axisSide: meta.axisSide,
+                    meta: meta,
                     child: Text(
                       labels[index],
                       style: const TextStyle(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gloclone/view/wellness_dashboard_screen.dart';
+
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -21,9 +21,10 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
-import '../../view/medication_screen.dart';
+import '../view/glo_medication/medication_screen.dart';
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
+import '../view/wellness_dashboard_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

@@ -258,7 +258,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
 
     return ListView.separated(
       itemCount: paginated.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
+      separatorBuilder: (_, _) => Divider(height: 1, color: Colors.grey.shade100),
       itemBuilder: (context, index) {
         final item = paginated[index];
         final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);
@@ -366,7 +366,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
 
     return ListView.separated(
       itemCount: paginated.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
+      separatorBuilder: (_, _) => Divider(height: 1, color: Colors.grey.shade100),
       itemBuilder: (context, index) {
         final item = paginated[index];
         final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);

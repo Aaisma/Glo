@@ -44,7 +44,7 @@ class AuthRepoImpl implements AuthRepo {
     final LoginResult result = await FacebookAuth.instance.login();
 
     if (result.status == LoginStatus.success) {
-      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.tokenString);
+      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
       return await _auth.signInWithCredential(credential);
     } else {
       throw Exception("Facebook sign in failed: ${result.message}");
