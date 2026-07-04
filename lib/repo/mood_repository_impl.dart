@@ -3,7 +3,10 @@ import '../model/user_model_mood.dart';
 import 'mood_repository.dart';
 
 class MoodRepositoryImpl implements MoodRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  MoodRepositoryImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<List<UserModelMood>> streamUserMoodLogs(String userId) {

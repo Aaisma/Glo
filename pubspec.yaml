@@ -1,6 +1,6 @@
 name: glo
 description: "A new Flutter project."
-publish_to: 'none' # Prevent accidental publishing
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -34,10 +34,13 @@ dependencies:
   tflite_flutter: ^0.12.1
   table_calendar: ^3.2.0
 
+  fake_cloud_firestore: ^4.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  firebase_auth_mocks: ^0.15.2
 
 flutter:
   uses-material-design: true
