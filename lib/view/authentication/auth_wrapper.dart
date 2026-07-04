@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/user_view_model.dart';
+import '../dashboard_page.dart';
 import 'authentication_page.dart';
 import '../survey_page.dart';
 import '../navigation_icon/glo_profile.dart';
-import '../../view/dashboard_page.dart';
-import '../../view/admin/admin_dashboard_page.dart';
+import 'package:glo/view/admin_dashboard_screen.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -55,7 +55,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
             final userModel = userVM.user!;
             
             if (userModel.role == 'admin') {
-              return const AdminDashboardPage();
+              return const AdminDashboardScreen();
             }
             
             if (!userModel.surveyCompleted) {
@@ -63,7 +63,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
             }
             
             if (!userModel.profileCompleted) {
-              return const GloProfileScreen(); // Assuming this is defined
+              return const GloProfileScreen();
             }
 
             // User is fully onboarded

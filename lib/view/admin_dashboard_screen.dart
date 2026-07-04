@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';
 import 'admin_meal_tracker_screen.dart';
+import './dashboard_card/admin/admin_monthly_tracking_screen.dart';
+
 
 enum ChartView { bar, line, pie }
 
@@ -323,6 +325,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
                         } else if (item["label"] == "Meal Tracker") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMealTrackerScreen()));
+                        } else if (item["label"] == "Monthly Tracking") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMonthlyTrackingScreen()));
                         }
                         // Feedback: your friend will wire her own screen into this case later
                       },

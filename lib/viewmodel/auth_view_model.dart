@@ -10,7 +10,7 @@ import '../repo/user_repo.dart';
 class AuthViewModel extends ChangeNotifier {
   final AuthRepo _authRepo;
   final UserRepo _userRepo;
-  
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _user;
   bool _loading = false;
@@ -22,7 +22,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo}) 
-      : _authRepo = authRepo, 
+      : _authRepo = authRepo,
         _userRepo = userRepo {
     _user = _authRepo.currentUser;
   }
@@ -150,7 +150,7 @@ class AuthViewModel extends ChangeNotifier {
       
       if (result.status == LoginStatus.success) {
         final AccessToken accessToken = result.accessToken!;
-        final AuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
+        final AuthCredential credential = FacebookAuthProvider.credential(accessToken.token);
         final UserCredential userCredential = await _auth.signInWithCredential(credential);
         _setError(null);
         return userCredential.user;
