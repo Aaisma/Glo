@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:glo/viewmodel/image_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
+import 'package:glo/viewmodel/image_viewmodel.dart';
 import 'package:glo/view/navigation_icon/calendar_screen.dart';
-import 'package:glo/view/navigation_icon/notification_page.dart';
+import 'package:glo/view/components/top_navigation.dart';
+import 'package:glo/view/components/bottom_navigation.dart';
+
 import 'glo_about_us_screen.dart';
 
 class GloProfileScreen extends StatefulWidget {
@@ -18,7 +20,7 @@ class GloProfileScreen extends StatefulWidget {
 }
 
 class _GloProfileScreenState extends State<GloProfileScreen> {
-  int _currentIndex = 4;
+  final int _currentIndex = 4;
 
   String _bio = "Taking care of myself,\none day at a time.";
   String? _localProfileImagePath;
@@ -31,45 +33,41 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   String get _userName {
     final user = FirebaseAuth.instance.currentUser;
-
-    final displayName = user?.displayName?.trim();
-    if (displayName != null && displayName.isNotEmpty) return displayName;
-
+    final name = user?.displayName?.trim();
     final email = user?.email?.trim();
-    if (email != null && email.isNotEmpty) return email.split("@").first;
 
+    if (name != null && name.isNotEmpty) return name;
+    if (email != null && email.isNotEmpty) return email.split("@").first;
     return "User";
   }
 
   void _onBottomTap(int index) {
-    setState(() => _currentIndex = index);
+    if (index == _currentIndex) return;
 
-    switch (index) {
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => CalendarScreen()),
-        );
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/history');
-        break;
-      case 4:
-        break;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Screen not connected yet")),
-        );
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => CalendarScreen()),
+      );
+      return;
     }
+
+    if (index == 3) {
+      Navigator.pushReplacementNamed(context, '/history');
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Screen not connected yet")),
+    );
   }
 
-  Future<void> _pickFromGalleryOnly() async {
+  Future<void> _pickProfileImage() async {
     final messenger = ScaffoldMessenger.of(context);
+    final imageVm = context.read<ImageViewModel>();
 
     try {
-      final picker = ImagePicker();
-
-      final XFile? image = await picker.pickImage(
+      final image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
         maxWidth: 800,
@@ -85,12 +83,9 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
         return;
       }
 
-      setState(() {
-        _localProfileImagePath = image.path;
-      });
+      setState(() => _localProfileImagePath = image.path);
 
-      final vm = Provider.of<ImageViewModel>(context, listen: false);
-      await vm.updateProfileImage("user123", image.path);
+      await imageVm.updateProfileImage("user123", image.path);
 
       if (!mounted) return;
 
@@ -108,29 +103,26 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   void _editProfile() {
     final nameController = TextEditingController(text: _userName);
-    final bioController = TextEditingController(text: _bio.replaceAll("\n", " "));
+    final bioController = TextEditingController(
+      text: _bio.replaceAll("\n", " "),
+    );
 
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: softPink,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-          title: const Text(
-            "Edit Profile",
-            style: TextStyle(
-              fontFamily: "Georgia",
-              fontWeight: FontWeight.bold,
-              color: dark,
-            ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
           ),
+          title: const _DialogTitle("Edit Profile"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(dialogContext);
-                  _pickFromGalleryOnly();
+                  _pickProfileImage();
                 },
                 icon: const Icon(Icons.photo_library_outlined),
                 label: const Text("Change Profile Picture"),
@@ -154,11 +146,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                nameController.dispose();
-                bioController.dispose();
-                Navigator.pop(dialogContext);
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancel", style: TextStyle(color: pink)),
             ),
             ElevatedButton(
@@ -167,26 +155,23 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 final navigator = Navigator.of(dialogContext);
                 final messenger = ScaffoldMessenger.of(context);
 
-                final newName = nameController.text.trim();
-                final newBio = bioController.text.trim();
+                final name = nameController.text.trim();
+                final bio = bioController.text.trim();
 
                 try {
                   final user = FirebaseAuth.instance.currentUser;
 
-                  if (user != null && newName.isNotEmpty) {
-                    await user.updateDisplayName(newName);
+                  if (user != null && name.isNotEmpty) {
+                    await user.updateDisplayName(name);
                   }
 
                   if (!mounted) return;
 
                   setState(() {
-                    _bio = newBio.isEmpty
+                    _bio = bio.isEmpty
                         ? "Taking care of myself,\none day at a time."
-                        : newBio;
+                        : bio;
                   });
-
-                  nameController.dispose();
-                  bioController.dispose();
 
                   navigator.pop();
 
@@ -206,18 +191,21 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
           ],
         );
       },
-    );
+    ).whenComplete(() {
+      nameController.dispose();
+      bioController.dispose();
+    });
   }
 
   Future<void> _changePassword() async {
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
 
     bool isLoading = false;
-    bool obscureCurrent = true;
-    bool obscureNew = true;
-    bool obscureConfirm = true;
+    bool hideCurrent = true;
+    bool hideNew = true;
+    bool hideConfirm = true;
 
     await showDialog(
       context: context,
@@ -230,81 +218,43 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
               ),
-              title: const Text(
-                "Change Password",
-                style: TextStyle(
-                  fontFamily: "Georgia",
-                  fontWeight: FontWeight.bold,
-                  color: dark,
-                ),
-              ),
+              title: const _DialogTitle("Change Password"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
-                    controller: currentPasswordController,
-                    obscureText: obscureCurrent,
-                    decoration: InputDecoration(
-                      labelText: "Current Password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureCurrent
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setDialogState(() {
-                            obscureCurrent = !obscureCurrent;
-                          });
-                        },
-                      ),
-                    ),
+                  _PasswordField(
+                    controller: currentController,
+                    label: "Current Password",
+                    obscure: hideCurrent,
+                    onToggle: () {
+                      setDialogState(() => hideCurrent = !hideCurrent);
+                    },
                   ),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: newPasswordController,
-                    obscureText: obscureNew,
-                    decoration: InputDecoration(
-                      labelText: "New Password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureNew
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setDialogState(() {
-                            obscureNew = !obscureNew;
-                          });
-                        },
-                      ),
-                    ),
+                  _PasswordField(
+                    controller: newController,
+                    label: "New Password",
+                    obscure: hideNew,
+                    onToggle: () {
+                      setDialogState(() => hideNew = !hideNew);
+                    },
                   ),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: confirmPasswordController,
-                    obscureText: obscureConfirm,
-                    decoration: InputDecoration(
-                      labelText: "Confirm New Password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureConfirm
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setDialogState(() {
-                            obscureConfirm = !obscureConfirm;
-                          });
-                        },
-                      ),
-                    ),
+                  _PasswordField(
+                    controller: confirmController,
+                    label: "Confirm New Password",
+                    obscure: hideConfirm,
+                    onToggle: () {
+                      setDialogState(() => hideConfirm = !hideConfirm);
+                    },
                   ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
                   child: const Text("Cancel", style: TextStyle(color: pink)),
                 ),
                 ElevatedButton(
@@ -315,15 +265,13 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                     final navigator = Navigator.of(dialogContext);
                     final messenger = ScaffoldMessenger.of(context);
 
-                    final currentPassword =
-                    currentPasswordController.text.trim();
-                    final newPassword = newPasswordController.text.trim();
-                    final confirmPassword =
-                    confirmPasswordController.text.trim();
+                    final current = currentController.text.trim();
+                    final newPass = newController.text.trim();
+                    final confirm = confirmController.text.trim();
 
-                    if (currentPassword.isEmpty ||
-                        newPassword.isEmpty ||
-                        confirmPassword.isEmpty) {
+                    if (current.isEmpty ||
+                        newPass.isEmpty ||
+                        confirm.isEmpty) {
                       messenger.showSnackBar(
                         const SnackBar(
                           content: Text("Please fill all fields"),
@@ -332,7 +280,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                       return;
                     }
 
-                    if (newPassword.length < 6) {
+                    if (newPass.length < 6) {
                       messenger.showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -343,7 +291,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                       return;
                     }
 
-                    if (newPassword != confirmPassword) {
+                    if (newPass != confirm) {
                       messenger.showSnackBar(
                         const SnackBar(
                           content: Text("New passwords do not match"),
@@ -366,11 +314,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
                       final credential = EmailAuthProvider.credential(
                         email: user.email!,
-                        password: currentPassword,
+                        password: current,
                       );
 
                       await user.reauthenticateWithCredential(credential);
-                      await user.updatePassword(newPassword);
+                      await user.updatePassword(newPass);
 
                       if (!mounted) return;
 
@@ -378,7 +326,9 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
                       messenger.showSnackBar(
                         const SnackBar(
-                          content: Text("Password changed successfully"),
+                          content: Text(
+                            "Password changed successfully",
+                          ),
                         ),
                       );
                     } on FirebaseAuthException catch (e) {
@@ -424,12 +374,12 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       },
     );
 
-    currentPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
+    currentController.dispose();
+    newController.dispose();
+    confirmController.dispose();
   }
 
-  void _showClicked(String title) {
+  void _onMenuTap(String title) {
     if (title == "About Us") {
       Navigator.push(
         context,
@@ -440,6 +390,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
     if (title == "Change Password") {
       _changePassword();
+      return;
+    }
+
+    if (title == "Personal Information") {
+      _editProfile();
       return;
     }
 
@@ -454,15 +409,10 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: softPink,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-          title: const Text(
-            "Logout",
-            style: TextStyle(
-              fontFamily: "Georgia",
-              fontWeight: FontWeight.bold,
-              color: dark,
-            ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
           ),
+          title: const _DialogTitle("Logout"),
           content: const Text("Are you sure you want to logout?"),
           actions: [
             TextButton(
@@ -480,9 +430,12 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 if (!mounted) return;
 
                 dialogNavigator.pop();
-                navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+                navigator.pushNamedAndRemoveUntil('/login', (_) => false);
               },
-              child: const Text("Logout", style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Logout",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -511,7 +464,10 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
-                  const TopNavigation(title: "Profile"),
+                  TopNavigation(
+                    isLoggedIn: true,
+                    userName: _userName,
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 188,
@@ -519,17 +475,19 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                       userName: _userName,
                       bio: _bio,
                       localImagePath: _localProfileImagePath,
-                      onCameraTap: _pickFromGalleryOnly,
+                      onImageTap: _pickProfileImage,
                       onEditTap: _editProfile,
                     ),
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 104,
-                    child: _GoalCard(onTap: () => _showClicked("My Goal")),
+                    child: _GoalCard(
+                      onTap: () => _onMenuTap("My Goal"),
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  Expanded(child: _MenuCard(onTap: _showClicked)),
+                  Expanded(child: _MenuCard(onTap: _onMenuTap)),
                   const SizedBox(height: 10),
                   _LogoutButton(onTap: _logout),
                 ],
@@ -542,171 +500,40 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 }
 
-class TopNavigation extends StatelessWidget {
-  final String title;
-
-  const TopNavigation({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 42,
-      child: Row(
-        children: [
-          _HeaderIcon(
-            width: 44,
-            icon: Icons.menu_rounded,
-            size: 28,
-            onTap: () {},
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: "Georgia",
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: _GloProfileScreenState.dark,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 88,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _HeaderIcon(
-                  width: 40,
-                  icon: Icons.calendar_today_outlined,
-                  size: 24,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => CalendarScreen()),
-                    );
-                  },
-                ),
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _HeaderIcon(
-                        width: 40,
-                        icon: Icons.notifications_none_rounded,
-                        size: 28,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const NotificationsPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      const Positioned(
-                        right: 0,
-                        top: 0,
-                        child: CircleAvatar(
-                          radius: 8,
-                          backgroundColor: _GloProfileScreenState.pink,
-                          child: Text(
-                            "3",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderIcon extends StatelessWidget {
-  final double width;
-  final IconData icon;
-  final double size;
-  final VoidCallback onTap;
-
-  const _HeaderIcon({
-    required this.width,
-    required this.icon,
-    required this.size,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: 40,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Icon(
-          icon,
-          color: _GloProfileScreenState.pink,
-          size: size,
-        ),
-      ),
-    );
-  }
-}
-
 class _ProfileCard extends StatelessWidget {
   final String userName;
   final String bio;
   final String? localImagePath;
-  final VoidCallback onCameraTap;
+  final VoidCallback onImageTap;
   final VoidCallback onEditTap;
 
   const _ProfileCard({
     required this.userName,
     required this.bio,
     required this.localImagePath,
-    required this.onCameraTap,
+    required this.onImageTap,
     required this.onEditTap,
   });
 
-  ImageProvider _getProfileImage(BuildContext context) {
+  ImageProvider _profileImage(BuildContext context) {
     if (localImagePath != null && File(localImagePath!).existsSync()) {
       return FileImage(File(localImagePath!));
     }
 
-    try {
-      final vm = Provider.of<ImageViewModel>(context);
-      final savedPathOrUrl = vm.currentImage?.url;
+    final savedPath = context.watch<ImageViewModel>().currentImage?.url;
 
-      if (savedPathOrUrl != null && savedPathOrUrl.isNotEmpty) {
-        if (!savedPathOrUrl.startsWith("http") &&
-            File(savedPathOrUrl).existsSync()) {
-          return FileImage(File(savedPathOrUrl));
-        }
-      }
-    } catch (_) {}
+    if (savedPath != null &&
+        savedPath.isNotEmpty &&
+        !savedPath.startsWith("http") &&
+        File(savedPath).existsSync()) {
+      return FileImage(File(savedPath));
+    }
 
     return const AssetImage("assets/images/profilepicture.png");
   }
 
   @override
   Widget build(BuildContext context) {
-    final ImageProvider imageProvider = _getProfileImage(context);
-
     return _SoftCard(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -718,13 +545,13 @@ class _ProfileCard extends StatelessWidget {
                 Stack(
                   children: [
                     GestureDetector(
-                      onTap: onCameraTap,
+                      onTap: onImageTap,
                       child: CircleAvatar(
                         radius: 36,
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 32,
-                          backgroundImage: imageProvider,
+                          backgroundImage: _profileImage(context),
                         ),
                       ),
                     ),
@@ -732,7 +559,7 @@ class _ProfileCard extends StatelessWidget {
                       right: 0,
                       bottom: 1,
                       child: GestureDetector(
-                        onTap: onCameraTap,
+                        onTap: onImageTap,
                         child: const CircleAvatar(
                           radius: 14,
                           backgroundColor: _GloProfileScreenState.pink,
@@ -780,16 +607,12 @@ class _ProfileCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: onEditTap,
-                  child: const SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: Icon(
-                      Icons.edit_note_rounded,
-                      color: _GloProfileScreenState.pink,
-                      size: 28,
-                    ),
+                IconButton(
+                  onPressed: onEditTap,
+                  icon: const Icon(
+                    Icons.edit_note_rounded,
+                    color: _GloProfileScreenState.pink,
+                    size: 28,
                   ),
                 ),
               ],
@@ -851,8 +674,6 @@ class _StatItem extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 12,
               color: _GloProfileScreenState.dark,
@@ -861,8 +682,6 @@ class _StatItem extends StatelessWidget {
           const SizedBox(height: 3),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.bold,
@@ -890,40 +709,11 @@ class _GoalCard extends StatelessWidget {
           _RoundIcon(icon: Icons.track_changes_rounded, iconSize: 30),
           SizedBox(width: 16),
           Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                width: 270,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "My Goal",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: "Georgia",
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: _GloProfileScreenState.dark,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Stay consistent, feel my best & embrace every step.",
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.15,
-                        color: _GloProfileScreenState.dark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            child: _CardText(
+              title: "My Goal",
+              subtitle: "Stay consistent, feel my best & embrace every step.",
+              titleSize: 24,
+              subtitleSize: 13,
             ),
           ),
         ],
@@ -941,7 +731,7 @@ class _MenuData {
 }
 
 class _MenuCard extends StatelessWidget {
-  final Function(String) onTap;
+  final ValueChanged<String> onTap;
 
   const _MenuCard({required this.onTap});
 
@@ -955,11 +745,6 @@ class _MenuCard extends StatelessWidget {
       Icons.lock_outline_rounded,
       "Change Password",
       "Update your account password",
-    ),
-    _MenuData(
-      Icons.notifications_none_rounded,
-      "Reminders",
-      "Manage reminders",
     ),
     _MenuData(
       Icons.chat_bubble_outline_rounded,
@@ -988,9 +773,7 @@ class _MenuCard extends StatelessWidget {
 
           return Expanded(
             child: _MenuTile(
-              icon: item.icon,
-              title: item.title,
-              subtitle: item.subtitle,
+              data: item,
               showDivider: index != items.length - 1,
               onTap: () => onTap(item.title),
             ),
@@ -1002,16 +785,12 @@ class _MenuCard extends StatelessWidget {
 }
 
 class _MenuTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final _MenuData data;
   final bool showDivider;
   final VoidCallback onTap;
 
   const _MenuTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.data,
     required this.showDivider,
     required this.onTap,
   });
@@ -1026,45 +805,14 @@ class _MenuTile extends StatelessWidget {
             onTap: onTap,
             child: Row(
               children: [
-                _RoundIcon(icon: icon, iconSize: 29),
+                _RoundIcon(icon: data.icon, iconSize: 29),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 260,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            softWrap: false,
-                            style: const TextStyle(
-                              fontFamily: "Georgia",
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: _GloProfileScreenState.dark,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            softWrap: false,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              height: 1,
-                              color: _GloProfileScreenState.dark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  child: _CardText(
+                    title: data.title,
+                    subtitle: data.subtitle,
+                    titleSize: 20,
+                    subtitleSize: 11,
                   ),
                 ),
               ],
@@ -1074,6 +822,59 @@ class _MenuTile extends StatelessWidget {
         if (showDivider)
           const Divider(height: 1, color: _GloProfileScreenState.borderPink),
       ],
+    );
+  }
+}
+
+class _CardText extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final double titleSize;
+  final double subtitleSize;
+
+  const _CardText({
+    required this.title,
+    required this.subtitle,
+    required this.titleSize,
+    required this.subtitleSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: SizedBox(
+        width: 270,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: "Georgia",
+                fontSize: titleSize,
+                fontWeight: FontWeight.bold,
+                color: _GloProfileScreenState.dark,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: subtitleSize,
+                height: 1.1,
+                color: _GloProfileScreenState.dark,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1137,16 +938,12 @@ class _LogoutButton extends StatelessWidget {
               size: 26,
             ),
             SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                "Log Out",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _GloProfileScreenState.pink,
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                ),
+            Text(
+              "Log Out",
+              style: TextStyle(
+                color: _GloProfileScreenState.pink,
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -1192,60 +989,51 @@ class _SoftCard extends StatelessWidget {
   }
 }
 
-class BottomNavigation extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
+class _DialogTitle extends StatelessWidget {
+  final String text;
 
-  const BottomNavigation({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
+  const _DialogTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontFamily: "Georgia",
+        fontWeight: FontWeight.bold,
+        color: _GloProfileScreenState.dark,
+      ),
+    );
+  }
+}
+
+class _PasswordField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool obscure;
+  final VoidCallback onToggle;
+
+  const _PasswordField({
+    required this.controller,
+    required this.label,
+    required this.obscure,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 78,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.96),
-        border: Border.all(color: const Color(0xFFFFD9E3)),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          currentIndex: currentIndex,
-          onTap: onTap,
-          selectedItemColor: _GloProfileScreenState.pink,
-          unselectedItemColor: Colors.black45,
-          selectedFontSize: 10,
-          unselectedFontSize: 9,
-          iconSize: 23,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              label: "Calendar",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_rounded),
-              label: "Insights",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_rounded),
-              label: "History",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: "Profile",
-            ),
-          ],
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: IconButton(
+          onPressed: onToggle,
+          icon: Icon(
+            obscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+          ),
         ),
       ),
     );

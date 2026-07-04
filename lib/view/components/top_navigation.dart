@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
-import '../notification_screen.dart';
+import 'package:glo/view/navigation_icon/notification_page.dart';
 
 class TopNavigation extends StatelessWidget {
   final bool isLoggedIn;
   final String? userName;
+  final String? title;
 
   const TopNavigation({
     super.key,
     this.isLoggedIn = false,
     this.userName,
+    this.title,
   });
 
   @override
   Widget build(BuildContext context) {
+    final headerText = title ??
+        (isLoggedIn
+            ? "Good Morning ${userName ?? 'User'} ❤︎"
+            : " ⟡˙⋆Welcome to Glo⋆˙⟡");
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         children: [
-          // Spacer to help center the text if there are icons on the right
-          if (isLoggedIn) const SizedBox(width: 48), 
+          if (isLoggedIn || title != null) const SizedBox(width: 48),
           Expanded(
             child: Text(
-              isLoggedIn ? "Good Morning ${userName ?? 'User'} ❤︎"
-                  : " ⟡˙⋆Welcome to Glo⋆˙⟡",
+              headerText,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 22,
@@ -32,18 +37,19 @@ class TopNavigation extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications, color: Color(0xFF332B2C)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const NotificationScreen()),
-                  );
-                },
-              ),
-            ],
+          IconButton(
+            icon: const Icon(
+              Icons.notifications,
+              color: Color(0xFF332B2C),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsPage(),
+                ),
+              );
+            },
           ),
         ],
       ),

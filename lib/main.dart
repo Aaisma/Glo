@@ -36,7 +36,7 @@ import 'package:glo/view/glo_derma_visit/skin_tips.dart';
 import 'package:glo/view/glo_derma_visit/treatment_tracker.dart';
 
 import 'package:glo/view/glo_profile/glo_about_us_screen.dart';
-import 'package:glo/view/authentication/glo_otp.dart';
+import 'package:glo/view/glo_otp/glo_otp.dart';
 
 // Admin
 import 'package:glo/view/health_overview_screen.dart';
@@ -55,7 +55,7 @@ class GloApp extends StatelessWidget {
   const GloApp({super.key});
 
   static const String testUserId = "test-user-001";
-  static const String testPhone = "+9779800000000";
+  static const String testPhone = "+9779765599190";
 
   String _getUserIdFromRoute(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments;
@@ -140,13 +140,19 @@ class GloApp extends StatelessWidget {
 
   Widget _otpScreen(BuildContext context) {
     final phone = _getPhoneFromRoute(context);
-    return GloOtpScreen(phone: phone);
+
+    return GloOtpScreen(
+      phone: phone,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<OtpViewModel>(
+          create: (_) => OtpViewModel(),
+        ),
         ChangeNotifierProvider<MedicationViewModel>(
           create: (_) => MedicationViewModel(),
         ),
@@ -155,9 +161,6 @@ class GloApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<HealthViewModel>(
           create: (_) => HealthViewModel(),
-        ),
-        ChangeNotifierProvider<OtpViewModel>(
-          create: (_) => OtpViewModel(),
         ),
         ChangeNotifierProvider<ImageViewModel>(
           create: (_) => ImageViewModel(
@@ -186,20 +189,15 @@ class GloApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFFF4FBFF),
         ),
 
-        // Testing OTP directly.
-        home: const GloOtpScreen(
-          phone: testPhone,
-        ),
-
-        // To test Derma Visit instead, replace home above with:
-        // home: const DermaVisitScreen(
-        //   userId: testUserId,
-        // ),
+        // Testing Profile directly
+        home: const GloProfileScreen(),
 
         routes: {
+          '/login': (_) => const GloOtpScreen(phone: testPhone),
+
           '/home': (_) => const GloProfileScreen(),
-          '/history': (_) => const HistoryScreen(),
           '/profile': (_) => const GloProfileScreen(),
+          '/history': (_) => const HistoryScreen(),
 
           '/adminOverview': (_) => const HealthOverviewScreen(),
 
@@ -216,6 +214,7 @@ class GloApp extends StatelessWidget {
           '/treatmentTracker': (context) => _treatmentTrackerScreen(context),
 
           '/about': (_) => const GloAboutUsScreen(),
+
           '/otp': (context) => _otpScreen(context),
         },
       ),

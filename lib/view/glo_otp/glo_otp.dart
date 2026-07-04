@@ -5,39 +5,94 @@ import 'package:provider/provider.dart';
 import 'package:glo/viewmodel/otp_viewmodel.dart';
 
 class GloOtpScreen extends StatelessWidget {
-  final String phone;
+  final String? phone;
+  final String defaultCountryCode;
 
   const GloOtpScreen({
     super.key,
-    this.phone = '',
+    this.phone,
+    this.defaultCountryCode = '+977',
   });
 
-  String _resolvePhone(BuildContext context) {
-    if (phone.trim().isNotEmpty) {
-      return phone.trim();
-    }
-
+  String? _getRouteValue(BuildContext context, String key) {
     final args = ModalRoute.of(context)?.settings.arguments;
 
-    if (args is String && args.trim().isNotEmpty) {
-      return args.trim();
-    }
+    if (args is Map && args[key] is String) {
+      final value = args[key] as String;
 
-    if (args is Map && args['phone'] is String) {
-      final routePhone = args['phone'] as String;
-      if (routePhone.trim().isNotEmpty) {
-        return routePhone.trim();
+      if (value.trim().isNotEmpty) {
+        return value.trim();
       }
     }
 
-    return '+9779800000000';
+    return null;
+  }
+
+  String? _resolvePhone(BuildContext context) {
+    final routePhone = _getRouteValue(context, 'phone');
+    final routeCountryCode = _getRouteValue(context, 'countryCode');
+
+    final rawPhone = phone?.trim().isNotEmpty == true
+        ? phone!.trim()
+        : routePhone;
+
+    if (rawPhone == null || rawPhone.trim().isEmpty) {
+      return null;
+    }
+
+    final countryCode = routeCountryCode ?? defaultCountryCode;
+
+    return _formatPhoneNumber(rawPhone, countryCode);
+  }
+
+  String _formatPhoneNumber(String value, String countryCode) {
+    String phoneNumber = value
+        .replaceAll(' ', '')
+        .replaceAll('-', '')
+        .replaceAll('(', '')
+        .replaceAll(')', '');
+
+    if (phoneNumber.startsWith('+')) {
+      return phoneNumber;
+    }
+
+    if (phoneNumber.startsWith('00')) {
+      return '+${phoneNumber.substring(2)}';
+    }
+
+    final cleanCountryCode =
+    countryCode.startsWith('+') ? countryCode : '+$countryCode';
+
+    return '$cleanCountryCode$phoneNumber';
   }
 
   @override
   Widget build(BuildContext context) {
-    return OtpPage(
-      phone: _resolvePhone(context),
-    );
+    final resolvedPhone = _resolvePhone(context);
+
+    if (resolvedPhone == null || resolvedPhone.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFFF2F5),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                "Phone number is missing.\nPlease go back and enter your phone number.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return OtpPage(phone: resolvedPhone);
   }
 }
 
@@ -87,39 +142,34 @@ class _OtpPageState extends State<OtpPage> {
 
   Future<void> _sendOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
     final success = await viewModel.sendOtp(widget.phone);
 
     if (!mounted) return;
 
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
+    _showMessage(viewModel.message ?? viewModel.error);
 
-    if (success && viewModel.verified) {
-      navigator.pushReplacementNamed('/home');
+    if (success && viewModel.verified && viewModel.userId != null) {
+      _finishOtp(viewModel.userId!);
     }
   }
 
   Future<void> _verifyOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
     final success = await viewModel.verifyOtp(_enteredOtp);
 
     if (!mounted) return;
 
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
+    _showMessage(viewModel.message ?? viewModel.error);
 
-    if (success) {
-      navigator.pushReplacementNamed('/home');
+    if (success && viewModel.userId != null) {
+      _finishOtp(viewModel.userId!);
     }
   }
 
   Future<void> _resendOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
 
     for (final controller in _controllers) {
       controller.clear();
@@ -131,17 +181,84 @@ class _OtpPageState extends State<OtpPage> {
 
     if (!mounted) return;
 
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
+    _showMessage(viewModel.message ?? viewModel.error);
   }
 
-  void _showMessage(
-      ScaffoldMessengerState messenger,
-      String? message,
-      ) {
+  void _finishOtp(String userId) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context, userId);
+      return;
+    }
+
+    Navigator.pushReplacementNamed(
+      context,
+      '/home',
+      arguments: {
+        'userId': userId,
+      },
+    );
+  }
+
+  void _showMessage(String? message) {
     if (message == null || message.trim().isEmpty) return;
 
-    messenger.showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+    );
+  }
+
+  Widget _otpBox({
+    required int index,
+    required bool loading,
+  }) {
+    return SizedBox(
+      width: 45,
+      height: 55,
+      child: TextField(
+        controller: _controllers[index],
+        focusNode: _focusNodes[index],
+        enabled: !loading,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(1),
+        ],
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        decoration: InputDecoration(
+          counterText: "",
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.pink.shade300,
+              width: 1.5,
+            ),
+          ),
+        ),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < 5) {
+            _focusNodes[index + 1].requestFocus();
+          }
+
+          if (value.isEmpty && index > 0) {
+            _focusNodes[index - 1].requestFocus();
+          }
+
+          if (_enteredOtp.length == 6) {
+            FocusScope.of(context).unfocus();
+          }
+        },
+      ),
     );
   }
 
@@ -233,49 +350,9 @@ class _OtpPageState extends State<OtpPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(
                       6,
-                          (index) => SizedBox(
-                        width: 45,
-                        height: 55,
-                        child: TextField(
-                          controller: _controllers[index],
-                          focusNode: _focusNodes[index],
-                          enabled: !loading,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          maxLength: 1,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          decoration: InputDecoration(
-                            counterText: "",
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.pink.shade300,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) {
-                            if (value.isNotEmpty && index < 5) {
-                              _focusNodes[index + 1].requestFocus();
-                            }
-
-                            if (value.isEmpty && index > 0) {
-                              _focusNodes[index - 1].requestFocus();
-                            }
-                          },
-                        ),
+                          (index) => _otpBox(
+                        index: index,
+                        loading: loading,
                       ),
                     ),
                   ),
@@ -322,8 +399,9 @@ class _OtpPageState extends State<OtpPage> {
                       child: Text(
                         "Resend Code",
                         style: TextStyle(
-                          color:
-                          loading ? Colors.pink.shade200 : Colors.pink,
+                          color: loading
+                              ? Colors.pink.shade200
+                              : Colors.pink,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
