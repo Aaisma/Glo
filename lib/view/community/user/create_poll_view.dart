@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../viewmodel/community_view_model.dart';
+import '../../../constants/ayd_colour.dart';
 import 'poll_preview_view.dart';
 
 class CreatePollView extends StatefulWidget {
@@ -66,7 +67,7 @@ class _CreatePollViewState extends State<CreatePollView> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: AydColors.admin,
       appBar: AppBar(
         title: const Text(
           "Create a Poll",
@@ -241,7 +242,7 @@ class _CreatePollViewState extends State<CreatePollView> {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
+                    backgroundColor: AydColors.communityButton,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {

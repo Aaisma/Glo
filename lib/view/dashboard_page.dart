@@ -71,12 +71,12 @@ class DashboardHome extends StatelessWidget {
     final periodViewModel = context.watch<PeriodViewModel>();
 
     final dashboardItems = [
-      {"title": "Daily Journal", "image": "assets/images/journal.png"},
-      {"title": "Water Tracker", "image": "assets/images/watertracker.png"},
-      {"title": "Medications", "image": "assets/images/medication.png"},
-      {"title": "Skin Tracker", "image": "assets/images/acnetracker.png"},
-      {"title": "Visit Derma", "image": "assets/images/skinderma.png"},
-      {"title": "Mood and Wellness", "image": "assets/images/stressandsleep.png"},
+      {"title": "Daily Journal", "image": "assets/images/dashboard/journal.png"},
+      {"title": "Water Tracker", "image": "assets/images/dashboard/watertracker.png"},
+      {"title": "Medications", "image": "assets/images/dashboard/medication.png"},
+      {"title": "Skin Tracker", "image": "assets/images/dashboard/acnetracker.png"},
+      {"title": "Visit Derma", "image": "assets/images/dashboard/skinderma.png"},
+      {"title": "Mood and Wellness", "image": "assets/images/dashboard/stressandsleep.png"},
     ];
 
     return Container(

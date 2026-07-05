@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import '../../../model/community_models.dart';
+import 'all_insights_view.dart';
 
 class ArticleDetailView extends StatefulWidget {
   final String insightId;
@@ -14,12 +15,20 @@ class ArticleDetailView extends StatefulWidget {
 }
 
 class _ArticleDetailViewState extends State<ArticleDetailView> {
+  final TextEditingController _commentController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ArticleDetailViewModel>().loadDetail(widget.insightId);
     });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,7 +59,7 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
               return ListTile(
                 title: Text(label),
                 onTap: () async {
-                  await viewModel.report(reason);
+                  if(!mounted) return;
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Thank you for your report. The content has been sent for moderation. 🌸")),
@@ -73,7 +82,6 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ArticleDetailViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
     final accentColor = const Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.insight == null) {
@@ -84,13 +92,42 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
     }
 
     final insight = viewModel.insight!;
-    final formattedDate = insight.publishedAt != null
-        ? DateFormat('MMMM dd, yyyy').format(insight.publishedAt!)
-        : DateFormat('MMMM dd, yyyy').format(insight.createdAt);
+    final formattedDate = insight.updatedAt != null
+        ? "Edited in ${DateFormat('MMMM dd, yyyy').format(insight.updatedAt!)}"
+        : (insight.publishedAt != null
+            ? DateFormat('MMMM dd, yyyy').format(insight.publishedAt!)
+            : DateFormat('MMMM dd, yyyy').format(insight.createdAt));
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
+    if (insight.isDeleted || insight.status == InsightStatus.archived) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFFF6F8),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            "This content has been archived or deleted.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/insight_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -194,7 +231,7 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       height: 200,
                       color: const Color(0xFFFFE5EC),
                       child: const Icon(Icons.image, size: 50, color: Colors.pink),
@@ -261,14 +298,14 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                     ),
                     const SizedBox(width: 24),
 
-                    // Comments Placeholder/Mock Icon
+                    // Comments
                     Row(
-                      children: const [
-                        Icon(Icons.chat_bubble_outline, color: Colors.grey, size: 22),
-                        SizedBox(width: 6),
+                      children: [
+                        const Icon(Icons.chat_bubble_outline, color: Colors.grey, size: 22),
+                        const SizedBox(width: 6),
                         Text(
-                          "24",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          "${insight.commentsCount}",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                       ],
                     ),
@@ -292,26 +329,6 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 24),
-
-                    // Share Button
-                    GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Link copied to clipboard! 🌸")),
-                        );
-                      },
-                      child: Row(
-                        children: const [
-                          Icon(Icons.share_outlined, color: Colors.grey, size: 24),
-                          SizedBox(width: 6),
-                          Text(
-                            "Share",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -324,8 +341,8 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         "Related Articles",
                         style: TextStyle(
                           fontSize: 18,
@@ -333,9 +350,21 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                           color: Color(0xFF332B2C),
                         ),
                       ),
-                      Text(
-                        "See all",
-                        style: TextStyle(fontSize: 13, color: Colors.grey),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AllInsightsView()),
+                          );
+                        },
+                        child: const Text(
+                          "See all >",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -353,11 +382,190 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                     },
                   ),
                 ),
-                const SizedBox(height: 30),
+              // Comments Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Comments (${insight.commentsCount})",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF332B2C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              if (viewModel.comments.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 30.0),
+                  child: Center(
+                    child: Text(
+                      "No comments yet. Be the first to comment! 🌸",
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: viewModel.comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = viewModel.comments[index];
+                    if (comment.isDeleted) return const SizedBox.shrink();
+                    return _buildCommentCard(context, comment, viewModel, accentColor);
+                  },
+                ),
+                
+              const SizedBox(height: 30),
               ],
-            ],
+            ]),
           ),
         ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 12,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF6F8),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _commentController,
+                  decoration: const InputDecoration(
+                    hintText: "Add a comment...",
+                    hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: Icon(Icons.send, color: accentColor),
+              onPressed: () async {
+                final text = _commentController.text.trim();
+                if (text.isNotEmpty) {
+                  await viewModel.addComment(text);
+                  _commentController.clear();
+                  if (!context.mounted) return;
+                  FocusScope.of(context).unfocus();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Comment posted! 🌸")),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  Widget _buildCommentCard(
+    BuildContext context,
+    InsightComment comment,
+    ArticleDetailViewModel vm,
+    Color favColor,
+  ) {
+    final formattedTime = DateFormat('MMM dd, hh:mm a').format(comment.createdAt);
+    final isLiked = vm.isCommentLiked(comment.id);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 14,
+            backgroundColor: const Color(0xFFFFD6E6),
+            child: Icon(Icons.person, size: 14, color: favColor),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "@${comment.username}",
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF332B2C)),
+                    ),
+                    Text(
+                      formattedTime,
+                      style: const TextStyle(color: Colors.grey, fontSize: 10),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  comment.content,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF332B2C), height: 1.4),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => vm.likeComment(comment.id),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 14,
+                            color: isLiked ? favColor : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${comment.likes}",
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -394,7 +602,7 @@ class _ArticleDetailViewState extends State<ArticleDetailView> {
                 height: 80,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(height: 80, color: const Color(0xFFFFE5EC)),
+                errorBuilder: (_, _, _) => Container(height: 80, color: const Color(0xFFFFE5EC)),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),

@@ -15,6 +15,7 @@ import 'view/navigation_icon/glo_profile.dart';
 import 'view/dashboard_page.dart';
 import 'package:glo/view/dashboard_card/admin/admin_dashboard_page.dart';
 import 'view/admin_dashboard_screen.dart';
+import 'view/glo_profile/manage_password_page.dart';
 
 // Repos
 import 'repo/user_repo_impl.dart';
@@ -39,6 +40,10 @@ import 'viewmodel/moderation_view_model.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
+import 'viewmodel/image_viewmodel.dart';
+
+// Image Repo
+import 'repo/image_repo_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +78,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
+        ChangeNotifierProvider(create: (_) => ImageViewModel(ImageRepoImpl())),
 
         // Insights Module ViewModels
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
@@ -92,7 +98,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InsightsModerationQueueViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => InsightsModerationDetailViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationQueueViewModel(CommunityModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CommunityModerationDetailViewModel(CommunityModerationRepoImpl())),
+        ChangeNotifierProvider(create: (_) => CommunityModerationDetailViewModel(CommunityModerationRepoImpl(), CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => AdminMonthlyTrackingViewModel(AdminMonthlyTrackingRepoImpl())),
       ],
       child: MaterialApp(
@@ -102,7 +108,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const DebugMenuScreen(),
+        home: const ManagePasswordPage(),
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/authWrapper': (context) => const AuthWrapper(),

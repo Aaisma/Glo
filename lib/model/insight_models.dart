@@ -21,8 +21,10 @@ class Insight {
   final int likes;
   final int saves;
   final int shares;
+  final int commentsCount;
   final bool isDeleted;
   final DateTime? deletedAt;
+  final DateTime? updatedAt;
 
   Insight({
     required this.id,
@@ -42,8 +44,10 @@ class Insight {
     this.likes = 0,
     this.saves = 0,
     this.shares = 0,
+    this.commentsCount = 0,
     this.isDeleted = false,
     this.deletedAt,
+    this.updatedAt,
   });
 
   Insight copyWith({
@@ -64,8 +68,10 @@ class Insight {
     int? likes,
     int? saves,
     int? shares,
+    int? commentsCount,
     bool? isDeleted,
     DateTime? deletedAt,
+    DateTime? updatedAt,
   }) {
     return Insight(
       id: id ?? this.id,
@@ -85,8 +91,10 @@ class Insight {
       likes: likes ?? this.likes,
       saves: saves ?? this.saves,
       shares: shares ?? this.shares,
+      commentsCount: commentsCount ?? this.commentsCount,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -109,8 +117,10 @@ class Insight {
       'likes': likes,
       'saves': saves,
       'shares': shares,
+      'commentsCount': commentsCount,
       'isDeleted': isDeleted,
-      'deletedAt': deletedAt,
+      'deletedAt': deletedAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -140,9 +150,13 @@ class Insight {
       likes: map['likes'] ?? 0,
       saves: map['saves'] ?? 0,
       shares: map['shares'] ?? 0,
+      commentsCount: map['commentsCount'] ?? 0,
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'] != null 
-          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'].toString())) 
+          : null,
+      updatedAt: map['updatedAt'] != null 
+          ? (map['updatedAt'] is Timestamp ? (map['updatedAt'] as Timestamp).toDate() : DateTime.parse(map['updatedAt'].toString())) 
           : null,
     );
   }
@@ -150,4 +164,70 @@ class Insight {
   String toJson() => json.encode(toMap());
 
   factory Insight.fromJson(String source) => Insight.fromMap(json.decode(source));
+}
+
+class InsightComment {
+  final String id;
+  final String insightId;
+  final String username;
+  final String content;
+  final int likes;
+  final DateTime createdAt;
+  final bool isDeleted;
+
+  InsightComment({
+    required this.id,
+    required this.insightId,
+    required this.username,
+    required this.content,
+    this.likes = 0,
+    required this.createdAt,
+    this.isDeleted = false,
+  });
+
+  InsightComment copyWith({
+    String? id,
+    String? insightId,
+    String? username,
+    String? content,
+    int? likes,
+    DateTime? createdAt,
+    bool? isDeleted,
+  }) {
+    return InsightComment(
+      id: id ?? this.id,
+      insightId: insightId ?? this.insightId,
+      username: username ?? this.username,
+      content: content ?? this.content,
+      likes: likes ?? this.likes,
+      createdAt: createdAt ?? this.createdAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'insightId': insightId,
+      'username': username,
+      'content': content,
+      'likes': likes,
+      'createdAt': createdAt,
+      'isDeleted': isDeleted,
+    };
+  }
+
+  factory InsightComment.fromMap(Map<String, dynamic> map) {
+    return InsightComment(
+      id: map['id'] ?? '',
+      insightId: map['insightId'] ?? '',
+      username: map['username'] ?? '',
+      content: map['content'] ?? '',
+      likes: map['likes'] ?? 0,
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      isDeleted: map['isDeleted'] ?? false,
+    );
+  }
 }

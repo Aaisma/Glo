@@ -15,6 +15,8 @@ class InsightsLibraryView extends StatefulWidget {
 }
 
 class _InsightsLibraryViewState extends State<InsightsLibraryView> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -24,15 +26,18 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InsightsLibraryViewModel>();
 
     return Container(
       decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/admin_background.png'),
-          fit: BoxFit.cover,
-        ),
+        color: AydColors.admin,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -67,8 +72,10 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                     ),
                   ],
                 ),
-                child: const TextField(
-                  decoration: InputDecoration(
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) => context.read<InsightsLibraryViewModel>().setSearchQuery(val),
+                  decoration: const InputDecoration(
                     hintText: "Search library...",
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                     prefixIcon: Icon(Icons.search, color: Colors.grey),
@@ -86,7 +93,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AydColors.adminBackground,
+                        backgroundColor: AydColors.adminInsightButton,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -106,8 +113,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AydColors.adminBackground,
-                        side: const BorderSide(color: AydColors.adminBackground),
+                        foregroundColor: AydColors.adminInsightButton,
+                        side: const BorderSide(color: AydColors.adminInsightButton),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -128,40 +135,54 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             // Tab bar
             _buildLibraryTabs(viewModel),
 
-            // Table Headers
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  SizedBox(width: 60, child: Text("Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                  Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                  Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                  Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                  SizedBox(width: 40, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                ],
+            // Table Section
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 800,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Table Headers
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            SizedBox(width: 60, child: Text("Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            SizedBox(width: 100, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+
+                      // Table / Rows
+                      Expanded(
+                        child: viewModel.isLoading
+                            ? const Center(child: CircularProgressIndicator(color: AydColors.adminInsightButton))
+                            : viewModel.insights.isEmpty
+                                ? const Center(child: Text("No articles found in this section.", style: TextStyle(color: Colors.grey)))
+                                : ListView.separated(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                                    itemCount: viewModel.insights.length,
+                                    separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
+                                    itemBuilder: (context, index) {
+                                      final insight = viewModel.insights[index];
+                                      return _buildInsightRow(context, insight, viewModel);
+                                    },
+                                  ),
+                      ),
+
+                      // Pagination Controls
+                      _buildPaginationBar(viewModel, AydColors.adminBackground),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const Divider(height: 1),
-
-            // Table / Rows
-            Expanded(
-              child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
-                  : viewModel.insights.isEmpty
-                      ? const Center(child: Text("No articles found in this section 🌸", style: TextStyle(color: Colors.grey)))
-                      : ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                          itemCount: viewModel.insights.length,
-                          separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
-                          itemBuilder: (context, index) {
-                            final insight = viewModel.insights[index];
-                            return _buildInsightRow(context, insight, viewModel);
-                          },
-                        ),
-            ),
-
-            // Pagination Controls
-            _buildPaginationBar(viewModel, AydColors.adminBackground),
           ],
         ),
       ),
@@ -194,13 +215,13 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
               ),
               selected: isSelected,
               onSelected: (val) => viewModel.setTab(tab),
-              selectedColor: AydColors.adminBackground,
+              selectedColor: AydColors.adminInsightButton,
               backgroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? AydColors.adminBackground : Colors.grey.shade300,
+                  color: isSelected ? AydColors.adminInsightButton : Colors.grey.shade300,
                 ),
               ),
             ),
@@ -285,18 +306,54 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
 
           // Actions
           SizedBox(
-            width: 40,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.more_horiz, color: Colors.grey, size: 18),
-                onPressed: () {
-                  // Show modal bottom sheet with actions like in mockup if needed,
-                  // or just keep it as a menu button.
-                },
-              ),
+            width: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.edit_outlined, color: Color(0xFF2C3154), size: 18),
+                  onPressed: () {
+                    final createVm = context.read<CreateInsightViewModel>();
+                    createVm.loadExistingInsight(insight);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateInsightViews(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.archive_outlined, color: Color(0xFF2C3154), size: 18),
+                  onPressed: () async {
+                    await vm.archiveInsight(insight.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Insight archived! 🌸")),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                  onPressed: () async {
+                    await vm.deleteInsight(insight.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Insight deleted! 🌸")),
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -323,7 +380,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             onPressed: viewModel.currentPage > 1 ? viewModel.prevPage : null,
           ),
           const SizedBox(width: 8),
-          const Text("1", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple, fontSize: 12)),
+          const Text("1", style: TextStyle(fontWeight: FontWeight.bold, color: AydColors.adminInsightButton, fontSize: 12)),
           const SizedBox(width: 8),
           const Text("2", style: TextStyle(color: Colors.grey, fontSize: 12)),
           const SizedBox(width: 8),

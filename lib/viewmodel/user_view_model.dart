@@ -72,9 +72,29 @@ class UserViewModel extends ChangeNotifier {
   }) async {
     setLoading(true);
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      User? user = FirebaseAuth.instance.currentUser;
+      
       if (user == null) {
-        throw Exception("No authenticated user found.");
+        if (_signupEmail.isEmpty || _signupPassword.isEmpty) {
+          throw Exception("No signup credentials found. Please try registering again.");
+        }
+        
+        final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _signupEmail,
+          password: _signupPassword,
+        );
+        user = userCredential.user;
+        
+        if (user != null) {
+          if (_signupName.isNotEmpty) {
+            await user.updateDisplayName(_signupName);
+          }
+          await _userRepo.createDefaultProfile(user);
+        }
+      }
+
+      if (user == null) {
+        throw Exception("Failed to authenticate user.");
       }
       setUserId(user.uid);
 

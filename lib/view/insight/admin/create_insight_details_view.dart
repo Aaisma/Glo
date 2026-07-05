@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/insight_view_model.dart';
+import '../../../constants/ayd_colour.dart';
 
 class CreateInsightDetailsView extends StatelessWidget {
   final Color activeColor;
@@ -30,7 +31,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   value: "Publish Now",
                   groupValue: viewModel.publishType,
                   onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
-                  activeColor: Colors.deepPurple,
+                  activeColor: AydColors.adminInsightButton,
                 ),
                 const Divider(),
                 RadioListTile<String>(
@@ -60,7 +61,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                       }
                     }
                   },
-                  activeColor: Colors.deepPurple,
+                  activeColor: AydColors.adminInsightButton,
                 ),
                 const Divider(),
                 RadioListTile<String>(
@@ -69,7 +70,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   value: "Save as Draft",
                   groupValue: viewModel.publishType,
                   onChanged: (val) { if (val != null) viewModel.setPublishType(val); },
-                  activeColor: Colors.deepPurple,
+                  activeColor: AydColors.adminInsightButton,
                 ),
               ],
             ),
@@ -89,7 +90,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   title: const Text("Featured Insight", style: TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text("Show in featured section"),
                   value: viewModel.isFeatured,
-                  activeColor: Colors.deepPurple,
+                  activeColor: AydColors.adminInsightButton,
                   onChanged: (val) => viewModel.setFeatured(val!),
                 ),
                 const Divider(),
@@ -97,7 +98,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   title: const Text("Trending", style: TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text("Show in trending section"),
                   value: viewModel.isTrending,
-                  activeColor: Colors.deepPurple,
+                  activeColor: AydColors.adminInsightButton,
                   onChanged: (val) => viewModel.setTrending(val!),
                 ),
               ],
@@ -118,7 +119,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => viewModel.setStep(0),
-                child: const Text("<- Back"),
+                child: const Text("Back"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -128,7 +129,7 @@ class CreateInsightDetailsView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => viewModel.setStep(2),
-                child: const Text("Next: Preview ->"),
+                child: const Text("Next: Preview"),
               ),
             ],
           ),

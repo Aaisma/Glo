@@ -166,6 +166,7 @@ class _SurveyPageState extends State<SurveyPage> {
 
       if (mounted) {
         Navigator.pop(context); // Pop loading
+        Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
       }
     } catch (e) {
       if (mounted) {

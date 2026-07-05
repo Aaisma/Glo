@@ -25,10 +25,15 @@ class AydColors {
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
 
-  // Insight Module - User (Pink Theme)
-  static const Color primaryUser = Color(0xFFFD8CA1);
+  // Insight/Community Colour
+  static const Color insightButton = Color(0xFFFF6F9E); // pink button
+  static const Color communityButton = Color(0xFF2D5E78); // teal-blue button
+  static const Color communityCard = Color(0xFFF0FFFF);
 
-  // Insight Module - Admin (Blue Theme)
-  static const Color primaryAdmin = Color(0xFF2D5E78);
-  static const Color adminBackground = Color(0xFF2D5E78);
+  //Admin Colour
+  static const Color admin = Color(0xFFF9F7F0);
+  static const Color adminBackground = Color(0xFFF0FFFF);
+  static const Color adminInsightButton = Color(0xFFFF6F9E);
+  static const Color adminCommunityButton = Color(0xFF2D5E78);
+
 }

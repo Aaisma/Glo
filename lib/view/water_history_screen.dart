@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../repo/water_tracker_repo_impl.dart';
+import '../repo/water_history_repo_impl.dart';
 
 class WaterHistoryScreen extends StatefulWidget {
   final String userId;
@@ -10,7 +10,7 @@ class WaterHistoryScreen extends StatefulWidget {
 }
 
 class _WaterHistoryScreenState extends State<WaterHistoryScreen> {
-  final repo = WaterTrackerRepoImpl();
+  final repo = WaterHistoryRepoImpl();
   List history = [];
 
   @override

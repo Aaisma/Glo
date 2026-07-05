@@ -16,7 +16,7 @@ import '../glo_profile/cycle_setting_page.dart';
 import '../glo_profile/my_goal_page.dart';
 
 import 'notification_page.dart';
-import '../admin/admin_dashboard_page.dart';
+import '../dashboard_card/admin/admin_dashboard_page.dart';
 
 
 class ProfilePage extends StatelessWidget {

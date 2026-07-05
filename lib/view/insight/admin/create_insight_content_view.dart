@@ -4,7 +4,10 @@ import '../../../viewmodel/insight_view_model.dart';
 import 'create_poll_view.dart';
 import 'create_insight_details_view.dart';
 import 'create_insight_preview_view.dart';
-
+import '../../../constants/ayd_colour.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../../../viewmodel/image_viewmodel.dart';
 class CreateInsightViews extends StatefulWidget {
   const CreateInsightViews({super.key});
 
@@ -62,7 +65,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateInsightViewModel>();
-    final themeColor = Colors.deepPurple;
+    final themeColor = AydColors.adminInsightButton;
 
     // Trigger draft dialog after frame paint if flag set
     if (viewModel.showDraftRecovery) {
@@ -71,8 +74,12 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
       });
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+    return Container(
+      decoration: const BoxDecoration(
+        color: AydColors.admin,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
           "Create Insight",
@@ -87,22 +94,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             Navigator.of(context).pop();
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await viewModel.autoSaveDraft();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Draft saved successfully! 🌸")),
-                );
-              }
-            },
-            child: const Text(
-              "Save Draft",
-              style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+
       ),
       body: SafeArea(
         child: Column(
@@ -126,19 +118,20 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildProgressBar(int step, Color activeColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildProgressCircle(0, "Content", step >= 0, step == 0, activeColor),
-          _buildProgressLine(step >= 1, activeColor),
-          _buildProgressCircle(1, "Details", step >= 1, step == 1, activeColor),
-          _buildProgressLine(step >= 2, activeColor),
-          _buildProgressCircle(2, "Preview", step >= 2, step == 2, activeColor),
+          _buildProgressCircle(0, "Content", step > 0, step >= 0, activeColor),
+          Expanded(child: Divider(color: step > 0 ? activeColor : Colors.grey.shade300, thickness: 2)),
+          _buildProgressCircle(1, "Details", step > 1, step >= 1, activeColor),
+          Expanded(child: Divider(color: step > 1 ? activeColor : Colors.grey.shade300, thickness: 2)),
+          _buildProgressCircle(2, "Preview", step > 2, step >= 2, activeColor),
         ],
       ),
     );
@@ -213,7 +206,9 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
             ),
           ),
           const SizedBox(height: 16),
@@ -254,7 +249,9 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
             ),
           ),
           const SizedBox(height: 16),
@@ -262,41 +259,44 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
           // Cover Image Loader
           const Text("Cover Image", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  viewModel.coverImage,
-                  width: 100,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(width: 100, height: 60, color: const Color(0xFFFFE5EC)),
+          InkWell(
+            onTap: () async {
+              final source = await showModalBottomSheet<ImageSource>(
+                context: context,
+                builder: (ctx) => SafeArea(
+                  child: Wrap(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.camera_alt),
+                        title: const Text('Camera'),
+                        onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.photo_library),
+                        title: const Text('Gallery'),
+                        onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+                      ),
+                    ],
+                  ),
                 ),
+              );
+              
+              if (source != null && context.mounted) {
+                final picker = ImagePicker();
+                final pickedFile = await picker.pickImage(source: source);
+                if (pickedFile != null && context.mounted) {
+                  viewModel.setCoverImage(pickedFile.path);
+                }
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: double.infinity,
+                child: _buildCoverImage(viewModel.coverImage),
               ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFE5EC),
-                  foregroundColor: const Color(0xFFFF3E63),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  // Simulate image select by picking mock images
-                  final images = [
-                    'assets/images/stressandsleep.png',
-                    'assets/images/aboutus.png',
-                    'assets/images/logo.png',
-                    'assets/images/journal.png',
-                  ];
-                  final currentIdx = images.indexOf(viewModel.coverImage);
-                  final nextIdx = (currentIdx + 1) % images.length;
-                  viewModel.setCoverImage(images[nextIdx]);
-                },
-                child: const Text("Edit Image"),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -311,7 +311,9 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
             ),
           ),
           const SizedBox(height: 24),
@@ -322,8 +324,8 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             children: [
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.deepPurple,
-                  side: BorderSide(color: Colors.deepPurple.shade200),
+                  foregroundColor: AydColors.adminInsightButton,
+                  side: const BorderSide(color: Color(0xFFE4DAF9)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
@@ -333,7 +335,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
                     MaterialPageRoute(builder: (_) => const CreatePollView()),
                   );
                 },
-                child: const Text("+ Create Poll"),
+                child: const Text("Create Poll"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -343,13 +345,24 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => viewModel.setStep(1),
-                child: const Text("Next: Details ->"),
+                child: const Text("Next: Details"),
               ),
             ],
           ),
-          const SizedBox(height: 30),
-        ],
-      ),
-    );
+          const SizedBox(height: 100), // padding for keyboard
+      ],
+    ));
+  }
+
+  Widget _buildCoverImage(String coverImage) {
+    if (coverImage.isEmpty) {
+      return Image.asset('assets/images/image.png', height: 100, fit: BoxFit.cover);
+    } else if (coverImage.startsWith('http')) {
+      return Image.network(coverImage, height: 100, fit: BoxFit.cover);
+    } else if (coverImage.startsWith('assets/')) {
+      return Image.asset(coverImage, height: 100, fit: BoxFit.cover);
+    } else {
+      return Image.file(File(coverImage), height: 100, fit: BoxFit.cover);
+    }
   }
 }
