@@ -131,7 +131,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: 800,
+                  width: 1000,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -144,7 +144,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                             Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                            SizedBox(width: 140, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            SizedBox(width: 200, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                           ],
                         ),
                       ),
@@ -297,7 +297,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
 
           // Actions
           SizedBox(
-            width: 140,
+            width: 200,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -354,7 +354,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
 
   Widget _buildPaginationBar(InsightsLibraryViewModel viewModel, Color activeColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

@@ -93,7 +93,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
-                    width: 800,
+                    width: 1000,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -106,7 +106,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
                               Expanded(flex: 1, child: Text("Type", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                               Expanded(flex: 2, child: Text("Reason", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                               Expanded(flex: 1, child: Text("Count", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)), textAlign: TextAlign.center)),
-                              SizedBox(width: 140, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                              SizedBox(width: 200, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                             ],
                           ),
                         ),
@@ -265,7 +265,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
 
           // Actions
           SizedBox(
-            width: 140,
+            width: 200,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

@@ -356,7 +356,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
 
   Widget _buildCoverImage(String coverImage) {
     if (coverImage.isEmpty) {
-      return Image.asset('assets/images/image.png', height: 100, fit: BoxFit.cover);
+      return Image.asset('assets/images/feed/image.png', height: 100, fit: BoxFit.cover);
     } else if (coverImage.startsWith('http')) {
       return Image.network(coverImage, height: 100, fit: BoxFit.cover);
     } else if (coverImage.startsWith('assets/')) {

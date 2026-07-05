@@ -91,7 +91,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
-                    width: 800,
+                    width: 1000,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -104,7 +104,6 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                               Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                               Expanded(flex: 2, child: Text("Author", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                               Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                              SizedBox(width: 120, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             ],
                           ),
                         ),
@@ -274,50 +273,6 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                   style: const TextStyle(fontSize: 10, color: Colors.grey),
                 ),
               ),
-
-              // Actions
-              SizedBox(
-                width: 120,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: item.isDeleted
-                      ? const SizedBox.shrink()
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.edit_outlined, color: Color(0xFF2C3154), size: 18),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CommunityModerationDetailView(contentId: item.id),
-                                  ),
-                                ).then((res) {
-                                  if (res == true) vm.loadLibrary();
-                                });
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                              onPressed: () async {
-                                await vm.deleteDiscussion(item.id);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Discussion soft-deleted! 🌸")),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                ),
-              ),
             ],
           ),
         );
@@ -420,50 +375,6 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                   style: const TextStyle(fontSize: 10, color: Colors.grey),
                 ),
               ),
-
-              // Actions
-              SizedBox(
-                width: 120,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: item.isDeleted
-                      ? const SizedBox.shrink()
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.edit_outlined, color: Color(0xFF2C3154), size: 18),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CommunityModerationDetailView(contentId: item.id),
-                                  ),
-                                ).then((res) {
-                                  if (res == true) vm.loadLibrary();
-                                });
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                              onPressed: () async {
-                                await vm.deletePoll(item.id);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Poll soft-deleted! 🌸")),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                ),
-              ),
             ],
           ),
         );
@@ -483,7 +394,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
     int endItem = (_itemsPerPage * _currentPage).clamp(0, filtered.length);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
