@@ -4,6 +4,10 @@ import '../admin_skin_journal_screen.dart';
 import '../admin_hydration_hub_screen.dart';
 import '../admin_meal_tracker_screen.dart';
 import '../dashboard_card/admin/admin_monthly_tracking_screen.dart';
+import '../community/admin/community_posts_library_view.dart';
+import '../community/admin/community_moderation_queue_view.dart';
+import '../insight/admin/insights_library_view.dart';
+import '../insight/admin/moderation_queue_view.dart';
 
 class AdminSidebar extends StatelessWidget {
   const AdminSidebar({super.key});
@@ -50,6 +54,42 @@ class AdminSidebar extends StatelessWidget {
                   // If we need to mark active states, we can pass the current active label to AdminSidebar.
                   // For now we assume no item is "active" unless we add a parameter.
                   final isActive = false; 
+
+                  if (item["label"] == "Community Feed" || item["label"] == "Insights") {
+                    return ExpansionTile(
+                      leading: Icon(item["icon"] as IconData, color: const Color(0xFF4F8FE0)),
+                      title: Text(item["label"] as String, style: const TextStyle(color: Color(0xFF2A2A2A))),
+                      iconColor: const Color(0xFF4F8FE0),
+                      collapsedIconColor: const Color(0xFF4F8FE0),
+                      children: [
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 54),
+                          title: const Text("Library", style: TextStyle(color: Color(0xFF2A2A2A))),
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (item["label"] == "Community Feed") {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityPostsLibraryView()));
+                            } else {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InsightsLibraryView()));
+                            }
+                          },
+                        ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 54),
+                          title: const Text("Moderation", style: TextStyle(color: Color(0xFF2A2A2A))),
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (item["label"] == "Community Feed") {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityModerationQueueView()));
+                            } else {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const ModerationQueueView()));
+                            }
+                          },
+                        ),
+                      ],
+                    );
+                  }
+
                   return Container(
                     color: isActive ? const Color(0xFF4F8FE0).withOpacity(0.15) : Colors.transparent,
                     child: ListTile(

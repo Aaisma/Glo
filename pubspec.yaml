@@ -33,7 +33,7 @@ dependencies:
   intl: ^0.20.3
   tflite_flutter: ^0.12.1
   table_calendar: ^3.2.0
-
+  timeago: ^3.7.1
 
   fake_cloud_firestore: ^4.1.1
 
@@ -49,6 +49,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/survey/
+    - assets/images/dashboard/
     - assets/images/survey/acne_type/
     - assets/images/survey/last_page/
     - assets/images/survey/skin_type/
@@ -72,7 +73,6 @@ flutter:
     - assets/images/skintips.png
     - assets/images/background1.png
     - assets/images/history-background.png
-    - assets/images/skinderma.png
     - assets/images/fruits_bowl.png
     - assets/images/cleanser.png
     - assets/images/hydrated.png

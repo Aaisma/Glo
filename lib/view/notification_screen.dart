@@ -33,7 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
     final filteredList = viewModel.filteredNotifications
-        .where((item) => item?.createdAt.isAfter(oneWeekAgo))
+        .where((item) => item?.createdAt.isAfter(oneWeekAgo) ?? false)
         .toList();
 
     return Scaffold(

@@ -1,22 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-<<<<<<< HEAD
 import 'package:firebase_core/firebase_core.dart';
-import 'package:glo/repo/feedback_repo.dart';
-import 'package:glo/repo/feedback_repo_impl.dart';
-import 'package:glo/viewmodel/feedback_view_model.dart';
-import 'package:glo/view/glo_profile/feedback_welcome_screen.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const GloApp());
-}
-
-class GloApp extends StatelessWidget {
-  const GloApp({Key? key}) : super(key: key);
-=======
+import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 
@@ -44,6 +28,7 @@ import 'repo/insights_moderation_repo_impl.dart';
 import 'repo/community_moderation_repo_impl.dart';
 import 'repo/acne_repo_impl.dart';
 import 'repo/admin_monthly_tracking_repo.dart';
+import 'repo/image_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_view_model.dart';
@@ -57,9 +42,6 @@ import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
 import 'viewmodel/image_viewmodel.dart';
-
-// Image Repo
-import 'repo/image_repo_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,44 +65,11 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 
   @override
   Widget build(BuildContext context) {
-    const Color gloPrimaryPink = Color(0xFFFF4081);
-    const Color gloDarkText = Color(0xFF2C1330);
-    const Color gloBabyPinkBg = Color(0xFFFFF0F3);
-
     return MultiProvider(
       providers: [
-<<<<<<< HEAD
-        Provider<FeedbackRepo>(
-          create: (_) => FeedbackRepoImpl(),
-        ),
-        ChangeNotifierProvider<FeedbackViewModel>(
-          create: (context) => FeedbackViewModel(
-            repository: context.read<FeedbackRepo>(),
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'GLO Feedback Hub',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          scaffoldBackgroundColor: gloBabyPinkBg,
-          primaryColor: gloPrimaryPink,
-          textTheme: const TextTheme(
-            bodyMedium: TextStyle(color: gloDarkText),
-            titleLarge: TextStyle(color: gloDarkText, fontWeight: FontWeight.bold),
-          ),
-        ),
-        home: const FeedbackHomeScreen(),
-      ),
-    );
-  }
-}
-=======
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
@@ -143,7 +92,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CreatePollViewModel(CommunityRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityLibraryViewModel(CommunityRepoImpl())),
 
-        // Separated Moderation ViewModels
+        // Moderation ViewModels
         ChangeNotifierProvider(create: (_) => InsightsModerationQueueViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => InsightsModerationDetailViewModel(InsightsModerationRepoImpl())),
         ChangeNotifierProvider(create: (_) => CommunityModerationQueueViewModel(CommunityModerationRepoImpl())),
@@ -157,7 +106,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const ManagePasswordPage(),
+        home: const AdminDashboardScreen(),
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/authWrapper': (context) => const AuthWrapper(),
@@ -212,4 +161,3 @@ class DebugMenuScreen extends StatelessWidget {
     );
   }
 }
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e

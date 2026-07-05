@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:glo/view/wellness_dashboard_screen.dart';
-=======
 
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -25,11 +21,7 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
-<<<<<<< HEAD
-import 'medication_screen.dart';
-=======
 import '../view/glo_medication/medication_screen.dart';
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
 import '../view/wellness_dashboard_screen.dart';

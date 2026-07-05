@@ -6,6 +6,8 @@ import '../../../model/insight_models.dart';
 import 'create_insight_content_view.dart';
 import 'create_poll_view.dart';
 import '../../../constants/ayd_colour.dart';
+import '../../admin_navigation/admin_top_panel.dart';
+import '../../admin_navigation/admin_sidebar.dart';
 
 class InsightsLibraryView extends StatefulWidget {
   const InsightsLibraryView({super.key});
@@ -41,20 +43,9 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text(
-          "Insights Library",
-          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: const [],
-      ),
-      body: SafeArea(
+        appBar: const AdminTopPanel(),
+        drawer: const AdminSidebar(),
+        body: SafeArea(
         child: Column(
           children: [
             // Search Bar
@@ -153,7 +144,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                             Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                            SizedBox(width: 100, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                            SizedBox(width: 140, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                           ],
                         ),
                       ),
@@ -306,7 +297,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
 
           // Actions
           SizedBox(
-            width: 100,
+            width: 140,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

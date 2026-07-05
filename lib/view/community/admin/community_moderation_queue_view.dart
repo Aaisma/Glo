@@ -6,6 +6,8 @@ import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
 import 'community_moderation_detail_view.dart';
 import '../../../constants/ayd_colour.dart';
+import '../../admin_navigation/admin_top_panel.dart';
+import '../../admin_navigation/admin_sidebar.dart';
 
 class CommunityModerationQueueView extends StatefulWidget {
   const CommunityModerationQueueView({super.key});
@@ -45,19 +47,8 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            "Community Moderation",
-            style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          actions: [],
-        ),
+        appBar: const AdminTopPanel(),
+        drawer: const AdminSidebar(),
         body: SafeArea(
           child: Column(
             children: [
@@ -115,7 +106,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
                               Expanded(flex: 1, child: Text("Type", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                               Expanded(flex: 2, child: Text("Reason", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                               Expanded(flex: 1, child: Text("Count", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)), textAlign: TextAlign.center)),
-                              SizedBox(width: 80, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                              SizedBox(width: 140, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
                             ],
                           ),
                         ),
@@ -274,7 +265,7 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
 
           // Actions
           SizedBox(
-            width: 80,
+            width: 140,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

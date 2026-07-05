@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../constants/ayd_colour.dart';
+import '../../admin_navigation/admin_top_panel.dart';
+import '../../admin_navigation/admin_sidebar.dart';
 import 'community_moderation_detail_view.dart';
 
 class CommunityPostsLibraryView extends StatefulWidget {
@@ -42,18 +44,8 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            "Community Library",
-            style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
+        appBar: const AdminTopPanel(),
+        drawer: const AdminSidebar(),
         body: SafeArea(
           child: Column(
             children: [
@@ -112,7 +104,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
                               Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                               Expanded(flex: 2, child: Text("Author", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                               Expanded(flex: 2, child: Text("Date", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
-                              SizedBox(width: 80, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                              SizedBox(width: 120, child: Text("Actions", textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                             ],
                           ),
                         ),
@@ -285,7 +277,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
 
               // Actions
               SizedBox(
-                width: 80,
+                width: 120,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: item.isDeleted
@@ -431,7 +423,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
 
               // Actions
               SizedBox(
-                width: 80,
+                width: 120,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: item.isDeleted
