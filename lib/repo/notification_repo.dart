@@ -1,4 +1,4 @@
-import 'package:gloclone/model/notification_model.dart';
+import 'package:glo/model/notification_model.dart';
 
 class NotificationRepo {
   final List<NotificationModel> _mockDatabase = [];

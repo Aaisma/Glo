@@ -216,6 +216,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
+extension on Object? {
+  get createdAt => null;
+}
+
 class NotificationCard extends StatelessWidget {
   final NotificationModel item;
   final VoidCallback onTap;
