@@ -1,4 +1,4 @@
-package com.example.gloclone
+package com.example.glo.glo
 
 import io.flutter.embedding.android.FlutterActivity
 

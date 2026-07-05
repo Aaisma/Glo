@@ -7,7 +7,12 @@ import 'follow_up_reminder.dart';
 import 'skin_tips.dart';
 
 class DermaVisitScreen extends StatelessWidget {
-  const DermaVisitScreen({super.key});
+  final String userId;
+
+  const DermaVisitScreen({
+    super.key,
+    this.userId = "test-user-001",
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,16 +26,16 @@ class DermaVisitScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 /// BACK BUTTON
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: _circleButton(
                     icon: Icons.arrow_back_ios_new_rounded,
                     onTap: () {
@@ -38,7 +43,6 @@ class DermaVisitScreen extends StatelessWidget {
                     },
                   ),
                 ),
-
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -54,9 +58,7 @@ class DermaVisitScreen extends StatelessWidget {
                             fontFamily: 'Serif',
                           ),
                         ),
-
                         const SizedBox(height: 6),
-
                         const Text(
                           "Manage your skin health journey\nwith ease ♡",
                           style: TextStyle(
@@ -65,7 +67,6 @@ class DermaVisitScreen extends StatelessWidget {
                             height: 1.4,
                           ),
                         ),
-
                         const SizedBox(height: 22),
 
                         /// REMINDER CARD (static, no navigation)
@@ -88,7 +89,8 @@ class DermaVisitScreen extends StatelessWidget {
                         Expanded(
                           child: GridView(
                             physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 14,
                               crossAxisSpacing: 14,
@@ -101,7 +103,7 @@ class DermaVisitScreen extends StatelessWidget {
                                 icon: Icons.calendar_month_outlined,
                                 title: "Log Visit",
                                 subtitle: "Record doctor visits",
-                                page: const LogVisitScreen(),
+                                page: LogVisitScreen(userId: userId),
                               ),
                               _toolCard(
                                 context,
@@ -109,7 +111,7 @@ class DermaVisitScreen extends StatelessWidget {
                                 icon: Icons.receipt_long_outlined,
                                 title: "Prescription",
                                 subtitle: "Store prescriptions",
-                                page: const PrescriptionScreen(),
+                                page: PrescriptionScreen(userId: userId),
                               ),
                               _toolCard(
                                 context,
@@ -117,7 +119,7 @@ class DermaVisitScreen extends StatelessWidget {
                                 icon: Icons.medication_outlined,
                                 title: "Treatment Tracker",
                                 subtitle: "Track treatment progress",
-                                page: const TreatmentTrackerScreen(),
+                                page: TreatmentTrackerScreen(userId: userId),
                               ),
                               _toolCard(
                                 context,
@@ -125,7 +127,7 @@ class DermaVisitScreen extends StatelessWidget {
                                 icon: Icons.notifications_active_outlined,
                                 title: "Follow-Up Reminder",
                                 subtitle: "Never miss appointments",
-                                page: const FollowUpReminderScreen(),
+                                page: FollowUpReminderScreen(userId: userId),
                               ),
                             ],
                           ),
@@ -139,7 +141,8 @@ class DermaVisitScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const SkinHealthTipsScreen(),
+                                builder: (_) =>
+                                    SkinHealthTipsScreen(userId: userId),
                               ),
                             );
                           },
@@ -161,7 +164,7 @@ class DermaVisitScreen extends StatelessWidget {
 
   /// Helper for dynamic badges (stubbed for now)
   String getDynamicBadge(String type) {
-// Replace with Firestore counts later
+    // Replace with Firestore counts later
     switch (type) {
       case "visits":
         return "21";
@@ -177,7 +180,10 @@ class DermaVisitScreen extends StatelessWidget {
   }
 
   /// Circle Button
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _circleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return Container(
       height: 46,
       width: 46,
@@ -216,45 +222,71 @@ class DermaVisitScreen extends StatelessWidget {
               color: const Color(0xFFFFEFF4),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(Icons.calendar_month_rounded,
-                color: Color(0xFFFF7DA4), size: 30),
+            child: const Icon(
+              Icons.calendar_month_rounded,
+              color: Color(0xFFFF7DA4),
+              size: 30,
+            ),
           ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Next Visit Reminder",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  "Next Visit Reminder",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
                 SizedBox(height: 8),
-                Text("10:30 AM",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("Dr. Sarah Khan",
-                    style: TextStyle(fontWeight: FontWeight.w500)),
-                Text("Skin & Hair Specialist",
-                    style: TextStyle(fontSize: 12, color: Colors.black54)),
+                Text(
+                  "10:30 AM",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  "Dr. Sarah Khan",
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  "Skin & Hair Specialist",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded,
-              size: 18, color: Color(0xFFFF7DA4)),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 18,
+            color: Color(0xFFFF7DA4),
+          ),
         ],
       ),
     );
   }
 
   /// Tool Card
-  Widget _toolCard(BuildContext context,
-      {required String badge,
+  Widget _toolCard(
+      BuildContext context, {
+        required String badge,
         required IconData icon,
         required String title,
         required String subtitle,
-        required Widget page}) {
+        required Widget page,
+      }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => page),
+        );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -274,7 +306,10 @@ class DermaVisitScreen extends StatelessWidget {
               top: 10,
               left: 10,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF7DA4),
                   borderRadius: BorderRadius.circular(50),
@@ -282,9 +317,10 @@ class DermaVisitScreen extends StatelessWidget {
                 child: Text(
                   badge,
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -302,17 +338,28 @@ class DermaVisitScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
-                          icon, size: 34, color: const Color(0xFFFF7DA4)),
+                        icon,
+                        size: 34,
+                        color: const Color(0xFFFF7DA4),
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    Text(title,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(subtitle,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 11, color: Colors.black54)),
+                    Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ],
                 ),
               ),

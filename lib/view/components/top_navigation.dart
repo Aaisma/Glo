@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../navigation_icon/calendar_screen.dart';
 import '../notification_screen.dart';
 
 class TopNavigation extends StatelessWidget {
@@ -35,15 +34,6 @@ class TopNavigation extends StatelessWidget {
           ),
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.calendar_today, color: Color(0xFF332B2C)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => CalendarScreen()),
-                  );
-                },
-              ),
               IconButton(
                 icon: const Icon(Icons.notifications, color: Color(0xFF332B2C)),
                 onPressed: () {

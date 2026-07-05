@@ -10,7 +10,7 @@ class AydColors {
   static const Color button = Color(0xFFC79B74);
   static const Color warning = Color(0xFFD68B1F);
 
-  // Survey, Insight, Community Feed, and Profile Pages Colors
+  // Survey, Community Feed, and Profile Pages Colors
   static const Color primaryPink = Color(0xFFF86A90);
   static const Color ctaPink = Color(0xFFFF6F9E);
   static const Color progressPink = Color(0xFFFF5C93);
@@ -25,18 +25,10 @@ class AydColors {
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
 
-  // Admin Side Palette (Insight & Community)
-  static const Color adminPrimary = Color(0xFF8B6FF7);
-  static const Color adminSecondary = Color(0xFFF6A8C7);
-  static const Color adminTertiary = Color(0xFFB7E8FF);
+  // Insight Module - User (Pink Theme)
+  static const Color primaryUser = Color(0xFFFD8CA1);
 
-  // Insight Colors
-  static const Color insightButton = Color(0xFF8B6FF7);
-  static const Color insightTextPrimary = Color(0xFF332B2C);
-  static const Color insightTextSecondary = Colors.grey;
-
-  // Community Feed Colors
-  static const Color communityButton = Color(0xFF8B6FF7);
-  static const Color communityTextPrimary = Color(0xFF332B2C);
-  static const Color communityTextSecondary = Colors.grey;
+  // Insight Module - Admin (Blue Theme)
+  static const Color primaryAdmin = Color(0xFF2D5E78);
+  static const Color adminBackground = Color(0xFF2D5E78);
 }

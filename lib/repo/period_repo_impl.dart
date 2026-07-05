@@ -3,7 +3,10 @@ import '../model/period_log_model.dart';
 import 'period_repo.dart';
 
 class PeriodRepoImpl implements PeriodRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  PeriodRepoImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<void> addLog(PeriodLogModel log) async {

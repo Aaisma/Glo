@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../model/onboarding_survey_data.dart';
 import '../../viewmodel/user_view_model.dart';
-import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import 'components/onboarding_widgets.dart';
 
@@ -302,7 +301,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     hintText: "Age",
                     suffixText: "years",
                     filled: true,
-                    fillColor: accentLightPink.withOpacity(0.3),
+                    fillColor: accentLightPink.withValues(alpha: 0.3),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
@@ -345,7 +344,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Weight",
                           filled: true,
-                          fillColor: accentLightPink.withOpacity(0.3),
+                          fillColor: accentLightPink.withValues(alpha: 0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -404,7 +403,7 @@ class _SurveyPageState extends State<SurveyPage> {
                     decoration: InputDecoration(
                       hintText: "Height in cm",
                       filled: true,
-                      fillColor: accentLightPink.withOpacity(0.3),
+                      fillColor: accentLightPink.withValues(alpha: 0.3),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     ),
                   )
@@ -418,7 +417,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Feet",
                             filled: true,
-                            fillColor: accentLightPink.withOpacity(0.3),
+                            fillColor: accentLightPink.withValues(alpha: 0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -431,7 +430,7 @@ class _SurveyPageState extends State<SurveyPage> {
                           decoration: InputDecoration(
                             hintText: "Inches",
                             filled: true,
-                            fillColor: accentLightPink.withOpacity(0.3),
+                            fillColor: accentLightPink.withValues(alpha: 0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           ),
                         ),
@@ -456,7 +455,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         decoration: InputDecoration(
                           hintText: "Water Goal",
                           filled: true,
-                          fillColor: accentLightPink.withOpacity(0.3),
+                          fillColor: accentLightPink.withValues(alpha: 0.3),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
@@ -1027,7 +1026,7 @@ class _SurveyPageState extends State<SurveyPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1179,7 +1178,7 @@ class _SurveyPageState extends State<SurveyPage> {
                         runSpacing: 6,
                         children: data.acneTypes.map((c) => Chip(
                           label: Text(c, style: const TextStyle(fontSize: 11, color: primaryPink)),
-                          backgroundColor: primaryPink.withOpacity(0.1),
+                          backgroundColor: primaryPink.withValues(alpha: 0.1),
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1897,7 +1896,7 @@ class _SurveyPageState extends State<SurveyPage> {
           DynamicTipCard(
             title: "${selectedFeature["icon"]} ${selectedFeature["title"]}",
             text: "${selectedFeature["description"]}\n\nThis tracker will be initialized automatically based on your survey answers once you complete setup.",
-            icon: Image(image: AssetImage(selectedFeature["image"]!), width: 44, height: 44, errorBuilder: (_, __, ___) => const Icon(Icons.star, color: primaryPink, size: 36)),
+            icon: Image(image: AssetImage(selectedFeature["image"]!), width: 44, height: 44, errorBuilder: (_, _, _) => const Icon(Icons.star, color: primaryPink, size: 36)),
           ),
         ],
       ),

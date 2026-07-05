@@ -73,6 +73,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                       reason: reason,
                     );
                   }
+                  if (!context.mounted) return;
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Thank you for your report. The content has been sent for moderation. 🌸")),
@@ -140,12 +141,11 @@ class _PollDetailViewState extends State<PollDetailView> {
                   type: ContentType.poll,
                 );
                 await hiddenBox.put(_poll!.id, hc.toMap());
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Poll hidden. 🌸")),
                   );
-                }
               } else if (value == 'report') {
                 _showReportDialog(context);
               }

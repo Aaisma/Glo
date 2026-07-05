@@ -1,22 +1,70 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../model/medication_model.dart';
 
 class MedicationsService {
-  final _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
+
+  MedicationsService({FirebaseFirestore? firestore})
+      : _db = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _medicationsRef =>
+      _db.collection('medications');
+
+  void _validateUserId(String userId) {
+    if (userId.trim().isEmpty) {
+      throw Exception('User ID is required.');
+    }
+  }
+
+  void _validateMedicationId(String? id) {
+    if (id == null || id.trim().isEmpty) {
+      throw Exception('Medication ID is required.');
+    }
+  }
 
   Future<void> addMedication(MedicationModel med, String userId) async {
-    final docRef = _db.collection('medications').doc();
+    _validateUserId(userId);
+
+    final docRef = _medicationsRef.doc();
+
     med.id = docRef.id;
+    med.userId = userId;
+
     await docRef.set({
       ...med.toMap(),
+      'id': docRef.id,
       'userId': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
+  Future<void> updateMedication(MedicationModel med, String userId) async {
+    _validateUserId(userId);
+    _validateMedicationId(med.id);
+
+    med.userId = userId;
+
+    await _medicationsRef.doc(med.id).set({
+      ...med.toMap(),
+      'userId': userId,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> deleteMedication(String id) async {
+    _validateMedicationId(id);
+
+    await _medicationsRef.doc(id).delete();
+  }
+
   Future<List<MedicationModel>> getMedications(String userId) async {
-    final snapshot = await _db
-        .collection('medications')
+    _validateUserId(userId);
+
+    final snapshot = await _medicationsRef
         .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
         .get();
 
     return snapshot.docs
@@ -24,11 +72,30 @@ class MedicationsService {
         .toList();
   }
 
-  Future<void> updateMedication(MedicationModel med) async {
-    await _db.collection('medications').doc(med.id).update(med.toMap());
+  Stream<List<MedicationModel>> watchMedications(String userId) {
+    _validateUserId(userId);
+
+    return _medicationsRef
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((doc) => MedicationModel.fromMap(doc.data(), doc.id))
+          .toList(),
+    );
   }
 
-  Future<void> deleteMedication(String id) async {
-    await _db.collection('medications').doc(id).delete();
+  Stream<int> watchMedicationCount(String userId) {
+    _validateUserId(userId);
+
+    return _medicationsRef
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
+  Stream<int> watchAllMedicationCount() {
+    return _medicationsRef.snapshots().map((snapshot) => snapshot.docs.length);
   }
 }

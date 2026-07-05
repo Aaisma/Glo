@@ -8,13 +8,16 @@ import '../authentication/register_screen.dart';
 import '../authentication/logout.dart';
 
 import '../components/top_navigation.dart';
-import './profile_pages/help_support_page.dart';
-import './profile_pages/about_us_page.dart';
-import './profile_pages/personal_info_page.dart';
-import './profile_pages/cycle_settings_page.dart';
-import './profile_pages/my_goal_page.dart';
+
+import '../glo_profile/help_support_page.dart';
+import '../glo_profile/glo_about_us_screen.dart';
+import '../glo_profile/personal_info_page.dart';
+import '../glo_profile/cycle_setting_page.dart';
+import '../glo_profile/my_goal_page.dart';
+
 import 'notification_page.dart';
 import '../admin/admin_dashboard_page.dart';
+
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -389,7 +392,7 @@ class ProfilePage extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpSupportPage()));
               break;
             case "About Us":
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const GloAboutUsScreen()));
               break;
             case "Admin Portal":
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminDashboardPage()));
@@ -429,3 +432,5 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
+
+

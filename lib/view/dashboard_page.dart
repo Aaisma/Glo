@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:glo/view/wellness_dashboard_screen.dart';
+=======
+
+>>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -13,6 +17,7 @@ import 'JournalEntryScreen.dart';
 import 'navigation_icon/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'navigation_icon/history_page.dart';
+import 'navigation_icon/calendar_screen.dart';
 
 // Wellness pages
 import '../../view/dashboard_card/log_symptoms_page.dart';
@@ -20,9 +25,14 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
+<<<<<<< HEAD
 import 'medication_screen.dart';
+=======
+import '../view/glo_medication/medication_screen.dart';
+>>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
+import '../view/wellness_dashboard_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -37,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _pages = [
     const DashboardHome(),
     const InsightsFeedView(),
+    const CalendarScreen(),
     const HistoryPage(),
     const GloProfileScreen(),
   ];

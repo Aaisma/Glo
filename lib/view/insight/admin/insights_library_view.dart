@@ -5,6 +5,7 @@ import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import 'create_insight_content_view.dart';
 import 'create_poll_view.dart';
+import '../../../constants/ayd_colour.dart';
 
 class InsightsLibraryView extends StatefulWidget {
   const InsightsLibraryView({super.key});
@@ -25,11 +26,16 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InsightsLibraryViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/admin_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
           "Insights Library",
@@ -41,20 +47,37 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF332B2C)),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Color(0xFF332B2C)),
-            onPressed: () {},
-          ),
-        ],
+        actions: const [],
       ),
       body: SafeArea(
         child: Column(
           children: [
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search library...",
+                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ),
             // Admin Action Buttons Row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
@@ -63,7 +86,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
+                        backgroundColor: AydColors.adminBackground,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -83,8 +106,8 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.deepPurple,
-                        side: BorderSide(color: Colors.deepPurple.shade200),
+                        foregroundColor: AydColors.adminBackground,
+                        side: const BorderSide(color: AydColors.adminBackground),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -106,10 +129,10 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             _buildLibraryTabs(viewModel),
 
             // Table Headers
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
               child: Row(
-                children: const [
+                children: [
                   SizedBox(width: 60, child: Text("Status", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 3, child: Text("Title", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   Expanded(flex: 2, child: Text("Category", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
@@ -129,7 +152,7 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
                       : ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                           itemCount: viewModel.insights.length,
-                          separatorBuilder: (_, __) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
+                          separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
                           itemBuilder: (context, index) {
                             final insight = viewModel.insights[index];
                             return _buildInsightRow(context, insight, viewModel);
@@ -138,13 +161,12 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
             ),
 
             // Pagination Controls
-            _buildPaginationBar(viewModel, Colors.deepPurple),
+            _buildPaginationBar(viewModel, AydColors.adminBackground),
           ],
         ),
       ),
-    );
+    ));
   }
-
   Widget _buildLibraryTabs(InsightsLibraryViewModel viewModel) {
     final tabs = ["All", "Published", "Draft", "Scheduled", "Archived"];
 
@@ -172,13 +194,13 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
               ),
               selected: isSelected,
               onSelected: (val) => viewModel.setTab(tab),
-              selectedColor: Colors.deepPurple,
+              selectedColor: AydColors.adminBackground,
               backgroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? Colors.deepPurple : Colors.grey.shade300,
+                  color: isSelected ? AydColors.adminBackground : Colors.grey.shade300,
                 ),
               ),
             ),

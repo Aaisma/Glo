@@ -19,7 +19,7 @@ class DefaultFirebaseOptions {
     if (kIsWeb) {
       throw UnsupportedError(
         'DefaultFirebaseOptions have not been configured for web - '
-            'you can reconfigure this by running the FlutterFire CLI again.',
+        'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
     switch (defaultTargetPlatform) {
@@ -30,17 +30,17 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -57,13 +57,11 @@ class DefaultFirebaseOptions {
     storageBucket: 'gloo-5dd46.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCkjW1eLA9gJKgsObhhFYIP0Ju6CtF85HE',
-    appId: '1:714010295460:ios:458c6084eb87602acb7a31',
-    messagingSenderId: '714010295460',
-    projectId: 'gloo-5dd46',
-    storageBucket: 'gloo-5dd46.firebasestorage.app',
-    androidClientId: '714010295460-4go5mujqm70fm2joqis5o0pund5h5ikc.apps.googleusercontent.com',
-    iosClientId: '714010295460-o6f6uhqb21i031jaa5e8appoc3cujocd.apps.googleusercontent.com',
+    apiKey: 'AIzaSyAtOgJxPLFi9plBqIMhHqaB6hG3Y8i-7iQ',
+    appId: '1:945185357757:ios:f27f604ef77c0151339cd4',
+    messagingSenderId: '945185357757',
+    projectId: 'gloo-ayusha',
+    storageBucket: 'gloo-ayusha.firebasestorage.app',
     iosBundleId: 'com.example.glo.glo',
   );
 }

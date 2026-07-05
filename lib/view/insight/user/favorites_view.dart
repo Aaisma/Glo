@@ -62,19 +62,19 @@ class _FavoritesViewState extends State<FavoritesView> {
     }
 
     return Scaffold(
-      backgroundColor: AydColors.appBackground,
+      backgroundColor: AydColors.background,
       appBar: AppBar(
         title: const Text(
           "Favorites",
           style: TextStyle(
-            color: AydColors.insightTextPrimary,
+            color: AydColors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.insightTextPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

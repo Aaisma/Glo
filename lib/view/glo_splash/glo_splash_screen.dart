@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../register.dart';
-import '../dashboard.dart';
+import '../authentication/register_screen.dart';
+import '../dashboard_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -48,9 +48,9 @@ class _SplashScreenState extends State<SplashScreen>
     Widget nextPage;
 
     if (user != null || rememberLogin == true) {
-      nextPage = const Dashboard();
+      nextPage = const DashboardScreen();
     } else {
-      nextPage = const Register();
+      nextPage = const RegisterScreen();
     }
 
     _fadeNavigate(nextPage);

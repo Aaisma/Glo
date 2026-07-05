@@ -28,23 +28,38 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
     final accentColor = const Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.moderationItem == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFFFF6F8),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1))),
+      return Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/admin_background.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1))),
+        ),
       );
     }
 
     final item = viewModel.moderationItem!;
     final formattedDate = DateFormat('MMMM dd, yyyy').format(item.reportedAt);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
-        title: const Text(
-          "Moderation Review",
-          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/admin_background.png'),
+          fit: BoxFit.cover,
         ),
+      ),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text(
+            "Moderation Review",
+            style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
@@ -254,6 +269,7 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

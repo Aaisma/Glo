@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import '../insight/admin/insights_library_view.dart';
-import '../community/admin/community_posts_library_view.dart';
-import '../insight/admin/moderation_queue_view.dart' as insight_mod;
-import '../community/admin/community_moderation_queue_view.dart' as comm_mod;
+import 'package:glo/view/insight/admin/insights_library_view.dart';
+import 'package:glo/view/community/admin/community_posts_library_view.dart';
+import 'package:glo/view/insight/admin/moderation_queue_view.dart' as insight_mod;
+import 'package:glo/view/community/admin/community_moderation_queue_view.dart' as comm_mod;
+
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    final _ = const Color(0xFFFD8CA1);
+    final _ = const Color(0xFFFF3E63);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),
@@ -112,7 +113,7 @@ class AdminDashboardPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

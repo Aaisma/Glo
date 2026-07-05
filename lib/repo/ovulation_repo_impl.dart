@@ -3,7 +3,10 @@ import '../model/ovulation_log_model.dart';
 import 'ovulation_repo.dart';
 
 class OvulationRepoImpl implements OvulationRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  OvulationRepoImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<void> addLog(OvulationLogModel log) async {

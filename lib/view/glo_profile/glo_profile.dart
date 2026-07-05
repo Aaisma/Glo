@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:glo/viewmodel/image_viewmodel.dart';
@@ -19,7 +20,6 @@ class GloProfileScreen extends StatefulWidget {
 class _GloProfileScreenState extends State<GloProfileScreen> {
   int _currentIndex = 4;
 
-  String _userName = "Victoria";
   String _bio = "Taking care of myself,\none day at a time.";
   String? _localProfileImagePath;
 
@@ -28,6 +28,18 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   static const iconBg = Color(0xFFFFEAF1);
   static const borderPink = Color(0xFFFFD6E2);
   static const dark = Color(0xFF14181F);
+
+  String get _userName {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final displayName = user?.displayName?.trim();
+    if (displayName != null && displayName.isNotEmpty) return displayName;
+
+    final email = user?.email?.trim();
+    if (email != null && email.isNotEmpty) return email.split("@").first;
+
+    return "User";
+  }
 
   void _onBottomTap(int index) {
     setState(() => _currentIndex = index);
@@ -96,76 +108,325 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   void _editProfile() {
     final nameController = TextEditingController(text: _userName);
-    final bioController = TextEditingController(
-      text: _bio.replaceAll("\n", " "),
-    );
+    final bioController = TextEditingController(text: _bio.replaceAll("\n", " "));
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: softPink,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text(
-          "Edit Profile",
-          style: TextStyle(
-            fontFamily: "Georgia",
-            fontWeight: FontWeight.bold,
-            color: dark,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: softPink,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          title: const Text(
+            "Edit Profile",
+            style: TextStyle(
+              fontFamily: "Georgia",
+              fontWeight: FontWeight.bold,
+              color: dark,
+            ),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-                _pickFromGalleryOnly();
-              },
-              icon: const Icon(Icons.photo_library_outlined),
-              label: const Text("Change Profile Picture"),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: pink,
-                side: const BorderSide(color: borderPink),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _pickFromGalleryOnly();
+                },
+                icon: const Icon(Icons.photo_library_outlined),
+                label: const Text("Change Profile Picture"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: pink,
+                  side: const BorderSide(color: borderPink),
+                ),
               ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Name"),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: bioController,
+                maxLines: 2,
+                decoration: const InputDecoration(labelText: "Bio"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                nameController.dispose();
+                bioController.dispose();
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Cancel", style: TextStyle(color: pink)),
             ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: "Name"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: bioController,
-              maxLines: 2,
-              decoration: const InputDecoration(labelText: "Bio"),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: pink),
+              onPressed: () async {
+                final navigator = Navigator.of(dialogContext);
+                final messenger = ScaffoldMessenger.of(context);
+
+                final newName = nameController.text.trim();
+                final newBio = bioController.text.trim();
+
+                try {
+                  final user = FirebaseAuth.instance.currentUser;
+
+                  if (user != null && newName.isNotEmpty) {
+                    await user.updateDisplayName(newName);
+                  }
+
+                  if (!mounted) return;
+
+                  setState(() {
+                    _bio = newBio.isEmpty
+                        ? "Taking care of myself,\none day at a time."
+                        : newBio;
+                  });
+
+                  nameController.dispose();
+                  bioController.dispose();
+
+                  navigator.pop();
+
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text("Profile updated")),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+
+                  messenger.showSnackBar(
+                    SnackBar(content: Text("Profile update failed: $e")),
+                  );
+                }
+              },
+              child: const Text("Save", style: TextStyle(color: Colors.white)),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: pink)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: pink),
-            onPressed: () {
-              setState(() {
-                _userName = nameController.text.trim().isEmpty
-                    ? "Victoria"
-                    : nameController.text.trim();
-
-                _bio = bioController.text.trim().isEmpty
-                    ? "Taking care of myself,\none day at a time."
-                    : bioController.text.trim();
-              });
-
-              Navigator.pop(context);
-            },
-            child: const Text("Save", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  Future<void> _changePassword() async {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    bool isLoading = false;
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: softPink,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              title: const Text(
+                "Change Password",
+                style: TextStyle(
+                  fontFamily: "Georgia",
+                  fontWeight: FontWeight.bold,
+                  color: dark,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: currentPasswordController,
+                    obscureText: obscureCurrent,
+                    decoration: InputDecoration(
+                      labelText: "Current Password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureCurrent
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            obscureCurrent = !obscureCurrent;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newPasswordController,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: "New Password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNew
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            obscureNew = !obscureNew;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: "Confirm New Password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirm
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            obscureConfirm = !obscureConfirm;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: const Text("Cancel", style: TextStyle(color: pink)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: pink),
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    final navigator = Navigator.of(dialogContext);
+                    final messenger = ScaffoldMessenger.of(context);
+
+                    final currentPassword =
+                    currentPasswordController.text.trim();
+                    final newPassword = newPasswordController.text.trim();
+                    final confirmPassword =
+                    confirmPasswordController.text.trim();
+
+                    if (currentPassword.isEmpty ||
+                        newPassword.isEmpty ||
+                        confirmPassword.isEmpty) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text("Please fill all fields"),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (newPassword.length < 6) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Password must be at least 6 characters",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (newPassword != confirmPassword) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text("New passwords do not match"),
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      setDialogState(() => isLoading = true);
+
+                      final user = FirebaseAuth.instance.currentUser;
+
+                      if (user == null || user.email == null) {
+                        throw FirebaseAuthException(
+                          code: "no-user",
+                          message: "No logged-in user found",
+                        );
+                      }
+
+                      final credential = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: currentPassword,
+                      );
+
+                      await user.reauthenticateWithCredential(credential);
+                      await user.updatePassword(newPassword);
+
+                      if (!mounted) return;
+
+                      navigator.pop();
+
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text("Password changed successfully"),
+                        ),
+                      );
+                    } on FirebaseAuthException catch (e) {
+                      if (!mounted) return;
+
+                      setDialogState(() => isLoading = false);
+
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            e.message ?? "Failed to change password",
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+
+                      setDialogState(() => isLoading = false);
+
+                      messenger.showSnackBar(
+                        SnackBar(content: Text("Error: $e")),
+                      );
+                    }
+                  },
+                  child: isLoading
+                      ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
+                    "Update",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
   }
 
   void _showClicked(String title) {
@@ -177,6 +438,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       return;
     }
 
+    if (title == "Change Password") {
+      _changePassword();
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("$title clicked")),
     );
@@ -185,30 +451,42 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   void _logout() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: softPink,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text(
-          "Logout",
-          style: TextStyle(
-            fontFamily: "Georgia",
-            fontWeight: FontWeight.bold,
-            color: dark,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: softPink,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          title: const Text(
+            "Logout",
+            style: TextStyle(
+              fontFamily: "Georgia",
+              fontWeight: FontWeight.bold,
+              color: dark,
+            ),
           ),
-        ),
-        content: const Text("Are you sure you want to logout?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: pink)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: pink),
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Logout", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancel", style: TextStyle(color: pink)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: pink),
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                final dialogNavigator = Navigator.of(dialogContext);
+
+                await FirebaseAuth.instance.signOut();
+
+                if (!mounted) return;
+
+                dialogNavigator.pop();
+                navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+              child: const Text("Logout", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -422,7 +700,7 @@ class _ProfileCard extends StatelessWidget {
       }
     } catch (_) {}
 
-    return const AssetImage("assets/images/profile.png");
+    return const AssetImage("assets/images/profilepicture.png");
   }
 
   @override
@@ -672,6 +950,11 @@ class _MenuCard extends StatelessWidget {
       Icons.person_outline_rounded,
       "Personal Information",
       "Edit your personal details",
+    ),
+    _MenuData(
+      Icons.lock_outline_rounded,
+      "Change Password",
+      "Update your account password",
     ),
     _MenuData(
       Icons.notifications_none_rounded,

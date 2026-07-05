@@ -168,13 +168,16 @@ class CommunityRepoImpl implements CommunityRepo {
 
   @override
   Future<List<CommunityPoll>> getPolls({required int page, required int limit}) async {
-    final snapshot = await _firestore.collection('community_polls').where('isDeleted', isEqualTo: false).orderBy('createdAt', descending: true).get();
+    final snapshot = await _firestore.collection('community_polls').where('isDeleted', isEqualTo: false).get();
     
     final allItems = snapshot.docs.map((d) {
       final map = d.data();
       map['id'] = d.id;
       return CommunityPoll.fromMap(map);
     }).toList();
+    
+    // Sort locally to avoid Firestore composite index requirement
+    allItems.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= allItems.length) return [];

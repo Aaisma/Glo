@@ -30,14 +30,21 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
 
     final activeList = viewModel.selectedTab == 'Reported' ? viewModel.reportedItems : viewModel.hiddenItems;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
-        title: const Text(
-          "Content Moderation",
-          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/admin_background.png'),
+          fit: BoxFit.cover,
         ),
+      ),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text(
+            "Content Moderation",
+            style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
@@ -139,6 +146,7 @@ class _ModerationQueueViewState extends State<ModerationQueueView> {
             _buildPaginationBar(viewModel, pinkTheme, activeList),
           ],
         ),
+      ),
       ),
     );
   }

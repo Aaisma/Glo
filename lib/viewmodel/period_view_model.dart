@@ -13,9 +13,9 @@ class PeriodViewModel extends ChangeNotifier {
   final OvulationRepo _ovulationRepo;
   final String _userId;
 
-  PeriodViewModel(this._repo, {OvulationRepo? ovulationRepo})
+  PeriodViewModel(this._repo, {OvulationRepo? ovulationRepo, FirebaseAuth? auth})
       : _ovulationRepo = ovulationRepo ?? OvulationRepoImpl(),
-        _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest' {
+        _userId = (auth ?? FirebaseAuth.instance).currentUser?.uid ?? 'guest' {
     fetchLogs();
   }
 
