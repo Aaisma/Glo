@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+<<<<<<< HEAD
+import 'package:glo/repo/auth_repo_impl.dart';
+import 'package:glo/repo/user_repo_impl.dart';
+import 'package:glo/viewmodel/auth_view_model.dart';
+import 'package:glo/viewmodel/user_view_model.dart';
+
+
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(
+            authRepo: AuthRepoImpl(),
+            userRepo: UserRepoImpl(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => UserViewModel(
+            userRepo: UserRepoImpl(),
+          ),
+        ),
+      ],
+      child: const GloOtpScreen(),
+    ),
+  );
+}
+=======
 
 import 'package:glo/viewmodel/otp_viewmodel.dart';
+>>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 
 class GloOtpScreen extends StatelessWidget {
   final String phone;
@@ -282,6 +311,29 @@ class _OtpPageState extends State<OtpPage> {
 
                   const SizedBox(height: 35),
 
+<<<<<<< HEAD
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pink,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+
+                    final success = await authVM.verifyOtp(_enteredOtp);
+
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? "OTP Verified!"
+                              : (authVM.error ?? "Invalid OTP"),
+=======
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -309,6 +361,7 @@ class _OtpPageState extends State<OtpPage> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+>>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
                         ),
                       ),
                     ),

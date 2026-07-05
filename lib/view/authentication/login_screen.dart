@@ -15,13 +15,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool obscurePassword = true;
-
-  // Main Theme Color
   final Color primaryPink = const Color(0xFFFF3E63);
 
   @override
   void dispose() {
-    // Clean up controllers to prevent memory leaks
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -31,7 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) return;
+    if (email.isEmpty || password.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter both email and password")),
+        );
+      }
+      return;
+    }
 
     final authVM = context.read<AuthViewModel>();
     final userVM = context.read<UserViewModel>();
@@ -46,13 +50,13 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authVM.error ?? "Login failed")),
+          SnackBar(content: Text(authVM.error ?? "Incorrect username or password")),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          const SnackBar(content: Text("Incorrect username or password")),
         );
       }
     }
@@ -71,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authVM.error ?? "Google sign in failed")),
+          const SnackBar(content: Text("Google sign in failed")),
         );
       }
     } catch (e) {
@@ -96,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authVM.error ?? "Facebook sign in failed")),
+          const SnackBar(content: Text("Facebook sign in failed")),
         );
       }
     } catch (e) {
@@ -120,8 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-
-                // Back Button
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
@@ -133,10 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // Login Title
                 Text(
                   "Login",
                   style: TextStyle(
@@ -145,9 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 const Text(
                   "Welcome Back, Lovely!",
                   style: TextStyle(
@@ -156,9 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 Text(
                   "°｡⋆⸜ 💕 We Missed You. Time To Step In! 💕 ⸝⋆｡°",
                   textAlign: TextAlign.center,
@@ -168,10 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
-                // Email Field
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -193,10 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 18),
-
-                // Password Field
                 TextField(
                   controller: passwordController,
                   obscureText: obscurePassword,
@@ -232,10 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // Forgot Password -> Pointing to OTP Screen
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
@@ -252,10 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
-                // Login Button
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -278,10 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 22),
-
-                // Registration Navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -307,10 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 25),
-
-                // Options, Darling! Divider
                 Row(
                   children: [
                     const Expanded(
@@ -337,9 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 Text(
                   "°✧⋆ Because One Size Never Fits All ⋆✧°",
                   textAlign: TextAlign.center,
@@ -349,25 +324,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Google Button
                 socialButton(
                   icon: Icons.g_mobiledata,
                   text: "Login with Google",
                   onTap: loginWithGoogle,
                 ),
-
                 const SizedBox(height: 14),
-
-                // Facebook Button
                 socialButton(
                   icon: Icons.facebook,
                   text: "Login with Facebook",
                   onTap: loginWithFacebook,
                 ),
-
                 const SizedBox(height: 30),
               ],
             ),
@@ -390,7 +358,7 @@ class _LoginScreenState extends State<LoginScreen> {
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           side: BorderSide(
-            color: primaryPink.withValues(alpha: 0.5),
+            color: primaryPink.withOpacity(0.5),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),

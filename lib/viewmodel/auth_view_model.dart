@@ -21,7 +21,11 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+<<<<<<< HEAD
+  AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo})
+=======
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo}) 
+>>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
       : _authRepo = authRepo,
         _userRepo = userRepo {
     _user = _authRepo.currentUser;
@@ -107,30 +111,41 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Google Sign In
+  // Google Sign In (Fixed for Google Sign-In v7+)
   Future<User?> signInWithGoogle() async {
     _setLoading(true);
     try {
       const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '714010295460-brtm8b47nffm381uje37pkkbr7bvuenj.apps.googleusercontent.com');
-      final GoogleSignIn googleSignIn = GoogleSignIn(
+
+      // FIX 1: Access via the singleton instance
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+
+      // FIX 2: Explicitly initialize before authenticating
+      await googleSignIn.initialize(
         clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
         serverClientId: googleClientId,
       );
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        _setLoading(false);
-        return null; // The user canceled the sign-in
-      }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // FIX 3: Use authenticate() instead of signIn()
+      final GoogleSignInAccount googleUser = await googleSignIn.authenticate(
+        scopeHint: ['email', 'profile'],
+      );
+
+      // FIX 4: Explicitly request authorization to safely access the access token
+      final authorizedUser = await googleUser.authorizationClient.authorizeScopes(['email', 'profile']);
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
       final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+        accessToken: authorizedUser.accessToken,
         idToken: googleAuth.idToken,
       );
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
       _setError(null);
       return userCredential.user;
+    } on GoogleSignInException catch (e) {
+      _setError("Google sign-in canceled: ${e.code}");
+      return null;
     } on FirebaseAuthException catch (e) {
       _setError(e.message);
       return null;
@@ -147,7 +162,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       final LoginResult result = await FacebookAuth.instance.login();
-      
+
       if (result.status == LoginStatus.success) {
         final AccessToken accessToken = result.accessToken!;
         final AuthCredential credential = FacebookAuthProvider.credential(accessToken.token);
@@ -169,13 +184,16 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Sign Out
+  // Sign Out (Fixed for Google Sign-In v7+)
   Future<void> signOut() async {
     _setLoading(true);
     try {
+      // FIX 5: Ready the Google instance before executing sign out actions
+      await GoogleSignIn.instance.initialize();
+
       await Future.wait([
         _auth.signOut(),
-        GoogleSignIn().signOut(),
+        GoogleSignIn.instance.signOut(),
         FacebookAuth.instance.logOut(),
       ]);
       _setError(null);
