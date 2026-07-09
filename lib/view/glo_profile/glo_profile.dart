@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import 'package:glo/viewmodel/image_viewmodel.dart';
-import 'package:glo/view/navigation_icon/calendar_screen.dart';
 import 'package:glo/view/components/bottom_navigation.dart';
+import 'package:glo/view/navigation_icon/calendar_screen.dart';
+import 'package:glo/viewmodel/profile_viewmodel.dart';
 
-import 'feedback_home_screen.dart';
 import 'glo_about_us_screen.dart';
 import 'glo_goal_screen.dart';
 import 'help_support_page.dart';
 import 'personal_info_page.dart';
+import 'package:glo/view/glo_profile/glo_feedback/feedback_welcome_screen.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -24,9 +24,7 @@ class GloProfileScreen extends StatefulWidget {
 
 class _GloProfileScreenState extends State<GloProfileScreen> {
   final int _currentIndex = 4;
-
-  String _bio = "Taking care of myself,\none day at a time.";
-  String? _localProfileImagePath;
+  bool _profileLoaded = false;
 
   static const pink = Color(0xFFE85D8A);
   static const softPink = Color(0xFFFFF7FA);
@@ -34,7 +32,19 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   static const borderPink = Color(0xFFFFD6E2);
   static const dark = Color(0xFF14181F);
 
-  String get _userName {
+  static const defaultBio = "Taking care of myself,\none day at a time.";
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_profileLoaded) return;
+    _profileLoaded = true;
+
+    context.read<ProfileViewModel>().loadProfile();
+  }
+
+  String get _authName {
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.displayName?.trim();
     final email = user?.email?.trim();
@@ -42,6 +52,53 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     if (name != null && name.isNotEmpty) return name;
     if (email != null && email.isNotEmpty) return email.split("@").first;
     return "User";
+  }
+
+  String get _authEmail {
+    return FirebaseAuth.instance.currentUser?.email?.trim() ?? "";
+  }
+
+  String get _authPhotoUrl {
+    return FirebaseAuth.instance.currentUser?.photoURL?.trim() ?? "";
+  }
+
+  String _usernameFromEmail(String email) {
+    if (email.trim().isEmpty || !email.contains("@")) return "glo_user";
+    return email.split("@").first;
+  }
+
+  String _resolvedName(ProfileViewModel vm) {
+    final name = vm.name.trim();
+
+    if (name.isNotEmpty && name.toLowerCase() != "user") {
+      return name;
+    }
+
+    return _authName;
+  }
+
+  String _resolvedBio(ProfileViewModel vm) {
+    final bio = vm.bio.trim();
+
+    if (bio.isNotEmpty) {
+      return bio;
+    }
+
+    return defaultBio;
+  }
+
+  String? _resolvedImagePath(ProfileViewModel vm) {
+    final profileImagePath = vm.profileImagePath?.trim();
+
+    if (profileImagePath != null && profileImagePath.isNotEmpty) {
+      return profileImagePath;
+    }
+
+    if (_authPhotoUrl.isNotEmpty) {
+      return _authPhotoUrl;
+    }
+
+    return null;
   }
 
   void _openPage(Widget page) {
@@ -74,7 +131,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   Future<void> _pickProfileImage() async {
     final messenger = ScaffoldMessenger.of(context);
-    final imageVm = context.read<ImageViewModel>();
+    final vm = context.read<ProfileViewModel>();
 
     try {
       final image = await ImagePicker().pickImage(
@@ -93,14 +150,18 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
         return;
       }
 
-      setState(() => _localProfileImagePath = image.path);
-
-      await imageVm.updateProfileImage("user123", image.path);
+      final success = await vm.updateProfileImage(image.path);
 
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text("Profile picture updated")),
+        SnackBar(
+          content: Text(
+            success
+                ? "Profile picture updated"
+                : vm.errorMessage ?? "Profile picture update failed",
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -112,93 +173,132 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 
   void _editProfile() {
-    final nameController = TextEditingController(text: _userName);
-    final bioController = TextEditingController(
-      text: _bio.replaceAll("\n", " "),
+    final vm = context.read<ProfileViewModel>();
+
+    final nameController = TextEditingController(
+      text: _resolvedName(vm),
     );
+
+    final bioController = TextEditingController(
+      text: _resolvedBio(vm).replaceAll("\n", " "),
+    );
+
+    bool isSaving = false;
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: softPink,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          title: const _DialogTitle("Edit Profile"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  _pickProfileImage();
-                },
-                icon: const Icon(Icons.photo_library_outlined),
-                label: const Text("Change Profile Picture"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: pink,
-                  side: const BorderSide(color: borderPink),
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: softPink,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              title: const _DialogTitle("Edit Profile"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: isSaving
+                          ? null
+                          : () {
+                        Navigator.pop(dialogContext);
+                        _pickProfileImage();
+                      },
+                      icon: const Icon(Icons.photo_library_outlined),
+                      label: const Text("Change Profile Picture"),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: pink,
+                        side: const BorderSide(color: borderPink),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: "Name"),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: bioController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(labelText: "Bio"),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Name"),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: bioController,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: "Bio"),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancel", style: TextStyle(color: pink)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: pink),
-              onPressed: () async {
-                final navigator = Navigator.of(dialogContext);
-                final messenger = ScaffoldMessenger.of(context);
+              actions: [
+                TextButton(
+                  onPressed: isSaving ? null : () => Navigator.pop(dialogContext),
+                  child: const Text("Cancel", style: TextStyle(color: pink)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: pink),
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                    final navigator = Navigator.of(dialogContext);
+                    final messenger = ScaffoldMessenger.of(context);
 
-                final name = nameController.text.trim();
-                final bio = bioController.text.trim();
+                    final name = nameController.text.trim();
+                    final bio = bioController.text.trim();
 
-                try {
-                  final user = FirebaseAuth.instance.currentUser;
+                    if (name.isEmpty) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text("Please enter your name"),
+                        ),
+                      );
+                      return;
+                    }
 
-                  if (user != null && name.isNotEmpty) {
-                    await user.updateDisplayName(name);
-                  }
+                    setDialogState(() => isSaving = true);
 
-                  if (!mounted) return;
+                    final success = await vm.saveProfile(
+                      name: name,
+                      bio: bio.isEmpty ? defaultBio : bio,
+                    );
 
-                  setState(() {
-                    _bio = bio.isEmpty
-                        ? "Taking care of myself,\none day at a time."
-                        : bio;
-                  });
+                    if (!mounted || !dialogContext.mounted) return;
 
-                  navigator.pop();
+                    setDialogState(() => isSaving = false);
 
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text("Profile updated")),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
+                    if (success) {
+                      navigator.pop();
 
-                  messenger.showSnackBar(
-                    SnackBar(content: Text("Profile update failed: $e")),
-                  );
-                }
-              },
-              child: const Text("Save", style: TextStyle(color: Colors.white)),
-            ),
-          ],
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text("Profile updated"),
+                        ),
+                      );
+                    } else {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            vm.errorMessage ?? "Profile update failed",
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: isSaving
+                      ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
+                    "Save",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     ).whenComplete(() {
@@ -229,36 +329,38 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 borderRadius: BorderRadius.circular(22),
               ),
               title: const _DialogTitle("Change Password"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _PasswordField(
-                    controller: currentController,
-                    label: "Current Password",
-                    obscure: hideCurrent,
-                    onToggle: () {
-                      setDialogState(() => hideCurrent = !hideCurrent);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _PasswordField(
-                    controller: newController,
-                    label: "New Password",
-                    obscure: hideNew,
-                    onToggle: () {
-                      setDialogState(() => hideNew = !hideNew);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _PasswordField(
-                    controller: confirmController,
-                    label: "Confirm New Password",
-                    obscure: hideConfirm,
-                    onToggle: () {
-                      setDialogState(() => hideConfirm = !hideConfirm);
-                    },
-                  ),
-                ],
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _PasswordField(
+                      controller: currentController,
+                      label: "Current Password",
+                      obscure: hideCurrent,
+                      onToggle: () {
+                        setDialogState(() => hideCurrent = !hideCurrent);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _PasswordField(
+                      controller: newController,
+                      label: "New Password",
+                      obscure: hideNew,
+                      onToggle: () {
+                        setDialogState(() => hideNew = !hideNew);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _PasswordField(
+                      controller: confirmController,
+                      label: "Confirm New Password",
+                      obscure: hideConfirm,
+                      onToggle: () {
+                        setDialogState(() => hideConfirm = !hideConfirm);
+                      },
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -274,64 +376,21 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                       : () async {
                     final navigator = Navigator.of(dialogContext);
                     final messenger = ScaffoldMessenger.of(context);
+                    final vm = context.read<ProfileViewModel>();
 
-                    final current = currentController.text.trim();
-                    final newPass = newController.text.trim();
-                    final confirm = confirmController.text.trim();
+                    setDialogState(() => isLoading = true);
 
-                    if (current.isEmpty ||
-                        newPass.isEmpty ||
-                        confirm.isEmpty) {
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text("Please fill all fields"),
-                        ),
-                      );
-                      return;
-                    }
+                    final success = await vm.changePassword(
+                      currentPassword: currentController.text,
+                      newPassword: newController.text,
+                      confirmPassword: confirmController.text,
+                    );
 
-                    if (newPass.length < 6) {
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Password must be at least 6 characters",
-                          ),
-                        ),
-                      );
-                      return;
-                    }
+                    if (!mounted || !dialogContext.mounted) return;
 
-                    if (newPass != confirm) {
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text("New passwords do not match"),
-                        ),
-                      );
-                      return;
-                    }
+                    setDialogState(() => isLoading = false);
 
-                    try {
-                      setDialogState(() => isLoading = true);
-
-                      final user = FirebaseAuth.instance.currentUser;
-
-                      if (user == null || user.email == null) {
-                        throw FirebaseAuthException(
-                          code: "no-user",
-                          message: "No logged-in user found",
-                        );
-                      }
-
-                      final credential = EmailAuthProvider.credential(
-                        email: user.email!,
-                        password: current,
-                      );
-
-                      await user.reauthenticateWithCredential(credential);
-                      await user.updatePassword(newPass);
-
-                      if (!mounted) return;
-
+                    if (success) {
                       navigator.pop();
 
                       messenger.showSnackBar(
@@ -341,25 +400,14 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                           ),
                         ),
                       );
-                    } on FirebaseAuthException catch (e) {
-                      if (!mounted) return;
-
-                      setDialogState(() => isLoading = false);
-
+                    } else {
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(
-                            e.message ?? "Failed to change password",
+                            vm.errorMessage ??
+                                "Failed to change password",
                           ),
                         ),
-                      );
-                    } catch (e) {
-                      if (!mounted) return;
-
-                      setDialogState(() => isLoading = false);
-
-                      messenger.showSnackBar(
-                        SnackBar(content: Text("Error: $e")),
                       );
                     }
                   },
@@ -446,10 +494,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               onPressed: () async {
                 final navigator = Navigator.of(context);
                 final dialogNavigator = Navigator.of(dialogContext);
+                final vm = context.read<ProfileViewModel>();
 
-                await FirebaseAuth.instance.signOut();
+                await vm.logout();
 
-                if (!mounted) return;
+                if (!mounted || !dialogContext.mounted) return;
 
                 dialogNavigator.pop();
                 navigator.pushNamedAndRemoveUntil('/login', (_) => false);
@@ -467,6 +516,14 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<ProfileViewModel>();
+
+    final fullName = _resolvedName(vm);
+    final email = _authEmail;
+    final username = _usernameFromEmail(email);
+    final bio = _resolvedBio(vm);
+    final imagePath = _resolvedImagePath(vm);
+
     return Scaffold(
       bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
@@ -482,7 +539,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
         child: Container(
           color: Colors.white.withValues(alpha: 0.58),
           child: SafeArea(
-            child: Padding(
+            child: vm.isLoading
+                ? const Center(
+              child: CircularProgressIndicator(color: pink),
+            )
+                : Padding(
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
@@ -491,9 +552,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                   SizedBox(
                     height: 188,
                     child: _ProfileCard(
-                      userName: _userName,
-                      bio: _bio,
-                      localImagePath: _localProfileImagePath,
+                      fullName: fullName,
+                      username: username,
+                      email: email,
+                      bio: bio,
+                      imagePath: imagePath,
                       onImageTap: _pickProfileImage,
                       onEditTap: _editProfile,
                     ),
@@ -542,32 +605,36 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  final String userName;
+  final String fullName;
+  final String username;
+  final String email;
   final String bio;
-  final String? localImagePath;
+  final String? imagePath;
   final VoidCallback onImageTap;
   final VoidCallback onEditTap;
 
   const _ProfileCard({
-    required this.userName,
+    required this.fullName,
+    required this.username,
+    required this.email,
     required this.bio,
-    required this.localImagePath,
+    required this.imagePath,
     required this.onImageTap,
     required this.onEditTap,
   });
 
-  ImageProvider _profileImage(BuildContext context) {
-    if (localImagePath != null && File(localImagePath!).existsSync()) {
-      return FileImage(File(localImagePath!));
-    }
+  ImageProvider _profileImage() {
+    final path = imagePath?.trim();
 
-    final savedPath = context.watch<ImageViewModel>().currentImage?.url;
+    if (path != null && path.isNotEmpty) {
+      if (path.startsWith("http")) {
+        return NetworkImage(path);
+      }
 
-    if (savedPath != null &&
-        savedPath.isNotEmpty &&
-        !savedPath.startsWith("http") &&
-        File(savedPath).existsSync()) {
-      return FileImage(File(savedPath));
+      final file = File(path);
+      if (file.existsSync()) {
+        return FileImage(file);
+      }
     }
 
     return const AssetImage("assets/images/profilepicture.png");
@@ -575,6 +642,8 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cleanEmail = email.trim();
+
     return _SoftCard(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -592,7 +661,7 @@ class _ProfileCard extends StatelessWidget {
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 32,
-                          backgroundImage: _profileImage(context),
+                          backgroundImage: _profileImage(),
                         ),
                       ),
                     ),
@@ -618,28 +687,52 @@ class _ProfileCard extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: onEditTap,
+                    borderRadius: BorderRadius.circular(14),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Hello, $userName",
+                          "Hello, $fullName",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontFamily: "Georgia",
-                            fontSize: 23,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: _GloProfileScreenState.dark,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
-                          bio,
-                          maxLines: 2,
+                          "@$username",
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _GloProfileScreenState.dark,
+                          ),
+                        ),
+                        if (cleanEmail.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            cleanEmail,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: _GloProfileScreenState.dark,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          bio,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
                             height: 1.18,
                             color: _GloProfileScreenState.dark,
                           ),

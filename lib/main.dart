@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
@@ -55,43 +56,63 @@ Future<void> main() async {
 class GloApp extends StatelessWidget {
   const GloApp({super.key});
 
-  static const String testUserId = "test-user-001";
-  static const String testPhone = "+9779765599190";
+  static const String testUserId = 'test-user-001';
+  static const String testPhone = '+9779765599190';
+
+  String _currentUserId() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid != null && uid.trim().isNotEmpty) {
+      return uid.trim();
+    }
+
+    return testUserId;
+  }
+
+  String _currentPhone() {
+    final phone = FirebaseAuth.instance.currentUser?.phoneNumber;
+
+    if (phone != null && phone.trim().isNotEmpty) {
+      return phone.trim();
+    }
+
+    return testPhone;
+  }
 
   String _getUserIdFromRoute(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is String && args.trim().isNotEmpty) {
-      return args;
+      return args.trim();
     }
 
     if (args is Map && args['userId'] is String) {
       final userId = args['userId'] as String;
 
       if (userId.trim().isNotEmpty) {
-        return userId;
+        return userId.trim();
       }
     }
 
-    return testUserId;
+    return _currentUserId();
   }
 
   String _getPhoneFromRoute(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is String && args.trim().isNotEmpty) {
-      return args;
+      return args.trim();
     }
 
     if (args is Map && args['phone'] is String) {
       final phone = args['phone'] as String;
 
       if (phone.trim().isNotEmpty) {
-        return phone;
+        return phone.trim();
       }
     }
 
-    return testPhone;
+    return _currentPhone();
   }
 
   Widget _medicationScreen(BuildContext context) {
@@ -191,7 +212,7 @@ class GloApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: "Glo App",
+        title: 'Glo App',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
@@ -200,10 +221,8 @@ class GloApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFFF4FBFF),
         ),
 
-        // Testing Profile directly
-        home: const MedicationScreen(
-          userId: GloApp.testUserId,
-        ),
+        // Current running screen
+        home: const GloProfileScreen(),
 
         routes: {
           '/login': (_) => const GloOtpScreen(phone: testPhone),
@@ -233,4 +252,4 @@ class GloApp extends StatelessWidget {
       ),
     );
   }
-} 
+}
