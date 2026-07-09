@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../model/medication_model.dart';
 
 class MedicationsService {
@@ -27,7 +26,6 @@ class MedicationsService {
     _validateUserId(userId);
 
     final docRef = _medicationsRef.doc();
-
     med.id = docRef.id;
     med.userId = userId;
 
@@ -55,7 +53,6 @@ class MedicationsService {
 
   Future<void> deleteMedication(String id) async {
     _validateMedicationId(id);
-
     await _medicationsRef.doc(id).delete();
   }
 
@@ -72,30 +69,29 @@ class MedicationsService {
         .toList();
   }
 
-  Stream<List<MedicationModel>> watchMedications(String userId) {
+
+  Stream<List<MedicationModel>> getMedicationsStream(String userId) {
     _validateUserId(userId);
 
     return _medicationsRef
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-          .map((doc) => MedicationModel.fromMap(doc.data(), doc.id))
-          .toList(),
-    );
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => MedicationModel.fromMap(doc.data(), doc.id)).toList());
   }
 
-  Stream<int> watchMedicationCount(String userId) {
+  // ✅ Renamed to match repo
+  Stream<int> getMedicationCountStream(String userId) {
     _validateUserId(userId);
-
     return _medicationsRef
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
   }
 
-  Stream<int> watchAllMedicationCount() {
+  // ✅ Renamed to match repo
+  Stream<int> getAllMedicationCountStream() {
     return _medicationsRef.snapshots().map((snapshot) => snapshot.docs.length);
   }
 }

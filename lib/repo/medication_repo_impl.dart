@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../model/medication_model.dart';
 import 'medication_repo.dart';
 
@@ -25,14 +24,10 @@ class MedicationRepoImpl implements MedicationRepo {
   }
 
   @override
-  Future<void> addMedication(
-      MedicationModel medication,
-      String userId,
-      ) async {
+  Future<void> addMedication(MedicationModel medication, String userId) async {
     _validateUserId(userId);
 
     final docRef = _medicationsRef.doc();
-
     medication.id = docRef.id;
     medication.userId = userId;
 
@@ -46,10 +41,7 @@ class MedicationRepoImpl implements MedicationRepo {
   }
 
   @override
-  Future<void> updateMedication(
-      MedicationModel medication,
-      String userId,
-      ) async {
+  Future<void> updateMedication(MedicationModel medication, String userId) async {
     _validateUserId(userId);
     _validateMedicationId(medication.id);
 
@@ -65,7 +57,6 @@ class MedicationRepoImpl implements MedicationRepo {
   @override
   Future<void> deleteMedication(String medicationId) async {
     _validateMedicationId(medicationId);
-
     await _medicationsRef.doc(medicationId).delete();
   }
 
@@ -91,11 +82,8 @@ class MedicationRepoImpl implements MedicationRepo {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-          .map((doc) => MedicationModel.fromMap(doc.data(), doc.id))
-          .toList(),
-    );
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => MedicationModel.fromMap(doc.data(), doc.id)).toList());
   }
 
   @override
