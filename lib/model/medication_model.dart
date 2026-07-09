@@ -35,10 +35,7 @@ class MedicationModel {
     this.updatedAt,
   });
 
-  factory MedicationModel.fromMap(
-      Map<String, dynamic> data,
-      String documentId,
-      ) {
+  factory MedicationModel.fromMap(Map<String, dynamic> data, String documentId) {
     return MedicationModel(
       id: documentId,
       userId: data['userId'] as String?,
@@ -63,27 +60,25 @@ class MedicationModel {
       'type': type,
       'dosage': dosage,
       'schedule': schedule,
-      'startDate': startDate,
-      'endDate': endDate,
+      'startDate': _toTimestamp(startDate),
+      'endDate': _toTimestamp(endDate),
       'doctorName': doctorName,
       'instructions': instructions,
-      'issuedDate': issuedDate,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
+      'issuedDate': _toTimestamp(issuedDate),
+      'createdAt': _toTimestamp(createdAt),
+      'updatedAt': _toTimestamp(updatedAt),
     };
   }
 
   static DateTime? _toDateTime(dynamic value) {
     if (value == null) return null;
-
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-
-    if (value is DateTime) {
-      return value;
-    }
-
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
     return null;
+  }
+
+  static Timestamp? _toTimestamp(DateTime? value) {
+    if (value == null) return null;
+    return Timestamp.fromDate(value);
   }
 }
