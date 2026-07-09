@@ -17,6 +17,13 @@ abstract class CommunityModerationRepo {
     required String contentSnippet,
     required ModerationReason reason,
   });
+  Future<void> recordHiddenContent({
+    required String contentId,
+    required ContentType contentType,
+    required String title,
+    required String authorName,
+    required String contentSnippet,
+  });
   Future<void> archiveModerationItem(String id);
   Future<void> softDeleteContent(String id);
 }

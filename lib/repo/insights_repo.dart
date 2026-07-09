@@ -12,11 +12,18 @@ abstract class InsightsRepo {
   Future<DraftItem?> getDraft(String id);
   Future<void> discardDraft(String id);
   Future<void> publishInsight(Insight insight);
+  Future<void> updateInsight(Insight insight);
   Future<void> archiveInsight(String id);
+  Future<void> deleteInsight(String id);
   Future<void> duplicateInsight(String id);
   Future<List<Insight>> getAllAdminInsights();
   Future<void> addView(String id);
   Future<void> likeInsight(String id);
   Future<bool> isInsightLiked(String id);
   Future<void> hideInsight(String id);
+  Future<List<String>> getHiddenContentIds();
+  Future<void> addInsightComment(String insightId, InsightComment comment);
+  Future<List<InsightComment>> getInsightComments(String insightId);
+  Future<void> likeInsightComment(String commentId);
+  Future<bool> isInsightCommentLiked(String commentId);
 }

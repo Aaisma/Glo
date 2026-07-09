@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../../viewmodel/community_view_model.dart';
+
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
 import '../../../repo/community_repo.dart';
@@ -114,9 +114,36 @@ class _PollDetailViewState extends State<PollDetailView> {
 
     final hasVoted = _poll!.userVotedOption != null;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
+    if (_poll!.isDeleted) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFFF6F8),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            "This poll has been archived or deleted.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/community_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
         title: const Text(
           "Poll Details",
           style: TextStyle(
@@ -366,6 +393,6 @@ class _PollDetailViewState extends State<PollDetailView> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

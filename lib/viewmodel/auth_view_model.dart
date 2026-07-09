@@ -21,11 +21,15 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+<<<<<<< HEAD
 
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo})
 
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo}) 
 
+=======
+  AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo})
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
       : _authRepo = authRepo,
         _userRepo = userRepo {
     _user = _authRepo.currentUser;
@@ -42,8 +46,8 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> login(BuildContext context, String email, String password) async {
     _setLoading(true);
     try {
-      final credential = await _authRepo.signInWithEmail(email, password);
-      _user = credential.user;
+      final user = await _authRepo.signInWithEmail(email, password);
+      _user = user;
       notifyListeners();
       if (context.mounted) {
         // await checkUserProfile(context, _user!.uid);
@@ -58,8 +62,8 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signUp(String email, String password) async {
     _setLoading(true);
     try {
-      final credential = await _authRepo.signUpWithEmail(email, password);
-      _user = credential.user;
+      final user = await _authRepo.signUpWithEmail(email, password);
+      _user = user;
       notifyListeners();
       return _user;
     } catch (e) {
@@ -115,40 +119,10 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signInWithGoogle() async {
     _setLoading(true);
     try {
-      const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '714010295460-brtm8b47nffm381uje37pkkbr7bvuenj.apps.googleusercontent.com');
-
-      // FIX 1: Access via the singleton instance
-      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-
-      // FIX 2: Explicitly initialize before authenticating
-      await googleSignIn.initialize(
-        clientId: (kIsWeb || Platform.isIOS) ? googleClientId : null,
-        serverClientId: googleClientId,
-      );
-
-      // FIX 3: Use authenticate() instead of signIn()
-      final GoogleSignInAccount googleUser = await googleSignIn.authenticate(
-        scopeHint: ['email', 'profile'],
-      );
-
-      // FIX 4: Explicitly request authorization to safely access the access token
-      final authorizedUser = await googleUser.authorizationClient.authorizeScopes(['email', 'profile']);
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: authorizedUser.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      _setError(null);
-      return userCredential.user;
-    } on GoogleSignInException catch (e) {
-      _setError("Google sign-in canceled: ${e.code}");
-      return null;
-    } on FirebaseAuthException catch (e) {
-      _setError(e.message);
-      return null;
+      final user = await _authRepo.signInWithGoogle();
+      _user = user;
+      notifyListeners();
+      return user;
     } catch (e) {
       _setError(e.toString());
       return null;
@@ -161,21 +135,10 @@ class AuthViewModel extends ChangeNotifier {
   Future<User?> signInWithFacebook() async {
     _setLoading(true);
     try {
-      final LoginResult result = await FacebookAuth.instance.login();
-
-      if (result.status == LoginStatus.success) {
-        final AccessToken accessToken = result.accessToken!;
-        final AuthCredential credential = FacebookAuthProvider.credential(accessToken.token);
-        final UserCredential userCredential = await _auth.signInWithCredential(credential);
-        _setError(null);
-        return userCredential.user;
-      } else {
-        _setError(result.message);
-        return null;
-      }
-    } on FirebaseAuthException catch (e) {
-      _setError(e.message);
-      return null;
+      final user = await _authRepo.signInWithFacebook();
+      _user = user;
+      notifyListeners();
+      return user;
     } catch (e) {
       _setError(e.toString());
       return null;
@@ -188,12 +151,9 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> signOut() async {
     _setLoading(true);
     try {
-      // FIX 5: Ready the Google instance before executing sign out actions
-      await GoogleSignIn.instance.initialize();
-
       await Future.wait([
         _auth.signOut(),
-        GoogleSignIn.instance.signOut(),
+        GoogleSignIn().signOut(),
         FacebookAuth.instance.logOut(),
       ]);
       _setError(null);

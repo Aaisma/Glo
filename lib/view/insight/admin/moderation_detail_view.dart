@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../viewmodel/moderation_view_model.dart';
 import '../../../model/community_models.dart';
+import '../../../constants/ayd_colour.dart';
+import '../user/article_detail_view.dart';
 
 class ModerationDetailView extends StatefulWidget {
   final String contentId;
@@ -15,7 +17,7 @@ class ModerationDetailView extends StatefulWidget {
 class _ModerationDetailViewState extends State<ModerationDetailView> {
   @override
   void initState() {
-    super.didChangeDependencies();
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<InsightsModerationDetailViewModel>().loadDetail(widget.contentId);
     });
@@ -28,36 +30,21 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
     final accentColor = const Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.moderationItem == null) {
-      return Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/admin_background.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: const Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1))),
-        ),
+      return Scaffold(
+        backgroundColor: AydColors.admin,
+        body: const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1))),
       );
     }
 
     final item = viewModel.moderationItem!;
     final formattedDate = DateFormat('MMMM dd, yyyy').format(item.reportedAt);
 
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/admin_background.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            "Moderation Review",
-            style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+    return Scaffold(
+      backgroundColor: AydColors.admin,
+      appBar: AppBar(
+        title: const Text(
+          "Moderation Review",
+          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.transparent,
         elevation: 0,
@@ -77,19 +64,25 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                 children: [
                   Expanded(
                     child: _buildMetricCard(
-                      title: "Total Reports",
+                      title: "Reports",
                       value: "${item.reportsCount}",
-                      icon: Icons.report_problem_outlined,
-                      color: const Color(0xFFFFE5EC),
+                      icon: Icons.report_outlined,
+                      bgColor: const Color(0xFFFFF0F3),
+                      iconColor: const Color(0xFFFE2B5E),
+                      valueColor: const Color(0xFF2C3154),
+                      subtitle: null,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _buildMetricCard(
                       title: "Hidden By",
-                      value: "${item.hiddenCount}",
+                      value: "${item.hiddenCount} Users",
                       icon: Icons.visibility_off_outlined,
-                      color: const Color(0xFFFFF2F5),
+                      bgColor: const Color(0xFFF4F1FA),
+                      iconColor: const Color(0xFF6773B3),
+                      valueColor: const Color(0xFF2C3154),
+                      subtitle: null,
                     ),
                   ),
                 ],
@@ -98,22 +91,17 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
               const SizedBox(height: 24),
 
               // Content Preview Card
-              const Text(
-                "Content Preview",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-              ),
-              const SizedBox(height: 12),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.01),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -122,37 +110,33 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: const Color(0xFFFFD6E6),
-                          child: Icon(Icons.person, size: 16, color: accentColor),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4F1FA),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            item.contentType.name.substring(0, 1).toUpperCase() + item.contentType.name.substring(1),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6773B3)),
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "@${item.authorName}",
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              "Reported on $formattedDate",
-                              style: const TextStyle(color: Colors.grey, fontSize: 11),
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        Text(
+                          "by @${item.authorName}  •  $formattedDate",
+                          style: const TextStyle(color: Color(0xFF6773B3), fontSize: 11),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Text(
                       item.title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Text(
                       item.contentSnippet,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFF332B2C), height: 1.5),
+                      style: const TextStyle(fontSize: 14, color: Color(0xFF2C3154), height: 1.5),
                     ),
                   ],
                 ),
@@ -163,22 +147,16 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
               // Reason Breakdown Card
               const Text(
                 "Reason Breakdown",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.01),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFF0F0F0)),
                 ),
                 child: Column(
                   children: viewModel.reasonBreakdown.entries.map((entry) {
@@ -187,30 +165,41 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
 
                     String label = reason.name;
                     if (reason == ModerationReason.inappropriateContent) {
-                      label = "Inappropriate Content";
+                      label = "Inappropriate";
                     } else {
                       label = label[0].toUpperCase() + label.substring(1);
                     }
+                    
+                    Color barColor = Colors.redAccent;
+                    if (label == "Misinformation") barColor = Colors.orange;
+                    if (label == "Harassment") barColor = const Color(0xFFFE2B5E);
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            label,
-                            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF332B2C)),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFE5EC),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                          SizedBox(
+                            width: 100,
                             child: Text(
-                              "$count",
-                              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
+                              label,
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3154), fontSize: 13),
                             ),
+                          ),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: (count / (item.reportsCount > 0 ? item.reportsCount : 1)),
+                                backgroundColor: const Color(0xFFF4F1FA),
+                                valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            "$count",
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3154), fontSize: 13),
                           ),
                         ],
                       ),
@@ -222,54 +211,82 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
               const SizedBox(height: 32),
 
               // Admin Action Buttons
+              const Text(
+                "Admin Actions",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)),
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: pinkTheme),
-                        foregroundColor: accentColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: Color(0xFFE4DAF9)),
+                        foregroundColor: const Color(0xFF6773B3),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ArticleDetailView(insightId: item.contentId),
+                          ),
+                        );
+                      },
+                      child: const Text("View Full Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFFFDAB3)),
+                        foregroundColor: const Color(0xFFFF9500),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () async {
                         await viewModel.archiveContent(context);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Report dismissed! 🌸")),
+                            const SnackBar(content: Text("Content archived successfully! 🌸")),
                           );
+                          Navigator.of(context).pop(true);
                         }
                       },
-                      child: const Text("Dismiss Report", style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed: () async {
-                        await viewModel.softDeleteContent(context);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Content removed successfully! 🌸")),
-                          );
-                        }
-                      },
-                      child: const Text("Remove Content", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text("Archive Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFF0F3),
+                    foregroundColor: const Color(0xFFFE2B5E),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () async {
+                    await viewModel.softDeleteContent(context);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Content soft-deleted successfully! 🌸")),
+                      );
+                      Navigator.of(context).pop(true);
+                    }
+                  },
+                  child: const Text("Delete Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
               ),
               const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -278,37 +295,41 @@ class _ModerationDetailViewState extends State<ModerationDetailView> {
     required String title,
     required String value,
     required IconData icon,
-    required Color color,
+    required Color bgColor,
+    required Color iconColor,
+    required Color valueColor,
+    String? subtitle,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: color,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.01),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: const Color(0xFFFF3E63), size: 24),
+          Icon(icon, color: iconColor, size: 28),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: iconColor == const Color(0xFFFE2B5E) ? iconColor : const Color(0xFF2C3154)),
               ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
             ],
           ),
         ],

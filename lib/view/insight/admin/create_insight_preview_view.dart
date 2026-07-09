@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import '../../../viewmodel/insight_view_model.dart';
 
 class CreateInsightPreviewView extends StatelessWidget {
@@ -30,13 +31,7 @@ class CreateInsightPreviewView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    viewModel.coverImage,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(height: 160, color: const Color(0xFFFFE5EC)),
-                  ),
+                  _buildCoverImage(viewModel.coverImage),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -100,7 +95,7 @@ class CreateInsightPreviewView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => viewModel.setStep(1),
-                child: const Text("<- Back"),
+                child: const Text("Back"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -110,21 +105,33 @@ class CreateInsightPreviewView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                 ),
                 onPressed: () async {
-                  await viewModel.publish();
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          viewModel.publishType == 'Schedule'
-                              ? "Insight scheduled successfully! 🌸"
-                              : "Insight published successfully! 🌸",
+                  if (viewModel.publishType == 'Save as Draft') {
+                    await viewModel.autoSaveDraft();
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Draft saved successfully! 🌸")),
+                      );
+                    }
+                  } else {
+                    await viewModel.publish();
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            viewModel.publishType == 'Schedule'
+                                ? "Insight scheduled successfully! 🌸"
+                                : "Insight published successfully! 🌸",
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   }
                 },
-                child: Text(viewModel.publishType == 'Schedule' ? "Schedule Now" : "Publish New"),
+                child: Text(viewModel.publishType == 'Save as Draft' 
+                    ? "Save Draft" 
+                    : (viewModel.publishType == 'Schedule' ? "Schedule Now" : "Publish Now")),
               ),
             ],
           ),
@@ -132,5 +139,41 @@ class CreateInsightPreviewView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildCoverImage(String coverImage) {
+    if (coverImage.isEmpty) {
+      return Image.asset(
+        'assets/images/image.png',
+        height: 160,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
+      );
+    } else if (coverImage.startsWith('http')) {
+      return Image.network(
+        coverImage,
+        height: 160,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
+      );
+    } else if (coverImage.startsWith('assets/')) {
+      return Image.asset(
+        coverImage,
+        height: 160,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
+      );
+    } else {
+      return Image.file(
+        File(coverImage),
+        height: 160,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
+      );
+    }
   }
 }

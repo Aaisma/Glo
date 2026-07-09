@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../model/medication_model.dart';
@@ -23,45 +22,28 @@ class MedicationViewModel extends ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
 
-  Future<bool> addMedication(
-      MedicationModel medication,
-      String userId,
-      ) async {
+  Future<bool> addMedication(MedicationModel medication, String userId) async {
     return _run(() async {
       _validateUserId(userId);
-
       medication.userId = userId;
-
       await _repo.addMedication(medication, userId);
-
       return true;
     });
   }
 
-  Future<bool> updateMedication(
-      MedicationModel medication,
-      String userId,
-      ) async {
+  Future<bool> updateMedication(MedicationModel medication, String userId) async {
     return _run(() async {
       _validateUserId(userId);
-
       medication.userId = userId;
-
       await _repo.updateMedication(medication, userId);
-
       return true;
     });
   }
 
-  Future<bool> deleteMedication(
-      String userId,
-      String medicationId,
-      ) async {
+  Future<bool> deleteMedication(String userId, String medicationId) async {
     return _run(() async {
       _validateUserId(userId);
-
       await _repo.deleteMedication(medicationId);
-
       return true;
     });
   }
@@ -69,9 +51,7 @@ class MedicationViewModel extends ChangeNotifier {
   Future<bool> fetchMedications(String userId) async {
     return _run(() async {
       _validateUserId(userId);
-
       _medications = await _repo.getMedications(userId);
-
       return true;
     });
   }
@@ -80,7 +60,6 @@ class MedicationViewModel extends ChangeNotifier {
     if (userId.trim().isEmpty) {
       return Stream.error(Exception("User ID is required."));
     }
-
     return _repo.getMedicationsStream(userId);
   }
 
@@ -115,7 +94,6 @@ class MedicationViewModel extends ChangeNotifier {
     if (userId.trim().isEmpty) {
       return Stream.error(Exception("User ID is required."));
     }
-
     return _repo.getMedicationCountStream(userId);
   }
 
@@ -132,9 +110,7 @@ class MedicationViewModel extends ChangeNotifier {
     try {
       _setLoading(true);
       _error = null;
-
       final result = await action();
-
       return result;
     } catch (e) {
       _error = e.toString();

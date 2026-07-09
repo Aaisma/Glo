@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
 import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
+import '../../../constants/ayd_colour.dart';
+import '../../../viewmodel/community_view_model.dart';
 import 'article_detail_view.dart';
 import 'favorites_view.dart';
+import 'all_insights_view.dart';
 import '../../community/user/community_discussions_view.dart';
 import '../../community/user/discussion_detail_view.dart';
 
@@ -49,67 +52,81 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
     final viewModel = context.watch<InsightsFeedViewModel>();
     final pinkTheme = const Color(0xFFFD8CA1);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      body: SafeArea(
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/insight_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
         child: Column(
           children: [
             // Header Bar
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Insights Feed",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF3E63),
-                        ),
-                      ),
-                    ),
+              child: const Center(
+                child: Text(
+                  "⟡˙⋆Insight Feed⋆˙⟡",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF6F9E),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.bookmark_border, color: Color(0xFF332B2C), size: 28),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const FavoritesView()),
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
 
             // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => viewModel.setSearchQuery(val),
+                        decoration: const InputDecoration(
+                          hintText: "Search articles, topics, experts...",
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => viewModel.setSearchQuery(val),
-                  decoration: const InputDecoration(
-                    hintText: "Search articles, topics, experts...",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6F9E),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.bookmark_border, color: Colors.white, size: 28),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const FavoritesView()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -153,8 +170,8 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                 // Latest Insights
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text(
+                                  children: [
+                                    const Text(
                                       "Latest Insights",
                                       style: TextStyle(
                                         fontSize: 18,
@@ -162,9 +179,21 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                         color: Color(0xFF332B2C),
                                       ),
                                     ),
-                                    Text(
-                                      "See all",
-                                      style: TextStyle(fontSize: 13, color: Colors.grey),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (_) => const AllInsightsView()),
+                                        );
+                                      },
+                                      child: const Text(
+                                        "See all >",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -204,12 +233,12 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       "Community Spotlight",
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF8B5CF6),
+                                        color: AydColors.communityButton,
                                       ),
                                     ),
                                     GestureDetector(
@@ -219,11 +248,11 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                                           MaterialPageRoute(builder: (_) => const CommunityDiscussionsView()),
                                         );
                                       },
-                                      child: const Text(
+                                      child: Text(
                                         "See all >",
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF8B5CF6),
+                                          color: AydColors.communityButton,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -242,7 +271,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildCategorySection(InsightsFeedViewModel viewModel, Color activeColor) {
@@ -338,7 +367,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                       height: 120,
                       width: 110,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         height: 120,
                         width: 110,
                         color: const Color(0xFFFFE5EC),
@@ -464,7 +493,7 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                       height: 100,
                       width: 90,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         height: 100,
                         width: 90,
                         color: const Color(0xFFFFE5EC),
@@ -553,114 +582,122 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
   }
 
   Widget _buildCommunitySpotlightSection(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Hive.box('community_box').listenable(),
-      builder: (context, Box box, _) {
-        final discussions = box.keys
-            .where((k) => k.toString().startsWith('disc_'))
-            .map((k) => Discussion.fromMap(Map<String, dynamic>.from(box.get(k))))
-            .where((e) => !e.isDeleted)
-            .toList();
+    final viewModel = context.watch<CommunityFeedViewModel>();
+    
+    // In case the feed is not loaded, we trigger a load
+    if (viewModel.feedItems.isEmpty && !viewModel.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        viewModel.loadFeed(isRefresh: true);
+      });
+    }
 
-        if (discussions.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 20.0),
-              child: Text("No discussions yet. 🌸", style: TextStyle(color: Colors.grey, fontSize: 13)),
-            ),
-          );
-        }
+    final discussions = viewModel.feedItems
+        .whereType<Discussion>()
+        .where((e) => !e.isDeleted)
+        .toList();
 
-        // Sort by trending criteria
-        discussions.sort((a, b) => (b.views + b.likes + b.repliesCount).compareTo(a.views + a.likes + a.repliesCount));
+    if (discussions.isEmpty && !viewModel.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.0),
+          child: Text("No discussions yet. 🌸", style: TextStyle(color: Colors.grey, fontSize: 13)),
+        ),
+      );
+    } else if (viewModel.isLoading && discussions.isEmpty) {
+       return Center(
+         child: Padding(
+           padding: const EdgeInsets.symmetric(vertical: 20.0),
+           child: CircularProgressIndicator(color: AydColors.communityButton),
+         ),
+       );
+    }
 
-        return SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: discussions.length.clamp(0, 5),
-            itemBuilder: (context, index) {
-              final item = discussions[index];
-              final badgeText = index == 0 ? "Trending" : "Recent";
+    // Sort by trending criteria
+    discussions.sort((a, b) => (b.views + b.likes + b.repliesCount).compareTo(a.views + a.likes + a.repliesCount));
 
-              return Container(
-                width: MediaQuery.of(context).size.width * 0.6,
-                margin: const EdgeInsets.only(right: 12, bottom: 4),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+    return SizedBox(
+      height: 140,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: discussions.length.clamp(0, 5),
+        itemBuilder: (context, index) {
+          final item = discussions[index];
+          final badgeText = index == 0 ? "Trending" : "Recent";
+
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.6,
+            margin: const EdgeInsets.only(right: 12, bottom: 4),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AydColors.communityCard,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
                 ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => DiscussionDetailView(discussionId: item.id)),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF3E8FF),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.chat_bubble_rounded,
-                                size: 16,
-                                color: Color(0xFF8B5CF6),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.title,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF332B2C),
-                                  height: 1.3,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text(
-                          "${item.repliesCount} replies  •  $badgeText",
-                          style: const TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+              ],
+            ),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => DiscussionDetailView(discussionId: item.id)),
+                );
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF3E8FF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.chat_bubble_rounded,
+                            size: 16,
+                            color: Color(0xFF8B5CF6),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF332B2C),
+                              height: 1.3,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+                  const SizedBox(height: 8),
+                  Text(
+                    "${item.repliesCount} replies  •  $badgeText",
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

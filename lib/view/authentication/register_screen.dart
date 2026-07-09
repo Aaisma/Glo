@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../viewmodel/auth_view_model.dart';
 import '../../viewmodel/user_view_model.dart';
 import '../components/social_button.dart';
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -26,24 +26,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (email.isEmpty || password.isEmpty) return;
 
-    final authVM = context.read<AuthViewModel>();
     final userVM = context.read<UserViewModel>();
-    
-    userVM.setSignupCredentials(name, email, password);
 
     try {
-      final user = await authVM.signUpWithEmail(email, password);
-      if (user != null) {
-        await user.updateDisplayName(name);
-        userVM.setUserId(user.uid);
-        await userVM.createDefaultProfile();
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
-        }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authVM.error ?? "Registration failed")),
-        );
+      await userVM.clearOnboardingProgress();
+      userVM.setSignupCredentials(name, email, password);
+
+      if (mounted) {
+        Navigator.pushNamed(context, '/survey');
       }
     } catch (e) {
       if (mounted) {

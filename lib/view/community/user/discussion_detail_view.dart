@@ -85,61 +85,88 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
     final discussion = viewModel.discussion!;
     final formattedDate = DateFormat('MMMM dd, yyyy').format(discussion.createdAt);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
-        title: const Text(
-          "Discussion Detail",
-          style: TextStyle(
-            color: Color(0xFF332B2C),
-            fontWeight: FontWeight.bold,
+    if (discussion.isDeleted) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFFF6F8),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'hide') {
-                viewModel.hide(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Discussion hidden. 🌸")),
-                );
-              } else if (value == 'report') {
-                _showReportDialog(context, viewModel);
-              }
-            },
-            icon: const Icon(Icons.more_vert, color: Color(0xFF332B2C)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'hide',
-                child: Row(
-                  children: [
-                    Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
-                    SizedBox(width: 8),
-                    Text("Hide Post"),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'report',
-                child: Row(
-                  children: [
-                    Icon(Icons.report_outlined, color: Colors.redAccent, size: 20),
-                    SizedBox(width: 8),
-                    Text("Report Post", style: TextStyle(color: Colors.redAccent)),
-                  ],
-                ),
-              ),
-            ],
+        body: const Center(
+          child: Text(
+            "This discussion has been archived or deleted.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-        ],
+        ),
+      );
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/community_background.png'),
+          fit: BoxFit.cover,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text(
+            "Discussion Detail",
+            style: TextStyle(
+              color: Color(0xFF332B2C),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'hide') {
+                  viewModel.hide(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Discussion hidden. 🌸")),
+                  );
+                } else if (value == 'report') {
+                  _showReportDialog(context, viewModel);
+                }
+              },
+              icon: const Icon(Icons.more_vert, color: Color(0xFF332B2C)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'hide',
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
+                      SizedBox(width: 8),
+                      Text("Hide Post"),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.report_outlined, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 8),
+                      Text("Report Post", style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       body: SafeArea(
         child: Column(
           children: [
@@ -368,6 +395,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
           ],
         ),
       ),
+    ),
     );
   }
 

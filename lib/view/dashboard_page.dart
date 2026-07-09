@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+<<<<<<< HEAD
 import 'package:glo/view/glo_mood/wellness_dashboard_screen.dart';
 
+=======
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -23,10 +26,14 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
+<<<<<<< HEAD
 
 import 'medication_screen.dart';
 import '../view/glo_medication/medication_screen.dart';
 
+=======
+import '../view/glo_medication/medication_screen.dart';
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
 import 'glo_mood/wellness_dashboard_screen.dart';
@@ -76,12 +83,12 @@ class DashboardHome extends StatelessWidget {
     final periodViewModel = context.watch<PeriodViewModel>();
 
     final dashboardItems = [
-      {"title": "Daily Journal", "image": "assets/images/journal.png"},
-      {"title": "Water Tracker", "image": "assets/images/watertracker.png"},
-      {"title": "Medications", "image": "assets/images/medication.png"},
-      {"title": "Skin Tracker", "image": "assets/images/acnetracker.png"},
-      {"title": "Visit Derma", "image": "assets/images/skinderma.png"},
-      {"title": "Mood and Wellness", "image": "assets/images/stressandsleep.png"},
+      {"title": "Daily Journal", "image": "assets/images/dashboard/journal.png"},
+      {"title": "Water Tracker", "image": "assets/images/dashboard/watertracker.png"},
+      {"title": "Medications", "image": "assets/images/dashboard/medication.png"},
+      {"title": "Skin Tracker", "image": "assets/images/dashboard/acnetracker.png"},
+      {"title": "Visit Derma", "image": "assets/images/dashboard/skinderma.png"},
+      {"title": "Mood and Wellness", "image": "assets/images/dashboard/stressandsleep.png"},
     ];
 
     return Container(

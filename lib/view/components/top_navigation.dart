@@ -22,7 +22,7 @@ class TopNavigation extends StatelessWidget {
           Expanded(
             child: Text(
               isLoggedIn ? "Good Morning ${userName ?? 'User'} ❤︎"
-                  : " ⟡˙⋆Welcome to Glo⋆˙⟡",
+                  : "⟡˙⋆Welcome to Glo⋆˙⟡",
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 22,

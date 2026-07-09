@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../viewmodel/community_view_model.dart';
+import '../../../constants/ayd_colour.dart';
 import 'discussion_preview_view.dart';
 
 class CreateDiscussionView extends StatefulWidget {
@@ -26,7 +27,7 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
     final accentColor = const Color(0xFFFF3E63);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: AydColors.admin,
       appBar: AppBar(
         title: const Text(
           "Start a Discussion",
@@ -162,7 +163,7 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
+                    backgroundColor: AydColors.communityButton,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {

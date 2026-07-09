@@ -194,6 +194,13 @@ class DiscussionDetailViewModel extends ChangeNotifier {
   Future<void> hide(BuildContext context) async {
     if (_discussion == null) return;
     await _repo.hideDiscussion(_discussion!.id);
+    await _moderationRepo.recordHiddenContent(
+      contentId: _discussion!.id,
+      contentType: ContentType.discussion,
+      title: _discussion!.title,
+      authorName: _discussion!.username,
+      contentSnippet: _discussion!.content,
+    );
     Navigator.of(context).pop();
   }
 

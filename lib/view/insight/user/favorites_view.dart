@@ -36,7 +36,6 @@ class _FavoritesViewState extends State<FavoritesView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FavoritesViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
 
     // Filter items locally based on search query
     final query = viewModel.searchQuery.toLowerCase();
@@ -61,11 +60,18 @@ class _FavoritesViewState extends State<FavoritesView> {
       totalCount = filteredPolls.length;
     }
 
-    return Scaffold(
-      backgroundColor: AydColors.background,
-      appBar: AppBar(
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/insight_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
         title: const Text(
-          "Favorites",
+          "⟡˙⋆Favorites⋆˙⟡",
           style: TextStyle(
             color: AydColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -136,7 +142,7 @@ class _FavoritesViewState extends State<FavoritesView> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildFavoritesTabs(FavoritesViewModel viewModel) {
@@ -225,7 +231,7 @@ class _FavoritesViewState extends State<FavoritesView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -251,7 +257,7 @@ class _FavoritesViewState extends State<FavoritesView> {
                   width: 70,
                   height: 70,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(width: 70, height: 70, color: const Color(0xFFFFE5EC)),
+                  errorBuilder: (_, _, _) => Container(width: 70, height: 70, color: const Color(0xFFFFE5EC)),
                 ),
               ),
               const SizedBox(width: 14),

@@ -5,6 +5,9 @@ import '../../../viewmodel/moderation_view_model.dart';
 import '../../../model/community_models.dart';
 import '../../../model/shared_models.dart';
 import 'community_moderation_detail_view.dart';
+import '../../../constants/ayd_colour.dart';
+import '../../admin_navigation/admin_top_panel.dart';
+import '../../admin_navigation/admin_sidebar.dart';
 
 class CommunityModerationQueueView extends StatefulWidget {
   const CommunityModerationQueueView({super.key});
@@ -34,135 +37,108 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityModerationQueueViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
 
     final activeList = viewModel.selectedTab == 'Reported' ? viewModel.reportedItems : viewModel.hiddenItems;
     final filteredList = activeList.where((item) => item.title.toLowerCase().contains(_searchQuery)).toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
-        title: const Text(
-          "Community Moderation",
-          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: AydColors.admin,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: const AdminTopPanel(),
+        drawer: const AdminSidebar(),
+        body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Bar & Filter Button Row
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) {
-                          setState(() {
-                            _searchQuery = val.toLowerCase();
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          hintText: "Search reported content...",
-                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.filter_list, color: Color(0xFF332B2C)),
-                      onPressed: () {},
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Moderation Tabs
-              _buildModerationTabs(viewModel),
-              const SizedBox(height: 20),
-
-              // Content Table
-              Expanded(
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                 child: Container(
-                  width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: viewModel.isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Table Header
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                              decoration: BoxDecoration(
-                                border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
-                              ),
-                              child: Row(
-                                children: const [
-                                  Expanded(flex: 1, child: Text("Type", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
-                                  Expanded(flex: 3, child: Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
-                                  Expanded(flex: 2, child: Text("Stats", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
-                                  Expanded(flex: 2, child: Text("Reported At", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
-                                  SizedBox(width: 100, child: Text("Actions", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12), textAlign: TextAlign.center)),
-                                ],
-                              ),
-                            ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val.toLowerCase();
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      hintText: "Search content...",
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
 
-                            // Table Body
-                            Expanded(
-                              child: filteredList.isEmpty
+              // Moderation Tabs
+              _buildModerationTabs(viewModel),
+
+              // Table Section
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: 1000,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Table Headers
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                          child: Row(
+                            children: [
+                              Expanded(flex: 3, child: Text("Content", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                              Expanded(flex: 1, child: Text("Type", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                              Expanded(flex: 2, child: Text("Reason", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                              Expanded(flex: 1, child: Text("Count", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)), textAlign: TextAlign.center)),
+                              SizedBox(width: 200, child: Text("Actions", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)))),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+
+                        // Content Queue List
+                        Expanded(
+                          child: viewModel.isLoading
+                              ? const Center(child: CircularProgressIndicator(color: AydColors.adminCommunityButton))
+                              : filteredList.isEmpty
                                   ? const Center(
-                                      child: Text("Queue is empty! 🌸", style: TextStyle(color: Colors.grey)),
+                                      child: Text(
+                                        "Moderation queue is empty! 🌸",
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
                                     )
                                   : ListView.separated(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                                       itemCount: filteredList.length,
-                                      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
+                                      separatorBuilder: (_, __) => const Divider(height: 16, color: Color(0xFFF0F0F0)),
                                       itemBuilder: (context, index) {
                                         final item = filteredList[index];
-                                        return _buildQueueTableRow(context, item, viewModel);
+                                        return _buildQueueRow(context, item, viewModel);
                                       },
                                     ),
-                            ),
-
-                            // Pagination Controls
-                            _buildPaginationBar(viewModel, pinkTheme),
-                          ],
                         ),
+
+                        // Pagination Controls
+                        _buildPaginationBar(viewModel, filteredList),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -173,116 +149,130 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
   }
 
   Widget _buildModerationTabs(CommunityModerationQueueViewModel viewModel) {
-    return Row(
-      children: [
-        _buildTabChip("Reported", viewModel.reportedCount, viewModel),
-        const SizedBox(width: 16),
-        _buildTabChip("Hidden", viewModel.hiddenCount, viewModel),
-      ],
+    final tabs = ["Reported", "Hidden"];
+    
+    return Container(
+      height: 38,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: tabs.length,
+        itemBuilder: (context, index) {
+          final tab = tabs[index];
+          final count = tab == "Reported" ? viewModel.reportedCount : viewModel.hiddenCount;
+          final isSelected = viewModel.selectedTab == tab;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ChoiceChip(
+              label: Text(
+                "$tab ($count)",
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF332B2C),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (val) => viewModel.setTab(tab),
+              selectedColor: AydColors.adminCommunityButton,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? AydColors.adminCommunityButton : Colors.grey.shade300,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildTabChip(String label, int count, CommunityModerationQueueViewModel vm) {
-    final isSelected = vm.selectedTab == label;
-    final accent = const Color(0xFFFF3E63);
-
-    return ChoiceChip(
-      label: Text(
-        "$label ($count)",
-        style: TextStyle(
-          color: isSelected ? Colors.white : const Color(0xFF332B2C),
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
-      ),
-      selected: isSelected,
-      onSelected: (val) => vm.setTab(label),
-      selectedColor: accent,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isSelected ? accent : Colors.grey.shade200,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQueueTableRow(BuildContext context, ModerationItem item, CommunityModerationQueueViewModel vm) {
-    final formattedDate = DateFormat('MMM dd, hh:mm a').format(item.reportedAt);
-
+  Widget _buildQueueRow(BuildContext context, ModerationItem item, CommunityModerationQueueViewModel vm) {
     Color typeColor = Colors.grey;
     if (item.contentType == ContentType.article) typeColor = Colors.pink;
     if (item.contentType == ContentType.discussion) typeColor = Colors.deepPurple;
     if (item.contentType == ContentType.poll) typeColor = Colors.blue;
 
-    final statsText = vm.selectedTab == 'Reported'
-        ? "${item.reportsCount} Reports"
-        : "${item.hiddenCount} Hidden";
+    final primaryCountText = vm.selectedTab == 'Reported' ? "${item.reportsCount}" : "${item.hiddenCount}";
+    final reasonText = vm.selectedTab == 'Reported' 
+      ? item.reasons.isNotEmpty ? item.reasons.first.name.substring(0, 1).toUpperCase() + item.reasons.first.name.substring(1) : "Multiple"
+      : "Hidden";
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          // Type Badge
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: typeColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                item.contentType.name.toUpperCase(),
-                style: TextStyle(color: typeColor, fontSize: 10, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CommunityModerationDetailView(contentId: item.contentId),
           ),
-          const SizedBox(width: 16),
-          // Title
+        ).then((res) {
+          if (res == true) vm.loadQueue();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+          // Content Title
           Expanded(
             flex: 3,
-            child: Text(
-              item.title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(
+                item.title,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3154)),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          // Stats
+
+          // Type
+          Expanded(
+            flex: 1,
+            child: Text(
+              item.contentType.name.substring(0, 1).toUpperCase() + item.contentType.name.substring(1),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6773B3)),
+            ),
+          ),
+
+          // Reason/Status
           Expanded(
             flex: 2,
             child: Text(
-              statsText,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF3E63)),
+              reasonText,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.brown),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 16),
-          // Date
+
+          // Count
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
-              formattedDate,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              primaryCountText,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent),
             ),
           ),
-          const SizedBox(width: 16),
+
           // Actions
           SizedBox(
-            width: 100,
+            width: 200,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey, size: 20),
+                  icon: const Icon(Icons.remove_red_eye_outlined, color: Color(0xFF2C3154), size: 20),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -298,12 +288,12 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.archive_outlined, color: Colors.grey, size: 20),
+                  icon: const Icon(Icons.archive_outlined, color: Color(0xFF2C3154), size: 20),
                   onPressed: () async {
                     await vm.archiveItem(item.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Flagged item archived! 🌸")),
+                        const SnackBar(content: Text("Item archived! 🌸")),
                       );
                     }
                   },
@@ -327,31 +317,61 @@ class _CommunityModerationQueueViewState extends State<CommunityModerationQueueV
           ),
         ],
       ),
-    );
+    ));
   }
 
-  Widget _buildPaginationBar(CommunityModerationQueueViewModel viewModel, Color activeColor) {
+  Widget _buildPaginationBar(CommunityModerationQueueViewModel viewModel, List<ModerationItem> activeList) {
+    if (activeList.isEmpty) return const SizedBox.shrink();
+
+    // Use current page and limit to calculate visual numbers
+    int limit = 10;
+    int startItem = limit * (viewModel.currentPage - 1) + 1;
+    int endItem = (limit * viewModel.currentPage).clamp(0, activeList.length);
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey.shade100)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 14),
-            onPressed: viewModel.currentPage > 1 ? viewModel.prevPage : null,
+          Expanded(
+            child: Text(
+              "Showing $startItem-$endItem of ${activeList.length}",
+              style: const TextStyle(color: Color(0xFF6773B3), fontSize: 13, fontWeight: FontWeight.w600),
+            ),
           ),
-          const SizedBox(width: 12),
-          Text(
-            "Page ${viewModel.currentPage}",
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-          ),
-          const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios, size: 14),
-            onPressed: viewModel.hasMore ? viewModel.nextPage : null,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.chevron_left, size: 24, color: Color(0xFF6773B3)),
+                onPressed: viewModel.currentPage > 1 ? viewModel.prevPage : null,
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F1FA),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE4DAF9)),
+                ),
+                child: Text(
+                  "${viewModel.currentPage}",
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6773B3), fontSize: 13),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text("${viewModel.currentPage + 1}", style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2C3154), fontSize: 13)),
+              const SizedBox(width: 12),
+              Text("${viewModel.currentPage + 2}", style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2C3154), fontSize: 13)),
+              const SizedBox(width: 12),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.chevron_right, size: 24, color: Color(0xFF6773B3)),
+                onPressed: viewModel.hasMore ? viewModel.nextPage : null,
+              ),
+            ],
           ),
         ],
       ),

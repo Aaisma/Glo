@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../model/community_models.dart';
 import '../../../repo/community_repo.dart';
+import '../../../constants/ayd_colour.dart';
 import '../../insight/user/poll_detail_view.dart';
 import 'discussion_detail_view.dart';
 import 'create_discussion_view.dart';
@@ -49,20 +50,29 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     const pinkTheme = Color(0xFFFD8CA1);
     const accentColor = Color(0xFFFF3E63);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
-      appBar: AppBar(
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/feed/community_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+        centerTitle: true,
         title: const Text(
-          "Community discussions",
+          "⟡˙Community Discussions˙⟡",
           style: TextStyle(
-            color: Color(0xFF332B2C),
+            fontSize: 22,
+            color: AydColors.communityButton,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.communityButton),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -139,13 +149,13 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: accentColor,
+        backgroundColor: AydColors.communityButton,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
           _showCreateSelectorDialog(context);
         },
       ),
-    );
+    ));
   }
 
   void _showCreateSelectorDialog(BuildContext context) {
@@ -154,7 +164,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: AydColors.admin,
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -212,7 +222,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AydColors.admin,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -327,7 +337,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AydColors.admin,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -457,7 +467,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
   }
 
   Widget _buildFilterTabs(CommunityFeedViewModel viewModel) {
-    final filters = ['Trending', 'Recent', 'Unanswered', 'Following'];
+    final filters = ['Trending', 'Recent', 'Unanswered'];
     return SizedBox(
       height: 40,
       child: ListView.builder(
@@ -480,13 +490,13 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
               ),
               selected: isSelected,
               onSelected: (val) => viewModel.setFilter(filter),
-              selectedColor: const Color(0xFFFF3E63),
+              selectedColor: AydColors.communityButton,
               backgroundColor: Colors.white,
               elevation: isSelected ? 2 : 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFFFF3E63) : Colors.grey.shade200,
+                  color: isSelected ? AydColors.communityButton : Colors.grey.shade200,
                 ),
               ),
             ),

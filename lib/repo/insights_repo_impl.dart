@@ -196,16 +196,28 @@ class InsightsRepoImpl implements InsightsRepo {
     
     final now = DateTime.now();
     final published = insight.copyWith(
-      status: InsightStatus.published,
-      publishedAt: now,
+      status: insight.publishedAt != null ? insight.status : InsightStatus.published,
+      publishedAt: insight.publishedAt ?? now,
     );
     await _firestore.collection('insights').doc(published.id).set(published.toMap());
+  }
+
+  @override
+  Future<void> updateInsight(Insight insight) async {
+    await _firestore.collection('insights').doc(insight.id).update(insight.toMap());
   }
 
   @override
   Future<void> archiveInsight(String id) async {
     await _firestore.collection('insights').doc(id).update({
       'status': InsightStatus.archived.name,
+    });
+  }
+
+  @override
+  Future<void> deleteInsight(String id) async {
+    await _firestore.collection('insights').doc(id).update({
+      'isDeleted': true,
     });
   }
 
@@ -300,5 +312,81 @@ class InsightsRepoImpl implements InsightsRepo {
       type: ContentType.article,
     );
     await _firestore.collection('users').doc(_uid).collection('hidden_content').doc('hidden_$id').set(hidden.toMap());
+  }
+
+  @override
+  Future<List<String>> getHiddenContentIds() async {
+    if (_auth.currentUser == null) return [];
+    final snapshot = await _firestore.collection('users').doc(_uid).collection('hidden_content')
+        .where('type', isEqualTo: ContentType.article.name)
+        .get();
+    return snapshot.docs.map((d) => d.data()['contentId'] as String).toList();
+  }
+
+  @override
+  Future<void> addInsightComment(String insightId, InsightComment comment) async {
+    final commentRef = _firestore.collection('insights').doc(insightId).collection('comments').doc(comment.id);
+    final insightRef = _firestore.collection('insights').doc(insightId);
+
+    await _firestore.runTransaction((transaction) async {
+      final doc = await transaction.get(insightRef);
+      if (!doc.exists) return;
+
+      final currentComments = doc.data()?['commentsCount'] ?? 0;
+      transaction.update(insightRef, {'commentsCount': currentComments + 1});
+      transaction.set(commentRef, comment.toMap());
+    });
+  }
+
+  @override
+  Future<List<InsightComment>> getInsightComments(String insightId) async {
+    final snapshot = await _firestore.collection('insights').doc(insightId).collection('comments')
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('createdAt', descending: false)
+        .get();
+    
+    return snapshot.docs.map((d) {
+      final map = d.data();
+      map['id'] = d.id;
+      return InsightComment.fromMap(map);
+    }).toList();
+  }
+
+  @override
+  Future<void> likeInsightComment(String commentId) async {
+    if (_auth.currentUser == null) return;
+    
+    // For MVP, we use a global comment collection reference approach or simplify by finding the comment
+    // Actually, commentId doesn't have insightId in this signature. 
+    // To simplify and avoid changing signature, let's just use collectionGroup if needed, 
+    // but typically we'd need insightId. Let's find it via collectionGroup.
+    final query = await _firestore.collectionGroup('comments').where('id', isEqualTo: commentId).get();
+    if (query.docs.isEmpty) return;
+
+    final commentDoc = query.docs.first;
+    final likeRef = _firestore.collection('users').doc(_uid).collection('likes').doc('insight_comment_$commentId');
+
+    await _firestore.runTransaction((transaction) async {
+      final likeDoc = await transaction.get(likeRef);
+      final cDoc = await transaction.get(commentDoc.reference);
+      if (!cDoc.exists) return;
+
+      final currentLikes = cDoc.data()?['likes'] ?? 0;
+
+      if (likeDoc.exists) {
+        transaction.delete(likeRef);
+        transaction.update(commentDoc.reference, {'likes': (currentLikes - 1).clamp(0, 999999)});
+      } else {
+        transaction.set(likeRef, {'likedAt': FieldValue.serverTimestamp()});
+        transaction.update(commentDoc.reference, {'likes': currentLikes + 1});
+      }
+    });
+  }
+
+  @override
+  Future<bool> isInsightCommentLiked(String commentId) async {
+    if (_auth.currentUser == null) return false;
+    final doc = await _firestore.collection('users').doc(_uid).collection('likes').doc('insight_comment_$commentId').get();
+    return doc.exists;
   }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../authentication/register_screen.dart';
+import '../authentication/authentication_page.dart';
 import '../dashboard_page.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (user != null || rememberLogin == true) {
       nextPage = const DashboardScreen();
     } else {
-      nextPage = const RegisterScreen();
+      nextPage = const AuthenticationPage();
     }
 
     _fadeNavigate(nextPage);

@@ -13,23 +13,23 @@ class CommunityModerationRepoImpl implements CommunityModerationRepo {
     required bool isArchived,
     ContentType? filterType,
   }) async {
-    Query q = _firestore.collection('moderation_queue')
-        .where('isArchived', isEqualTo: isArchived)
-        .where('isDeleted', isEqualTo: false)
-        .where('contentType', whereIn: [ContentType.discussion.name, ContentType.poll.name])
-        .orderBy('reportedAt', descending: true);
-
-    final snapshot = await q.get();
+    final snapshot = await _firestore.collection('moderation_queue').get();
 
     var allItems = snapshot.docs.map((d) {
       final map = d.data() as Map<String, dynamic>;
       map['id'] = d.id;
       return ModerationItem.fromMap(map);
-    }).toList();
+    }).where((item) => 
+      (item.contentType == ContentType.discussion || item.contentType == ContentType.poll) && 
+      item.isArchived == isArchived && 
+      item.isDeleted == false
+    ).toList();
 
     if (filterType != null) {
       allItems = allItems.where((item) => item.contentType == filterType).toList();
     }
+    
+    allItems.sort((a, b) => b.reportedAt.compareTo(a.reportedAt));
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= allItems.length) return [];
@@ -99,6 +99,45 @@ class CommunityModerationRepoImpl implements CommunityModerationRepo {
         reasons: [reason],
         reportsCount: 1,
         hiddenCount: 0,
+        reportedAt: DateTime.now(),
+      );
+      await _firestore.collection('moderation_queue').doc(id).set(item.toMap());
+    }
+  }
+
+  @override
+  Future<void> recordHiddenContent({
+    required String contentId,
+    required ContentType contentType,
+    required String title,
+    required String authorName,
+    required String contentSnippet,
+  }) async {
+    final snapshot = await _firestore.collection('moderation_queue')
+        .where('contentId', isEqualTo: contentId)
+        .where('contentType', isEqualTo: contentType.name)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final docId = snapshot.docs.first.id;
+      final existing = ModerationItem.fromMap(snapshot.docs.first.data());
+      await _firestore.collection('moderation_queue').doc(docId).update({
+        'hiddenCount': existing.hiddenCount + 1,
+        'reportedAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      final id = 'comm_mod_${DateTime.now().millisecondsSinceEpoch}';
+      final item = ModerationItem(
+        id: id,
+        contentId: contentId,
+        contentType: contentType,
+        title: title,
+        authorName: authorName,
+        contentSnippet: contentSnippet,
+        reasons: [],
+        reportsCount: 0,
+        hiddenCount: 1,
         reportedAt: DateTime.now(),
       );
       await _firestore.collection('moderation_queue').doc(id).set(item.toMap());

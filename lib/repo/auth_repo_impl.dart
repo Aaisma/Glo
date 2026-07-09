@@ -7,6 +7,9 @@ class AuthRepoImpl implements AuthRepo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
+  User? get currentUser => _auth.currentUser;
+
+  @override
   Future<User?> signInWithEmail(String email, String password) async {
     final credential = await _auth.signInWithEmailAndPassword(
       email: email,
@@ -43,18 +46,9 @@ class AuthRepoImpl implements AuthRepo {
     final result = await FacebookAuth.instance.login();
     if (result.status != LoginStatus.success) return null;
 
-<<<<<<< HEAD
     final credential = FacebookAuthProvider.credential(result.accessToken!.token);
     final userCredential = await _auth.signInWithCredential(credential);
     return userCredential.user;
-=======
-    if (result.status == LoginStatus.success) {
-      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
-      return await _auth.signInWithCredential(credential);
-    } else {
-      throw Exception("Facebook sign in failed: ${result.message}");
-    }
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
   }
 
   @override

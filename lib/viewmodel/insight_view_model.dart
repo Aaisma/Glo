@@ -78,10 +78,13 @@ class InsightsFeedViewModel extends ChangeNotifier {
         category: _selectedCategory,
       );
 
+      final hiddenIds = await _repo.getHiddenContentIds();
+      final filteredItems = items.where((item) => !hiddenIds.contains(item.id)).toList();
+
       if (isRefresh || _page == 1) {
-        _latestInsights = items;
+        _latestInsights = filteredItems;
       } else {
-        _latestInsights.addAll(items);
+        _latestInsights.addAll(filteredItems);
       }
 
       if (items.length < _limit) {
@@ -195,6 +198,12 @@ class ArticleDetailViewModel extends ChangeNotifier {
   bool _isLiked = false;
   bool get isLiked => _isLiked;
 
+  List<InsightComment> _comments = [];
+  List<InsightComment> get comments => _comments;
+
+  final Set<String> _likedComments = {};
+  bool isCommentLiked(String commentId) => _likedComments.contains(commentId);
+
   Future<void> loadDetail(String id) async {
     _isLoading = true;
     notifyListeners();
@@ -210,6 +219,9 @@ class ArticleDetailViewModel extends ChangeNotifier {
 
         // Fetch likes state
         _isLiked = await _repo.isInsightLiked(id);
+
+        _comments = await _repo.getInsightComments(id);
+        _likedComments.clear();
       }
     } catch (e) {
       // error
@@ -228,6 +240,36 @@ class ArticleDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> addComment(String content) async {
+    if (_insight == null || content.trim().isEmpty) return;
+
+    final comment = InsightComment(
+      id: 'ic_${DateTime.now().millisecondsSinceEpoch}',
+      insightId: _insight!.id,
+      username: 'user_active',
+      content: content,
+      createdAt: DateTime.now(),
+    );
+
+    await _repo.addInsightComment(_insight!.id, comment);
+    // Reload to get updated comment count and comments
+    _insight = await _repo.getInsightById(_insight!.id);
+    _comments = await _repo.getInsightComments(_insight!.id);
+    notifyListeners();
+  }
+
+  Future<void> likeComment(String commentId) async {
+    if (_insight == null) return;
+    await _repo.likeInsightComment(commentId);
+    if (_likedComments.contains(commentId)) {
+      _likedComments.remove(commentId);
+    } else {
+      _likedComments.add(commentId);
+    }
+    _comments = await _repo.getInsightComments(_insight!.id);
+    notifyListeners();
+  }
+
   Future<void> save() async {
     if (_insight == null) return;
     await _repo.toggleSaveInsight(_insight!.id);
@@ -239,6 +281,12 @@ class ArticleDetailViewModel extends ChangeNotifier {
   Future<void> hide(BuildContext context) async {
     if (_insight == null) return;
     await _repo.hideInsight(_insight!.id);
+    await _moderationRepo.recordHiddenContent(
+      contentId: _insight!.id,
+      title: _insight!.title,
+      authorName: _insight!.authorId,
+      contentSnippet: _insight!.summary,
+    );
     Navigator.of(context).pop();
   }
 
@@ -295,6 +343,10 @@ class CreateInsightViewModel extends ChangeNotifier {
   String? _activeDraftId;
   String? get activeDraftId => _activeDraftId;
 
+  String? _existingPublishedId;
+  DateTime? _existingCreatedAt;
+  DateTime? _existingPublishedAt;
+
   bool _hasUnsavedChanges = false;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
@@ -329,6 +381,7 @@ class CreateInsightViewModel extends ChangeNotifier {
   void setCoverImage(String path) {
     _coverImage = path;
     _onFieldChanged();
+    notifyListeners();
   }
 
   void setStep(int step) {
@@ -377,6 +430,36 @@ class CreateInsightViewModel extends ChangeNotifier {
     }
   }
 
+  void loadExistingInsight(Insight insight) {
+    clearForm();
+    if (insight.status == InsightStatus.draft) {
+      _activeDraftId = insight.id;
+    } else {
+      _existingPublishedId = insight.id;
+      _existingCreatedAt = insight.createdAt;
+      _existingPublishedAt = insight.publishedAt;
+    }
+
+    titleController.text = insight.title;
+    summaryController.text = insight.summary;
+    contentController.text = insight.content;
+    _category = insight.category;
+    _readTime = insight.readTime;
+    _coverImage = insight.coverImage;
+    _isFeatured = insight.isFeatured;
+    _isTrending = insight.isTrending;
+    
+    if (insight.status == InsightStatus.scheduled) {
+      _publishType = 'Schedule';
+      _scheduleDate = insight.publishedAt;
+    } else if (insight.status == InsightStatus.published) {
+      _publishType = 'Publish Now';
+    }
+
+    _hasUnsavedChanges = false;
+    notifyListeners();
+  }
+
   Future<void> discardDraft() async {
     if (_activeDraftId != null) {
       await _repo.discardDraft(_activeDraftId!);
@@ -418,7 +501,8 @@ class CreateInsightViewModel extends ChangeNotifier {
   }
 
   Future<void> publish() async {
-    final id = _activeDraftId ?? 'art_${DateTime.now().millisecondsSinceEpoch}';
+    final isUpdate = _existingPublishedId != null;
+    final id = isUpdate ? _existingPublishedId! : (_activeDraftId ?? 'art_${DateTime.now().millisecondsSinceEpoch}');
 
     final insight = Insight(
       id: id,
@@ -431,18 +515,27 @@ class CreateInsightViewModel extends ChangeNotifier {
       status: _publishType == 'Schedule' ? InsightStatus.scheduled : InsightStatus.published,
       isFeatured: _isFeatured,
       isTrending: _isTrending,
-      createdAt: DateTime.now(),
-      publishedAt: _publishType == 'Schedule' ? _scheduleDate : DateTime.now(),
+      createdAt: isUpdate ? _existingCreatedAt! : DateTime.now(),
+      publishedAt: _publishType == 'Schedule' ? _scheduleDate : (isUpdate ? _existingPublishedAt : DateTime.now()),
+      updatedAt: isUpdate ? DateTime.now() : null,
       authorId: 'admin_1',
     );
 
-    await _repo.publishInsight(insight);
+    if (isUpdate) {
+      await _repo.updateInsight(insight);
+    } else {
+      await _repo.publishInsight(insight);
+    }
     clearForm();
   }
 
   void clearForm() {
     _autoSaveTimer?.cancel();
     _autoSaveTimer = null;
+    _existingPublishedId = null;
+    _existingCreatedAt = null;
+    _existingPublishedAt = null;
+    _activeDraftId = null;
     titleController.clear();
     summaryController.clear();
     contentController.clear();
@@ -487,6 +580,17 @@ class InsightsLibraryViewModel extends ChangeNotifier {
   bool _hasMore = true;
   bool get hasMore => _hasMore;
 
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    _page = 1;
+    _hasMore = true;
+    notifyListeners();
+    loadInsights();
+  }
+
   void setTab(String tab) {
     _selectedTab = tab;
     _page = 1;
@@ -506,6 +610,10 @@ class InsightsLibraryViewModel extends ChangeNotifier {
       if (_selectedTab != 'All') {
         final statusName = _selectedTab.toLowerCase();
         filtered = all.where((item) => item.status.name == statusName).toList();
+      }
+
+      if (_searchQuery.isNotEmpty) {
+        filtered = filtered.where((item) => item.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
       }
 
       // Sort by newest
@@ -530,6 +638,11 @@ class InsightsLibraryViewModel extends ChangeNotifier {
 
   Future<void> archiveInsight(String id) async {
     await _repo.archiveInsight(id);
+    await loadInsights();
+  }
+
+  Future<void> deleteInsight(String id) async {
+    await _repo.deleteInsight(id);
     await loadInsights();
   }
 

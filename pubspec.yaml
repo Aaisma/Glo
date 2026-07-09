@@ -1,6 +1,8 @@
 name: glo
 
+
 description: A new Flutter project.
+
 
 publish_to: 'none'
 
@@ -30,12 +32,17 @@ dependencies:
   google_fonts: ^6.2.1
   hive_flutter: ^1.1.0
   fl_chart: ^1.2.0
+
   lucide_icons: ^0.257.0
   image: ^4.3.0
-  nepali_utils: ^3.0.6
   firebase_messaging: ^16.4.1
+  nepali_utils: ^3.0.8
+  intl: ^0.20.3
   tflite_flutter: ^0.12.1
   table_calendar: ^3.2.0
+  timeago: ^3.7.1
+
+
   fake_cloud_firestore: ^4.1.1
 
 dev_dependencies:
@@ -50,6 +57,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/survey/
+    - assets/images/dashboard/
     - assets/images/survey/acne_type/
     - assets/images/survey/last_page/
     - assets/images/survey/skin_type/
@@ -97,6 +105,7 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
+
     - assets/images/flower.png
     - assets/images/logo.png
     - assets/images/profilepicture.png
@@ -108,12 +117,12 @@ flutter:
     - assets/images/skintips.png
     - assets/images/background1.png
     - assets/images/history-background.png
-    - assets/images/skinderma.png
     - assets/images/fruits_bowl.png
     - assets/images/cleanser.png
     - assets/images/hydrated.png
     - assets/images/sunscreen_face.png
     - assets/images/glow.png
     - assets/images/glow1.png
+
 
 

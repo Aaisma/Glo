@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../repo/community_repo.dart';
 import '../model/community_models.dart';
 import '../model/shared_models.dart';
 import '../repo/insights_moderation_repo.dart';
@@ -223,16 +224,22 @@ class CommunityModerationQueueViewModel extends ChangeNotifier {
   int get hiddenCount => _hiddenItems.length;
 }
 
+
+
 class CommunityModerationDetailViewModel extends ChangeNotifier {
   final CommunityModerationRepo _repo;
+  final CommunityRepo _communityRepo;
 
-  CommunityModerationDetailViewModel(this._repo);
+  CommunityModerationDetailViewModel(this._repo, this._communityRepo);
 
   ModerationItem? _moderationItem;
   ModerationItem? get moderationItem => _moderationItem;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  List<DiscussionReply> _replies = [];
+  List<DiscussionReply> get replies => _replies;
 
   Map<ModerationReason, int> get reasonBreakdown {
     if (_moderationItem == null) return {};
@@ -253,6 +260,16 @@ class CommunityModerationDetailViewModel extends ChangeNotifier {
 
     try {
       _moderationItem = await _repo.getModerationDetail(contentId);
+      if (_moderationItem != null && _moderationItem!.contentType == ContentType.discussion) {
+        final discussion = await _communityRepo.getDiscussionById(_moderationItem!.contentId);
+        if (discussion != null) {
+          _replies = discussion.replies;
+        } else {
+          _replies = [];
+        }
+      } else {
+        _replies = [];
+      }
     } catch (e) {
       // error
     } finally {
