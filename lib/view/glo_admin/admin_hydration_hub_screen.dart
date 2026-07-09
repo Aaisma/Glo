@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/admin_analytics_viewmodel.dart';
+import '../../viewmodel/admin_analytics_viewmodel.dart';
 
 class AdminHydrationHubScreen extends StatefulWidget {
   const AdminHydrationHubScreen({super.key});

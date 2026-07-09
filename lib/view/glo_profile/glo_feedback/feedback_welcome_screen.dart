@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:glo/view/glo_profile/feedback_rating_screen.dart';
+import 'package:glo/view/glo_profile/glo_feedback/feedback_rating_screen.dart';
 
 class FeedbackHomeScreen extends StatelessWidget {
   const FeedbackHomeScreen({super.key});

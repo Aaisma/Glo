@@ -21,11 +21,11 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-<<<<<<< HEAD
+
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo})
-=======
+
   AuthViewModel({required AuthRepo authRepo, required UserRepo userRepo}) 
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
+
       : _authRepo = authRepo,
         _userRepo = userRepo {
     _user = _authRepo.currentUser;

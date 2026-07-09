@@ -25,7 +25,7 @@ class FeedbackRepoImpl implements FeedbackRepo {
           .get();
 
       return snapshot.docs.map((doc) {
-        return FeedbackModel.fromJson(doc.data());
+        return FeedbackModel.fromJson(doc.data(), docId: doc.id);
       }).toList();
     } catch (e) {
       print("❌ Error fetching feedback history: $e");
@@ -41,8 +41,41 @@ class FeedbackRepoImpl implements FeedbackRepo {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        return FeedbackModel.fromJson(doc.data());
+        return FeedbackModel.fromJson(doc.data(), docId: doc.id);
       }).toList();
     });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllUserFeedback() async {
+    try {
+      final snapshot = await _firestore
+          .collection('feedback')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print("❌ Error fetching admin feedback: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateFeedbackStatus(String feedbackId, String status) async {
+    try {
+      await _firestore
+          .collection('feedback')
+          .doc(feedbackId)
+          .update({'status': status});
+      print("✅ Feedback status updated to $status");
+    } catch (e) {
+      print("❌ Error updating feedback status: $e");
+      rethrow;
+    }
   }
 }

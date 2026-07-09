@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ActivitySelectionScreen.dart';
-import '../viewmodel/journal_entry_viewmodel.dart'; // Import your new ViewModel layer!
-
+import '../../viewmodel/journal_entry_viewmodel.dart';
 class JournalEntryScreen extends StatefulWidget {
   const JournalEntryScreen({super.key});
 

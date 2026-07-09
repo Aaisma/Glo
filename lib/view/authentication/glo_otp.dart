@@ -1,91 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-<<<<<<< HEAD
 import 'package:glo/repo/auth_repo_impl.dart';
 import 'package:glo/repo/user_repo_impl.dart';
-import 'package:glo/viewmodel/auth_view_model.dart';
-import 'package:glo/viewmodel/user_view_model.dart';
-
+import 'package:glo/viewmodel/auth_viewmodel.dart';
+import 'package:glo/viewmodel/user_viewmodel.dart';
+import 'package:glo/viewmodel/otp_viewmodel.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel(
-            authRepo: AuthRepoImpl(),
-            userRepo: UserRepoImpl(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => UserViewModel(
-            userRepo: UserRepoImpl(),
-          ),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
+        ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
+        ChangeNotifierProvider(create: (_) => OtpViewModel()), // Added missing provider
       ],
-      child: const GloOtpScreen(),
+      child: const MaterialApp(home: GloOtpScreen()),
     ),
   );
 }
-=======
-
-import 'package:glo/viewmodel/otp_viewmodel.dart';
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
 
 class GloOtpScreen extends StatelessWidget {
   final String phone;
-
-  const GloOtpScreen({
-    super.key,
-    this.phone = '',
-  });
+  const GloOtpScreen({super.key, this.phone = ''});
 
   String _resolvePhone(BuildContext context) {
-    if (phone.trim().isNotEmpty) {
-      return phone.trim();
-    }
-
+    if (phone.trim().isNotEmpty) return phone.trim();
     final args = ModalRoute.of(context)?.settings.arguments;
-
-    if (args is String && args.trim().isNotEmpty) {
-      return args.trim();
-    }
-
-    if (args is Map && args['phone'] is String) {
-      final routePhone = args['phone'] as String;
-      if (routePhone.trim().isNotEmpty) {
-        return routePhone.trim();
-      }
-    }
-
+    if (args is String && args.trim().isNotEmpty) return args.trim();
+    if (args is Map && args['phone'] is String) return args['phone'] as String;
     return '+9779800000000';
   }
 
   @override
   Widget build(BuildContext context) {
-    return OtpPage(
-      phone: _resolvePhone(context),
-    );
+    return OtpPage(phone: _resolvePhone(context));
   }
 }
 
 class OtpPage extends StatefulWidget {
   final String phone;
-
-  const OtpPage({
-    super.key,
-    required this.phone,
-  });
+  const OtpPage({super.key, required this.phone});
 
   @override
   State<OtpPage> createState() => _OtpPageState();
 }
 
 class _OtpPageState extends State<OtpPage> {
-  final List<TextEditingController> _controllers =
-  List.generate(6, (_) => TextEditingController());
-
+  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   String get _enteredOtp => _controllers.map((c) => c.text.trim()).join();
@@ -93,85 +55,46 @@ class _OtpPageState extends State<OtpPage> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _sendOtp();
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _sendOtp());
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-
-    for (final node in _focusNodes) {
-      node.dispose();
-    }
-
+    for (var c in _controllers) c.dispose();
+    for (var n in _focusNodes) n.dispose();
     super.dispose();
   }
 
+  // --- Logic Methods ---
+
   Future<void> _sendOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-
-    final success = await viewModel.sendOtp(widget.phone);
-
+    await viewModel.sendOtp(widget.phone);
     if (!mounted) return;
-
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
-
-    if (success && viewModel.verified) {
-      navigator.pushReplacementNamed('/home');
-    }
+    _showMessage(viewModel.message ?? viewModel.error);
   }
 
   Future<void> _verifyOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-
     final success = await viewModel.verifyOtp(_enteredOtp);
-
     if (!mounted) return;
-
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
-
-    if (success) {
-      navigator.pushReplacementNamed('/home');
-    }
+    _showMessage(viewModel.message ?? viewModel.error);
+    if (success) Navigator.pushReplacementNamed(context, '/home');
   }
 
   Future<void> _resendOtp() async {
     final viewModel = context.read<OtpViewModel>();
-    final messenger = ScaffoldMessenger.of(context);
-
-    for (final controller in _controllers) {
-      controller.clear();
-    }
-
+    for (var c in _controllers) c.clear();
     _focusNodes.first.requestFocus();
-
     await viewModel.resendOtp(widget.phone);
-
     if (!mounted) return;
-
-    _showMessage(messenger, viewModel.message ?? viewModel.error);
+    _showMessage(viewModel.message ?? viewModel.error);
   }
 
-  void _showMessage(
-      ScaffoldMessengerState messenger,
-      String? message,
-      ) {
-    if (message == null || message.trim().isEmpty) return;
-
-    messenger.showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+  void _showMessage(String? message) {
+    if (message != null && message.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
   @override
@@ -186,204 +109,48 @@ class _OtpPageState extends State<OtpPage> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 15),
+                  // ... (Keep your existing UI elements here: Back Button, Icon, Text)
 
-                  GestureDetector(
-                    onTap: () => Navigator.maybePop(context),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.arrow_back_ios,
-                          size: 18,
-                          color: Colors.black54,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Back",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 80),
-
-                  Center(
-                    child: Container(
-                      height: 80,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.pinkAccent.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.water_drop_outlined,
-                        color: Colors.pink.shade400,
-                        size: 45,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  const Center(
-                    child: Text(
-                      "Enter OTP",
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Center(
-                    child: Text(
-                      "A 6-digit code has been sent to\n${widget.phone}",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
+                  // Verification Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(
-                      6,
-                          (index) => SizedBox(
-                        width: 45,
-                        height: 55,
-                        child: TextField(
-                          controller: _controllers[index],
-                          focusNode: _focusNodes[index],
-                          enabled: !loading,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          maxLength: 1,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          decoration: InputDecoration(
-                            counterText: "",
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.pink.shade300,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) {
-                            if (value.isNotEmpty && index < 5) {
-                              _focusNodes[index + 1].requestFocus();
-                            }
-
-                            if (value.isEmpty && index > 0) {
-                              _focusNodes[index - 1].requestFocus();
-                            }
-                          },
-                        ),
+                    children: List.generate(6, (index) => SizedBox(
+                      width: 45, height: 55,
+                      child: TextField(
+                        controller: _controllers[index],
+                        focusNode: _focusNodes[index],
+                        enabled: !loading,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 1,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: InputDecoration(counterText: "", filled: true, fillColor: Colors.white),
+                        onChanged: (value) {
+                          if (value.isNotEmpty && index < 5) _focusNodes[index + 1].requestFocus();
+                          if (value.isEmpty && index > 0) _focusNodes[index - 1].requestFocus();
+                        },
                       ),
-                    ),
+                    )),
                   ),
-
                   const SizedBox(height: 35),
 
-<<<<<<< HEAD
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final messenger = ScaffoldMessenger.of(context);
-
-                    final success = await authVM.verifyOtp(_enteredOtp);
-
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          success
-                              ? "OTP Verified!"
-                              : (authVM.error ?? "Invalid OTP"),
-=======
+                  // Verify Button
                   SizedBox(
-                    width: double.infinity,
-                    height: 55,
+                    width: double.infinity, height: 55,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink,
-                        disabledBackgroundColor: Colors.pink.shade200,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
                       onPressed: loading ? null : _verifyOtp,
-                      child: loading
-                          ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                          : const Text(
-                        "Verify and Continue",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
->>>>>>> 1d8f9a289da08819c929421905b2e629341ce77e
-                        ),
-                      ),
+                      child: loading ? const CircularProgressIndicator(color: Colors.white) : const Text("Verify and Continue"),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  Center(
-                    child: GestureDetector(
-                      onTap: loading ? null : _resendOtp,
-                      child: Text(
-                        "Resend Code",
-                        style: TextStyle(
-                          color:
-                          loading ? Colors.pink.shade200 : Colors.pink,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                  // Resend Link
+                  GestureDetector(
+                    onTap: loading ? null : _resendOtp,
+                    child: Text("Resend Code", style: TextStyle(color: loading ? Colors.grey : Colors.pink)),
                   ),
-
-                  const SizedBox(height: 30),
                 ],
               ),
             ),

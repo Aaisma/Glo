@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'repo/admin_analytics_repo_impl.dart';
 import 'viewmodel/admin_analytics_viewmodel.dart';
-import 'view/admin_dashboard_screen.dart';
+import 'view/glo_admin/admin_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
