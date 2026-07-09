@@ -12,4 +12,6 @@ abstract class HistoryRepo {
   Stream<List<HistoryModel>> getHistoryStream(String userId);
 
   Stream<int> getAllHistoryCountStream();
+
+  Stream<int> getUserHistoryCountStream(String userId);
 }

@@ -7,10 +7,13 @@ import 'package:provider/provider.dart';
 
 import 'package:glo/viewmodel/image_viewmodel.dart';
 import 'package:glo/view/navigation_icon/calendar_screen.dart';
-import 'package:glo/view/components/top_navigation.dart';
 import 'package:glo/view/components/bottom_navigation.dart';
 
+import 'feedback_home_screen.dart';
 import 'glo_about_us_screen.dart';
+import 'glo_goal_screen.dart';
+import 'help_support_page.dart';
+import 'personal_info_page.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -39,6 +42,13 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     if (name != null && name.isNotEmpty) return name;
     if (email != null && email.isNotEmpty) return email.split("@").first;
     return "User";
+  }
+
+  void _openPage(Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => page),
+    );
   }
 
   void _onBottomTap(int index) {
@@ -380,11 +390,13 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 
   void _onMenuTap(String title) {
-    if (title == "About Us") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const GloAboutUsScreen()),
-      );
+    if (title == "My Goal") {
+      _openPage(const GoalScreen());
+      return;
+    }
+
+    if (title == "Personal Information") {
+      _openPage(const PersonalInformationPage());
       return;
     }
 
@@ -393,8 +405,18 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
       return;
     }
 
-    if (title == "Personal Information") {
-      _editProfile();
+    if (title == "Feedback") {
+      _openPage(const FeedbackHomeScreen());
+      return;
+    }
+
+    if (title == "Help & Support") {
+      _openPage(const HelpSupportPage());
+      return;
+    }
+
+    if (title == "About Us" || title == "About Glo") {
+      _openPage(const GloAboutUsScreen());
       return;
     }
 
@@ -464,10 +486,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
-                  TopNavigation(
-                    isLoggedIn: true,
-                    userName: _userName,
-                  ),
+                  const _ProfileHeader(),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 188,
@@ -493,6 +512,28 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: 52,
+      child: Center(
+        child: Text(
+          "Profile",
+          style: TextStyle(
+            fontFamily: "Georgia",
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: _GloProfileScreenState.dark,
           ),
         ),
       ),

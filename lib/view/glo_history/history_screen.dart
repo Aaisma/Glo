@@ -1,15 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:glo/model/history_model.dart';
 import 'package:glo/view/glo_profile/glo_profile.dart';
 import 'package:glo/view/navigation_icon/calendar_screen.dart';
-import 'package:glo/view/components/top_navigation.dart';
 import 'package:glo/view/components/bottom_navigation.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:glo/viewmodel/history_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,153 +21,6 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final List<Map<String, dynamic>> historyItems = [
-    {
-      "id": "medication_history",
-      "type": "medication",
-      "title": "Medication History",
-      "icon": Icons.medication_outlined,
-      "content": [
-        "Paracetamol - 500mg daily",
-        "Vitamin D - Weekly dose",
-        "Side effects: None",
-      ],
-      "details":
-      "You’ve been consistent with your medication routine. No side effects reported. Keep hydration high and continue weekly Vitamin D doses.",
-    },
-    {
-      "id": "visit_history",
-      "type": "visit",
-      "title": "Visit History",
-      "icon": Icons.local_hospital_outlined,
-      "content": [
-        "Dr. Sharma - 12 May 2026",
-        "Treatment: Acne therapy",
-        "Follow-up: 20 June 2026",
-      ],
-      "details":
-      "Your last visit focused on acne therapy. Follow-up scheduled for 20 June 2026. Consider tracking skin changes before the next visit.",
-    },
-    {
-      "id": "cycle_history",
-      "type": "cycle",
-      "title": "Cycle History",
-      "icon": Icons.calendar_month_outlined,
-      "content": [
-        "Last Period: 3 June 2026",
-        "Duration: 5 days",
-        "Irregularity: April shorter cycle",
-      ],
-      "details":
-      "Cycle duration stable at 5 days. April showed a shorter cycle — monitor next two months for pattern consistency.",
-    },
-    {
-      "id": "acne_history",
-      "type": "acne",
-      "title": "Acne History",
-      "icon": Icons.face_retouching_natural_outlined,
-      "content": [
-        "Triggers: Stress, Oily Food",
-        "Treatment: Salicylic Acid",
-        "Severity: Moderate",
-      ],
-      "details":
-      "Stress and oily food remain primary triggers. Continue using salicylic acid and maintain a balanced diet to reduce flare-ups.",
-    },
-    {
-      "id": "mood_history",
-      "type": "mood",
-      "title": "Mood History",
-      "icon": Icons.mood_outlined,
-      "content": [
-        "Average Mood: Calm",
-        "Mood Swings: Mild",
-        "Linked to Acne Flare-Ups",
-      ],
-      "details":
-      "Mood stability improving. Mild swings linked to acne flare-ups. Mindfulness and hydration help maintain calmness.",
-    },
-    {
-      "id": "journal_notes",
-      "type": "journal",
-      "title": "Journal Notes",
-      "icon": Icons.menu_book_outlined,
-      "content": [
-        "Self-Care: Meditation, Hydration",
-        "Lifestyle Log: 7 Entries This Week",
-      ],
-      "details":
-      "Great consistency in journaling! Meditation and hydration are helping maintain balance. Keep logging daily reflections.",
-    },
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _syncHistoryToFirestore();
-  }
-
-  Future<void> _syncHistoryToFirestore() async {
-    await FirebaseFirestore.instance.collection("history").doc("history_screen").set({
-      "title": "History Screen",
-      "topic": "Glo App History",
-      "sections": historyItems.map((item) {
-        return {
-          "id": item["id"],
-          "type": item["type"],
-          "title": item["title"],
-          "content": item["content"],
-          "details": item["details"],
-        };
-      }).toList(),
-      "updatedAt": FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> _exportCycleData() async {
-    final cycleData = {
-      "lastPeriod": "3 June 2026",
-      "duration": "5 days",
-      "irregularity": "April shorter cycle",
-    };
-
-    final directory = await getApplicationDocumentsDirectory();
-
-    final jsonFile = File('${directory.path}/cycle_data.json');
-    await jsonFile.writeAsString(jsonEncode(cycleData));
-
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build: (_) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              "Cycle History",
-              style: pw.TextStyle(
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Text("Last Period: ${cycleData['lastPeriod']}"),
-            pw.Text("Duration: ${cycleData['duration']}"),
-            pw.Text("Irregularity: ${cycleData['irregularity']}"),
-          ],
-        ),
-      ),
-    );
-
-    final pdfFile = File('${directory.path}/cycle_data.pdf');
-    await pdfFile.writeAsBytes(await pdf.save());
-
-    await Share.shareXFiles(
-      [XFile(jsonFile.path), XFile(pdfFile.path)],
-      text: 'Cycle Data Export',
-    );
-  }
-
   void _onBottomTap(int index) {
     if (index == 3) return;
 
@@ -185,24 +34,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => CalendarScreen()),
+          MaterialPageRoute(
+            builder: (_) => CalendarScreen(),
+          ),
         );
         break;
       case 4:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const GloProfileScreen()),
+          MaterialPageRoute(
+            builder: (_) => const GloProfileScreen(),
+          ),
         );
         break;
       default:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Screen not connected yet")),
+          const SnackBar(
+            content: Text('Screen not connected yet'),
+          ),
         );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: HistoryScreen.softPink,
       bottomNavigationBar: BottomNavigation(
@@ -212,7 +69,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/background.png"),
+            image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -223,28 +80,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
-                  const TopNavigation(
-                    isLoggedIn: true,
-                    userName: "History",
-                  ),
+                  _buildHeader(),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          ...historyItems.map(
-                                (item) => _buildSection(
-                              title: item["title"],
-                              icon: item["icon"],
-                              content: List<String>.from(item["content"]),
-                              details: item["details"],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          _exportButton(),
-                        ],
-                      ),
-                    ),
+                    child: userId == null
+                        ? _buildMessage(
+                      icon: Icons.person_outline,
+                      title: 'Login required',
+                      message: 'Please login to view your history.',
+                    )
+                        : _buildHistoryList(userId),
                   ),
                 ],
               ),
@@ -255,63 +100,136 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required List<String> content,
-    required String details,
-  }) {
+  Widget _buildHeader() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
+      child: Center(
+        child: Text(
+          'history',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: HistoryScreen.pink,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryList(String userId) {
+    final viewModel = context.read<HistoryViewModel>();
+
+    return StreamBuilder<List<HistoryModel>>(
+      stream: viewModel.getHistoryStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: HistoryScreen.pink,
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return _buildMessage(
+            icon: Icons.error_outline,
+            title: 'Unable to load history',
+            message: snapshot.error.toString(),
+          );
+        }
+
+        final historyItems = snapshot.data ?? [];
+
+        if (historyItems.isEmpty) {
+          return _buildMessage(
+            icon: Icons.history,
+            title: 'No history yet',
+            message: 'Your saved activity will appear here.',
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              ...historyItems.map(
+                    (item) => _buildSection(item),
+              ),
+              const SizedBox(height: 10),
+              _exportButton(historyItems),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSection(HistoryModel item) {
     return GestureDetector(
-      onTap: () => _showDetailsDialog(title, details),
+      onTap: () => _showDetailsDialog(
+        item.title,
+        item.details,
+      ),
       child: _SoftCard(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            _RoundIcon(icon: icon, iconSize: 29),
+            _RoundIcon(
+              icon: item.icon,
+              iconSize: 29,
+            ),
             const SizedBox(width: 14),
             Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: SizedBox(
-                  width: 260,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    style: const TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: HistoryScreen.dark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ...item.content.map(
+                        (contentItem) => Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: Text(
+                        contentItem,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
                         style: const TextStyle(
-                          fontFamily: "Georgia",
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          height: 1,
                           color: HistoryScreen.dark,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      ...content.map(
-                            (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Text(
-                            item,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            softWrap: false,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              height: 1,
-                              color: HistoryScreen.dark,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(item.date),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: HistoryScreen.dark.withValues(alpha: 0.60),
+                    ),
+                  ),
+                ],
               ),
             ),
             const Icon(
@@ -325,52 +243,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  void _showDetailsDialog(String title, String details) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: HistoryScreen.softPink,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: "Georgia",
-            color: HistoryScreen.dark,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          details,
-          style: const TextStyle(
-            color: HistoryScreen.dark,
-            fontSize: 15,
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Close",
-              style: TextStyle(color: HistoryScreen.pink),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _exportButton() {
+  Widget _exportButton(List<HistoryModel> historyItems) {
     return GestureDetector(
-      onTap: _exportCycleData,
+      onTap: () {
+        context.read<HistoryViewModel>().exportCycleData(
+          items: historyItems,
+        );
+      },
       child: Container(
         height: 58,
         decoration: BoxDecoration(
           color: const Color(0xFFFFF3F7).withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: HistoryScreen.borderPink),
+          border: Border.all(
+            color: HistoryScreen.borderPink,
+          ),
           boxShadow: [
             BoxShadow(
               color: HistoryScreen.pink.withValues(alpha: 0.10),
@@ -390,7 +277,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             SizedBox(width: 12),
             Flexible(
               child: Text(
-                "Export Cycle Data",
+                'Export Cycle Data',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -404,6 +291,110 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildMessage({
+    required IconData icon,
+    required String title,
+    required String message,
+  }) {
+    return Center(
+      child: _SoftCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: HistoryScreen.pink,
+              size: 42,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+                color: HistoryScreen.dark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.35,
+                color: HistoryScreen.dark.withValues(alpha: 0.70),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDetailsDialog(
+      String title,
+      String details,
+      ) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: HistoryScreen.softPink,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Georgia',
+            color: HistoryScreen.dark,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          details.isEmpty ? 'No details available.' : details,
+          style: const TextStyle(
+            color: HistoryScreen.dark,
+            fontSize: 15,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Close',
+              style: TextStyle(
+                color: HistoryScreen.pink,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
 
@@ -454,7 +445,9 @@ class _SoftCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: HistoryScreen.softPink.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: HistoryScreen.borderPink),
+        border: Border.all(
+          color: HistoryScreen.borderPink,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.pink.withValues(alpha: 0.04),

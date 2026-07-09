@@ -1,28 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../model/history_model.dart';
 
 class HistoryService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  CollectionReference<Map<String, dynamic>> _historyRef(String userId) {
-    return _db.collection('users').doc(userId).collection('history');
+  CollectionReference<Map<String, dynamic>> get _historyRef {
+    return _db.collection('history');
   }
 
   Future<void> addHistory(
       HistoryModel history,
       String userId,
       ) async {
-    final docRef = _historyRef(userId).doc();
+    final docRef = _historyRef.doc();
 
     await docRef.set({
       ...history.toMap(),
       'id': docRef.id,
+      'userId': userId,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
   Future<List<HistoryModel>> getHistory(String userId) async {
-    final snapshot = await _historyRef(userId)
+    final snapshot = await _historyRef
+        .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .get();
 
@@ -37,7 +41,8 @@ class HistoryService {
   }
 
   Stream<List<HistoryModel>> getHistoryStream(String userId) {
-    return _historyRef(userId)
+    return _historyRef
+        .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
         .map(
@@ -56,10 +61,9 @@ class HistoryService {
       HistoryModel history,
       String userId,
       ) async {
-    await _historyRef(userId)
-        .doc(history.id)
-        .update({
+    await _historyRef.doc(history.id).update({
       ...history.toMap(),
+      'userId': userId,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -68,22 +72,18 @@ class HistoryService {
       String userId,
       String historyId,
       ) async {
-    await _historyRef(userId)
-        .doc(historyId)
-        .delete();
+    await _historyRef.doc(historyId).delete();
   }
 
-  Stream<int> getHistoryCountStream() {
-    return _db
-        .collectionGroup('history')
-        .snapshots()
-        .map(
+  Stream<int> getAllHistoryCountStream() {
+    return _historyRef.snapshots().map(
           (snapshot) => snapshot.docs.length,
     );
   }
 
   Stream<int> getUserHistoryCountStream(String userId) {
-    return _historyRef(userId)
+    return _historyRef
+        .where('userId', isEqualTo: userId)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs.length,

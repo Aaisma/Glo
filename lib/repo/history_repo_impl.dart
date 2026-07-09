@@ -32,21 +32,22 @@ class HistoryRepoImpl implements HistoryRepo {
   }
 
   @override
-  Future<List<HistoryModel>> getHistory(
-      String userId,
-      ) {
+  Future<List<HistoryModel>> getHistory(String userId) {
     return service.getHistory(userId);
   }
 
   @override
-  Stream<List<HistoryModel>> getHistoryStream(
-      String userId,
-      ) {
+  Stream<List<HistoryModel>> getHistoryStream(String userId) {
     return service.getHistoryStream(userId);
   }
 
   @override
   Stream<int> getAllHistoryCountStream() {
-    return service.getHistoryCountStream();
+    return service.getAllHistoryCountStream();
+  }
+
+  @override
+  Stream<int> getUserHistoryCountStream(String userId) {
+    return service.getUserHistoryCountStream(userId);
   }
 }

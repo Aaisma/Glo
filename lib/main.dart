@@ -18,6 +18,7 @@ import 'package:glo/repo/history_repo_impl.dart';
 import 'package:glo/repo/image_repo_impl.dart';
 
 // Services
+import 'package:glo/services/firestore_history_service.dart';
 import 'package:glo/services/history_service.dart';
 
 // Screens
@@ -150,26 +151,36 @@ class GloApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<FirestoreHistoryService>(
+          create: (_) => FirestoreHistoryService(),
+        ),
+
         ChangeNotifierProvider<OtpViewModel>(
           create: (_) => OtpViewModel(),
         ),
+
         ChangeNotifierProvider<MedicationViewModel>(
           create: (_) => MedicationViewModel(),
         ),
+
         ChangeNotifierProvider<VisitViewModel>(
           create: (_) => VisitViewModel(),
         ),
+
         ChangeNotifierProvider<HealthViewModel>(
           create: (_) => HealthViewModel(),
         ),
+
         ChangeNotifierProvider<ImageViewModel>(
           create: (_) => ImageViewModel(
             ImageRepoImpl(),
           ),
         ),
+
         ChangeNotifierProvider<ProfileViewModel>(
           create: (_) => ProfileViewModel(),
         ),
+
         ChangeNotifierProvider<HistoryViewModel>(
           create: (_) => HistoryViewModel(
             HistoryRepoImpl(
@@ -190,7 +201,9 @@ class GloApp extends StatelessWidget {
         ),
 
         // Testing Profile directly
-        home: const GloProfileScreen(),
+        home: const MedicationScreen(
+          userId: GloApp.testUserId,
+        ),
 
         routes: {
           '/login': (_) => const GloOtpScreen(phone: testPhone),
@@ -220,4 +233,4 @@ class GloApp extends StatelessWidget {
       ),
     );
   }
-}
+} 

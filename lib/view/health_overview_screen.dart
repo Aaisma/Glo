@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../model/health_overview_model.dart';
+import '../viewmodel/admin_health_overview_viewmodel.dart';
 
 class HealthOverviewScreen extends StatelessWidget {
-  const HealthOverviewScreen({
-    super.key,
-    this.data,
-  });
-
-  final HealthOverviewData? data;
+  const HealthOverviewScreen({super.key});
 
   static const Color primaryBlue = Color(0xFF9BD8FA);
   static const Color deepBlue = Color(0xFF21475E);
@@ -15,11 +13,11 @@ class HealthOverviewScreen extends StatelessWidget {
   static const Color bg = Color(0xFFF4FBFF);
   static const Color borderBlue = Color(0xFFDDF2FF);
 
-  bool get hasData => data != null;
-
   @override
   Widget build(BuildContext context) {
-    final overview = data ?? HealthOverviewData.empty();
+    final vm = Provider.of<AdminHealthOverviewViewModel>(context);
+    final overview = vm.overview ?? HealthOverviewData.empty();
+    final hasData = vm.overview != null;
 
     final cards = [
       StatCardData(
@@ -55,7 +53,9 @@ class HealthOverviewScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: vm.loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +83,8 @@ class HealthOverviewScreen extends StatelessWidget {
                 itemCount: cards.length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
@@ -113,89 +114,6 @@ class HealthOverviewScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class HealthOverviewData {
-  final String dateRange;
-
-  final int activeUsers;
-  final int totalVisits;
-  final int totalTreatments;
-  final int totalReminders;
-
-  final String activeUsersChange;
-  final String visitsChange;
-  final String treatmentsChange;
-  final String remindersChange;
-
-  final String activeUsersDetails;
-  final String visitsDetails;
-  final String treatmentsDetails;
-  final String remindersDetails;
-
-  final List<TreatmentStat> topTreatments;
-
-  const HealthOverviewData({
-    required this.dateRange,
-    required this.activeUsers,
-    required this.totalVisits,
-    required this.totalTreatments,
-    required this.totalReminders,
-    required this.activeUsersChange,
-    required this.visitsChange,
-    required this.treatmentsChange,
-    required this.remindersChange,
-    required this.activeUsersDetails,
-    required this.visitsDetails,
-    required this.treatmentsDetails,
-    required this.remindersDetails,
-    required this.topTreatments,
-  });
-
-  factory HealthOverviewData.empty() {
-    return const HealthOverviewData(
-      dateRange: "No data available yet",
-      activeUsers: 0,
-      totalVisits: 0,
-      totalTreatments: 0,
-      totalReminders: 0,
-      activeUsersChange: "0%",
-      visitsChange: "0%",
-      treatmentsChange: "0%",
-      remindersChange: "0%",
-      activeUsersDetails: "No user data has been added yet.",
-      visitsDetails: "No visit data has been added yet.",
-      treatmentsDetails: "No treatment data has been added yet.",
-      remindersDetails: "No reminder data has been added yet.",
-      topTreatments: [],
-    );
-  }
-}
-
-class TreatmentStat {
-  final String name;
-  final int count;
-
-  const TreatmentStat({
-    required this.name,
-    required this.count,
-  });
-}
-
-class StatCardData {
-  final String title;
-  final String value;
-  final String percent;
-  final IconData icon;
-  final String details;
-
-  const StatCardData({
-    required this.title,
-    required this.value,
-    required this.percent,
-    required this.icon,
-    required this.details,
-  });
 }
 
 class _Header extends StatelessWidget {
@@ -265,6 +183,10 @@ class _EmptyNotice extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Decoration? _cardDecoration() {
+    return null;
   }
 }
 
@@ -397,6 +319,10 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+
+  Decoration? _cardDecoration() {
+    return null;
+  }
 }
 
 class _ChartCard extends StatelessWidget {
@@ -424,6 +350,10 @@ class _ChartCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Decoration? _cardDecoration() {
+    return null;
   }
 }
 
@@ -492,19 +422,8 @@ class _TopTreatmentsCard extends StatelessWidget {
       ),
     );
   }
-}
 
-BoxDecoration _cardDecoration() {
-  return BoxDecoration(
-    color: HealthOverviewScreen.cardBlue,
-    borderRadius: BorderRadius.circular(20),
-    border: Border.all(color: HealthOverviewScreen.borderBlue),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.lightBlue.withValues(alpha: .07),
-        blurRadius: 18,
-        offset: const Offset(0, 6),
-      ),
-    ],
-  );
+  Decoration? _cardDecoration() {
+    return null;
+  }
 }
