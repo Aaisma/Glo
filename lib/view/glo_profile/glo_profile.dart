@@ -5,19 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-
 import 'package:glo/view/components/bottom_navigation.dart';
+import 'package:glo/view/components/top_navigation.dart';
 import 'package:glo/view/navigation_icon/calendar_screen.dart';
 import 'package:glo/viewmodel/profile_viewmodel.dart';
+import 'package:glo/view/glo_profile/glo_feedback/feedback_welcome_screen.dart';
 
 import 'glo_about_us_screen.dart';
 import 'glo_goal_screen.dart';
 import 'help_support_page.dart';
 import 'personal_info_page.dart';
-import 'package:glo/view/glo_profile/glo_feedback/feedback_welcome_screen.dart';
 
 class GloProfileScreen extends StatefulWidget {
-  const GloProfileScreen({super.key});
+  const GloProfileScreen({
+    super.key,
+    this.firebaseAuth,
+    this.imagePicker,
+  });
+
+  final FirebaseAuth? firebaseAuth;
+  final ImagePicker? imagePicker;
 
   @override
   State<GloProfileScreen> createState() => _GloProfileScreenState();
@@ -26,6 +33,12 @@ class GloProfileScreen extends StatefulWidget {
 class _GloProfileScreenState extends State<GloProfileScreen> {
   final int _currentIndex = 4;
   bool _profileLoaded = false;
+
+  FirebaseAuth get _firebaseAuth =>
+      widget.firebaseAuth ?? FirebaseAuth.instance;
+
+  ImagePicker get _imagePicker =>
+      widget.imagePicker ?? ImagePicker();
 
   static const pink = Color(0xFFE85D8A);
   static const softPink = Color(0xFFFFF7FA);
@@ -46,7 +59,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 
   String get _authName {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _firebaseAuth.currentUser;
     final name = user?.displayName?.trim();
     final email = user?.email?.trim();
 
@@ -56,11 +69,11 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 
   String get _authEmail {
-    return FirebaseAuth.instance.currentUser?.email?.trim() ?? "";
+    return _firebaseAuth.currentUser?.email?.trim() ?? "";
   }
 
   String get _authPhotoUrl {
-    return FirebaseAuth.instance.currentUser?.photoURL?.trim() ?? "";
+    return _firebaseAuth.currentUser?.photoURL?.trim() ?? "";
   }
 
   String _usernameFromEmail(String email) {
@@ -102,32 +115,36 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     return null;
   }
 
-  void _openPage(Widget page) {
-    Navigator.push(
+  Future<void> _openPage(Widget page) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => page),
     );
+
+    if (!mounted) return;
+    await context.read<ProfileViewModel>().loadProfile();
   }
 
   void _onBottomTap(int index) {
     if (index == _currentIndex) return;
 
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => CalendarScreen()),
-      );
-      return;
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/insights');
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CalendarScreen()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/history');
+        break;
     }
-
-    if (index == 3) {
-      Navigator.pushReplacementNamed(context, '/history');
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Screen not connected yet")),
-    );
   }
 
   Future<void> _pickProfileImage() async {
@@ -135,7 +152,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     final vm = context.read<ProfileViewModel>();
 
     try {
-      final image = await ImagePicker().pickImage(
+      final image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
         maxWidth: 800,
@@ -266,6 +283,10 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                     setDialogState(() => isSaving = false);
 
                     if (success) {
+                      await vm.loadProfile();
+
+                      if (!mounted || !dialogContext.mounted) return;
+
                       navigator.pop();
 
                       messenger.showSnackBar(
@@ -548,7 +569,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
-                  const _ProfileHeader(),
+                  const TopNavigation(title: "Profile"),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 188,
@@ -576,28 +597,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 52,
-      child: Center(
-        child: Text(
-          "Profile",
-          style: TextStyle(
-            fontFamily: "Georgia",
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: _GloProfileScreenState.dark,
           ),
         ),
       ),
