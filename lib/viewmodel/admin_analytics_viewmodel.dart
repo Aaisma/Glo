@@ -43,6 +43,8 @@ class AdminAnalyticsViewModel extends ChangeNotifier {
   Map<String, dynamic>? highestIntakeUser;
   double dehydrationRiskRate = 0;
 
+  Map<String, String> _userNames = {};
+
   Future<void> loadData() async {
     isLoading = true;
     errorMessage = null;
@@ -79,6 +81,7 @@ class AdminAnalyticsViewModel extends ChangeNotifier {
       averageProductsPerEntry = await _repo.getAverageProductsPerEntry();
       highestIntakeUser = await _repo.getHighestIntakeUser();
       dehydrationRiskRate = await _repo.getDehydrationRiskRate();
+      _userNames = await _repo.getUserNames();
     } catch (e) {
       errorMessage = "Failed to load analytics: $e";
     } finally {
@@ -88,4 +91,15 @@ class AdminAnalyticsViewModel extends ChangeNotifier {
   }
 
   String maskId(String id) => id.length > 4 ? "•••${id.substring(id.length - 4)}" : id;
+
+  /// Returns a display-friendly string for a given Firestore userId.
+  /// Looks up the real name loaded via getUserNames(); if that user has
+  /// no name on file (or the lookup hasn't happened yet), falls back to
+  /// the masked ID so the UI never shows a raw, unmasked Firestore ID.
+  String displayNameForUser(String? userId) {
+    if (userId == null || userId.isEmpty) return "Unknown User";
+    final realName = _userNames[userId];
+    if (realName != null && realName.isNotEmpty) return realName;
+    return maskId(userId);
+  }
 }

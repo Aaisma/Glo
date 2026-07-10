@@ -30,6 +30,7 @@ import 'repo/acne_repo_impl.dart';
 import 'repo/admin_monthly_tracking_repo.dart';
 import 'repo/water_tracker_repo_impl.dart';
 import 'repo/nutrition_repo_impl.dart';
+// admin analytics removed — not part of this workspace owner
 
 // ViewModels
 import 'viewmodel/user_view_model.dart';
@@ -44,12 +45,11 @@ import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
 import 'viewmodel/water_tracker_viewmodel.dart';
 import 'viewmodel/nutrition_tracker_viewmodel.dart';
+// admin analytics viewmodel removed
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Hive
   await Hive.initFlutter();
@@ -72,16 +72,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
-        ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
-        
+        ChangeNotifierProvider(
+          create: (_) => UserViewModel(userRepo: UserRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl()),
+        ),
+
         ChangeNotifierProxyProvider<UserViewModel, PeriodViewModel>(
           create: (_) => PeriodViewModel(PeriodRepoImpl()),
-          update: (_, userVM, periodVM) => periodVM!..updateUserId(userVM.userId),
+          update: (_, userVM, periodVM) =>
+          periodVM!..updateUserId(userVM.userId),
         ),
         ChangeNotifierProxyProvider<UserViewModel, OvulationViewModel>(
           create: (_) => OvulationViewModel(OvulationRepoImpl()),
-          update: (_, userVM, ovulationVM) => ovulationVM!..updateUserId(userVM.userId),
+          update: (_, userVM, ovulationVM) =>
+          ovulationVM!..updateUserId(userVM.userId),
         ),
         ChangeNotifierProxyProvider<UserViewModel, AcneTrackerViewModel>(
           create: (_) => AcneTrackerViewModel(AcneRepoImpl()),
@@ -93,31 +100,75 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<UserViewModel, NutritionTrackerViewModel>(
           create: (_) => NutritionTrackerViewModel(NutritionRepoImpl()),
-          update: (_, userVM, nutritionVM) => nutritionVM!..updateUserId(userVM.userId),
+          update: (_, userVM, nutritionVM) =>
+          nutritionVM!..updateUserId(userVM.userId),
         ),
 
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
 
         // Insights Module ViewModels
-        ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
-        ChangeNotifierProvider(create: (_) => FavoritesViewModel(InsightsRepoImpl(), CommunityRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CreateInsightViewModel(InsightsRepoImpl())),
-        ChangeNotifierProvider(create: (_) => InsightsLibraryViewModel(InsightsRepoImpl())),
-        ChangeNotifierProvider(create: (_) => ArticleDetailViewModel(InsightsRepoImpl(), InsightsModerationRepoImpl())),
+        ChangeNotifierProvider(
+          create: (_) => InsightsFeedViewModel(InsightsRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              FavoritesViewModel(InsightsRepoImpl(), CommunityRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CreateInsightViewModel(InsightsRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => InsightsLibraryViewModel(InsightsRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ArticleDetailViewModel(
+            InsightsRepoImpl(),
+            InsightsModerationRepoImpl(),
+          ),
+        ),
 
         // Community Module ViewModels
-        ChangeNotifierProvider(create: (_) => CommunityFeedViewModel(CommunityRepoImpl())),
-        ChangeNotifierProvider(create: (_) => DiscussionDetailViewModel(CommunityRepoImpl(), CommunityModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CreateDiscussionViewModel(CommunityRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CreatePollViewModel(CommunityRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CommunityLibraryViewModel(CommunityRepoImpl())),
+        ChangeNotifierProvider(
+          create: (_) => CommunityFeedViewModel(CommunityRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => DiscussionDetailViewModel(
+            CommunityRepoImpl(),
+            CommunityModerationRepoImpl(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CreateDiscussionViewModel(CommunityRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CreatePollViewModel(CommunityRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CommunityLibraryViewModel(CommunityRepoImpl()),
+        ),
 
         // Separated Moderation ViewModels
-        ChangeNotifierProvider(create: (_) => InsightsModerationQueueViewModel(InsightsModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => InsightsModerationDetailViewModel(InsightsModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CommunityModerationQueueViewModel(CommunityModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => CommunityModerationDetailViewModel(CommunityModerationRepoImpl())),
-        ChangeNotifierProvider(create: (_) => AdminMonthlyTrackingViewModel(AdminMonthlyTrackingRepoImpl())),
+        ChangeNotifierProvider(
+          create: (_) =>
+              InsightsModerationQueueViewModel(InsightsModerationRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              InsightsModerationDetailViewModel(InsightsModerationRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              CommunityModerationQueueViewModel(CommunityModerationRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              CommunityModerationDetailViewModel(CommunityModerationRepoImpl()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              AdminMonthlyTrackingViewModel(AdminMonthlyTrackingRepoImpl()),
+        ),
+        // Admin analytics provider removed (third-party feature)
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

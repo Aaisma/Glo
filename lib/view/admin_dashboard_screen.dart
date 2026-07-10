@@ -1,11 +1,204 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';
-import 'admin_nutrition_tracker_screen.dart';
+import 'nutrition_tracker_screen.dart';
 import './dashboard_card/admin/admin_monthly_tracking_screen.dart';
 
+// ============================================================================
+// ASSUMED FIRESTORE SCHEMA — adjust the collection/field names below (in
+// _DashboardRepo) to match your actual project if they differ.
+//
+//   users/{uid}
+//       name        (String)
+//       createdAt   (Timestamp)
+//       lastActiveAt(Timestamp)
+//
+//   tips_views/{id}      -> { userId, timestamp }   "Daily Tips"
+//   quiz_attempts/{id}   -> { userId, timestamp }   "Skincare Quiz"
+//   routine_logs/{id}    -> { userId, timestamp }   "Routine Tracker"
+//   water_logs/{id}      -> { userId, timestamp }   "Water Intake"
+//   community_posts/{id} -> { userId, timestamp }   "Posts Today"
+//   activity_logs/{id}   -> { userId, timestamp }   any user action,
+//                            used for "Most Active Time of Day" and to
+//                            rank "Top Active Users"
+// ============================================================================
+
 enum ChartView { bar, line, pie }
+enum DashboardRange { today, week, month }
+
+extension on DashboardRange {
+  String get label {
+    switch (this) {
+      case DashboardRange.today:
+        return 'Today';
+      case DashboardRange.week:
+        return 'This Week';
+      case DashboardRange.month:
+        return 'This Month';
+    }
+  }
+
+  DateTime get start {
+    final now = DateTime.now();
+    switch (this) {
+      case DashboardRange.today:
+        return DateTime(now.year, now.month, now.day);
+      case DashboardRange.week:
+        return now.subtract(const Duration(days: 7));
+      case DashboardRange.month:
+        return now.subtract(const Duration(days: 30));
+    }
+  }
+}
+
+class _DashboardData {
+  final int totalUsers;
+  final int activeUsers;
+  final int newSignups;
+  final int postsInRange;
+  final List<String> featureLabels;
+  final List<double> featureValues;
+  final List<Map<String, dynamic>> topUsers; // {name, count, color}
+  final List<double> timeOfDayBuckets; // [morning, afternoon, evening, night]
+
+  _DashboardData({
+    required this.totalUsers,
+    required this.activeUsers,
+    required this.newSignups,
+    required this.postsInRange,
+    required this.featureLabels,
+    required this.featureValues,
+    required this.topUsers,
+    required this.timeOfDayBuckets,
+  });
+}
+
+class _DashboardRepo {
+  final _db = FirebaseFirestore.instance;
+
+  Future<int> _countSince(String collection, DateTime since) async {
+    try {
+      final snap = await _db
+          .collection(collection)
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+          .get();
+      return snap.docs.length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<_DashboardData> load(DashboardRange range) async {
+    final since = range.start;
+    final oneDayAgo = DateTime.now().subtract(const Duration(hours: 24));
+
+    // --- Users ---
+    int totalUsers = 0;
+    int activeUsers = 0;
+    int newSignups = 0;
+    final Map<String, String> userNames = {}; // uid -> name
+
+    try {
+      final usersSnap = await _db.collection('users').get();
+      totalUsers = usersSnap.docs.length;
+      for (final doc in usersSnap.docs) {
+        final data = doc.data();
+        userNames[doc.id] = (data['name'] ?? 'Unknown User').toString();
+
+        final lastActive = data['lastActiveAt'];
+        if (lastActive is Timestamp && lastActive.toDate().isAfter(oneDayAgo)) {
+          activeUsers++;
+        }
+        final createdAt = data['createdAt'];
+        if (createdAt is Timestamp && createdAt.toDate().isAfter(since)) {
+          newSignups++;
+        }
+      }
+    } catch (_) {
+      // users collection missing/misnamed — leave at 0 rather than crash
+    }
+
+    // --- Posts today / in range ---
+    final postsInRange = await _countSince('community_posts', since);
+
+    // --- Feature usage ---
+    final featureLabels = ["Daily Tips", "Skincare Quiz", "Routine Tracker", "Water Intake"];
+    final featureCollections = ["tips_views", "quiz_attempts", "routine_logs", "water_logs"];
+    final featureValues = <double>[];
+    for (final col in featureCollections) {
+      featureValues.add((await _countSince(col, since)).toDouble());
+    }
+
+    // --- Activity logs: used for time-of-day + top active users ---
+    final timeOfDayBuckets = [0.0, 0.0, 0.0, 0.0]; // morning, afternoon, evening, night
+    final Map<String, int> activityCountByUser = {};
+
+    try {
+      final activitySnap = await _db
+          .collection('activity_logs')
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+          .get();
+
+      for (final doc in activitySnap.docs) {
+        final data = doc.data();
+        final ts = data['timestamp'];
+        if (ts is Timestamp) {
+          final hour = ts.toDate().hour;
+          if (hour >= 5 && hour < 12) {
+            timeOfDayBuckets[0]++;
+          } else if (hour >= 12 && hour < 17) {
+            timeOfDayBuckets[1]++;
+          } else if (hour >= 17 && hour < 21) {
+            timeOfDayBuckets[2]++;
+          } else {
+            timeOfDayBuckets[3]++;
+          }
+        }
+        final uid = data['userId'];
+        if (uid is String) {
+          activityCountByUser[uid] = (activityCountByUser[uid] ?? 0) + 1;
+        }
+      }
+    } catch (_) {
+      // activity_logs collection missing/misnamed — charts stay empty
+    }
+
+    // --- Top active users, ranked by activity count in range ---
+    final sortedUserIds = activityCountByUser.keys.toList()
+      ..sort((a, b) => activityCountByUser[b]!.compareTo(activityCountByUser[a]!));
+
+    final palette = [
+      const Color(0xFF4F8FE0),
+      const Color(0xFF9B7FE8),
+      const Color(0xFFFFB74D),
+      const Color(0xFF6FC3F7),
+    ];
+
+    final topUsers = <Map<String, dynamic>>[];
+    for (var i = 0; i < sortedUserIds.length && i < 4; i++) {
+      final uid = sortedUserIds[i];
+      topUsers.add({
+        "name": userNames[uid] ?? "Unknown User",
+        "count": activityCountByUser[uid],
+        "color": palette[i % palette.length],
+      });
+    }
+
+    return _DashboardData(
+      totalUsers: totalUsers,
+      activeUsers: activeUsers,
+      newSignups: newSignups,
+      postsInRange: postsInRange,
+      featureLabels: featureLabels,
+      featureValues: featureValues,
+      topUsers: topUsers,
+      timeOfDayBuckets: timeOfDayBuckets,
+    );
+  }
+}
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -16,22 +209,28 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   ChartView _chartView = ChartView.bar;
+  DashboardRange _range = DashboardRange.week;
+  final _repo = _DashboardRepo();
+  late Future<_DashboardData> _future;
 
-  final List<String> _featureLabels = ["Daily Tips", "Skincare Quiz", "Routine Tracker", "Water Intake"];
-  final List<double> _featureValues = [12, 8, 5, 4];
-  final List<Color> _featureColors = [
-    const Color(0xFF4F8FE0),
-    const Color(0xFF9B7FE8),
-    const Color(0xFFFFB74D),
-    const Color(0xFF6FC3F7),
+  static const List<Color> _featureColors = [
+    Color(0xFF4F8FE0),
+    Color(0xFF9B7FE8),
+    Color(0xFFFFB74D),
+    Color(0xFF6FC3F7),
   ];
 
-  final List<Map<String, dynamic>> _topUsers = [
-    {"name": "Alex Mercer", "hours": "2.1h/day", "color": const Color(0xFF4F8FE0)},
-    {"name": "Sam Carter", "hours": "1.8h/day", "color": const Color(0xFF9B7FE8)},
-    {"name": "Jordan Lee", "hours": "1.5h/day", "color": const Color(0xFFFFB74D)},
-    {"name": "Casey Smith", "hours": "1.1h/day", "color": const Color(0xFF6FC3F7)},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _future = _repo.load(_range);
+  }
+
+  void _refresh() {
+    setState(() {
+      _future = _repo.load(_range);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,133 +272,238 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 2.0,
-              children: [
-                _statCard(Icons.person, const Color(0xFF4F8FE0), "Total Users", "4"),
-                _statCard(Icons.person_outline, const Color(0xFF7AC74F), "Active Users", "3"),
-                _statCard(Icons.chat_bubble, const Color(0xFF9B7FE8), "Posts Today", "6"),
-                _statCard(Icons.person_add, const Color(0xFFFFB74D), "New Signups", "1"),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-                ],
+      body: FutureBuilder<_DashboardData>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  "Couldn't load dashboard data.\n${snapshot.error}",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
               ),
+            );
+          }
+
+          final data = snapshot.data!;
+
+          return RefreshIndicator(
+            onRefresh: () async => _refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  _buildRangeSelector(),
+                  const SizedBox(height: 16),
+
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 2.0,
                     children: [
-                      const Text(
-                        "Top Used Features",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF5F7FA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            _viewToggleButton("Bar", ChartView.bar),
-                            _viewToggleButton("Line", ChartView.line),
-                            _viewToggleButton("Pie", ChartView.pie),
-                          ],
-                        ),
-                      ),
+                      _statCard(Icons.person, const Color(0xFF4F8FE0), "Total Users", "${data.totalUsers}"),
+                      _statCard(Icons.person_outline, const Color(0xFF7AC74F), "Active Users (24h)", "${data.activeUsers}"),
+                      _statCard(Icons.chat_bubble, const Color(0xFF9B7FE8), "Posts (${_range.label})", "${data.postsInRange}"),
+                      _statCard(Icons.person_add, const Color(0xFFFFB74D), "New Signups (${_range.label})", "${data.newSignups}"),
                     ],
                   ),
+
                   const SizedBox(height: 24),
-                  SizedBox(height: 200, child: _buildChart()),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 24),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Top Active Users",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)),
-                  ),
-                  const SizedBox(height: 16),
-                  ..._topUsers.map((user) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: (user["color"] as Color).withOpacity(0.15),
-                            child: Icon(Icons.person, color: user["color"], size: 22),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              user["name"],
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF2A2A2A)),
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Top Used Features",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)),
                             ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: (user["color"] as Color).withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F7FA),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  _viewToggleButton("Bar", ChartView.bar),
+                                  _viewToggleButton("Line", ChartView.line),
+                                  _viewToggleButton("Pie", ChartView.pie),
+                                ],
+                              ),
                             ),
-                            child: Text(
-                              user["hours"],
-                              style: TextStyle(color: user["color"], fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 200,
+                          child: _buildFeatureChart(data.featureLabels, data.featureValues),
+                        ),
+                      ],
                     ),
-                  )),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Most Active Time of Day",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Based on activity logs in the selected range",
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(height: 180, child: _buildTimeOfDayChart(data.timeOfDayBuckets)),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Top Active Users",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A)),
+                        ),
+                        const SizedBox(height: 16),
+                        if (data.topUsers.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              "No activity data yet for this range.",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          )
+                        else
+                          ...data.topUsers.map((user) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF9FAFC),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: (user["color"] as Color).withOpacity(0.15),
+                                    child: Icon(Icons.person, color: user["color"], size: 22),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      user["name"],
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF2A2A2A)),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: (user["color"] as Color).withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      "${user["count"]} actions",
+                                      style: TextStyle(color: user["color"], fontWeight: FontWeight.bold, fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _card({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildRangeSelector() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Row(
+        children: DashboardRange.values.map((r) {
+          final selected = _range == r;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _range = r;
+                  _future = _repo.load(_range);
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected ? const Color(0xFF4F8FE0) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  r.label,
+                  style: TextStyle(
+                    color: selected ? Colors.white : Colors.grey.shade600,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -230,13 +534,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildChart() {
+  Widget _buildFeatureChart(List<String> labels, List<double> values) {
+    final maxVal = values.isEmpty ? 1.0 : (values.reduce((a, b) => a > b ? a : b) * 1.3).clamp(1.0, double.infinity);
+
     switch (_chartView) {
       case ChartView.bar:
         return BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: 15,
+            maxY: maxVal,
             barTouchData: BarTouchData(
               enabled: true,
               touchTooltipData: BarTouchTooltipData(
@@ -261,11 +567,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   reservedSize: 30,
                   getTitlesWidget: (value, meta) {
                     final i = value.toInt();
-                    if (i < 0 || i >= _featureLabels.length) return const SizedBox();
+                    if (i < 0 || i >= labels.length) return const SizedBox();
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        _featureLabels[i],
+                        labels[i],
                         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5A5A5A)),
                       ),
                     );
@@ -273,17 +579,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ),
             ),
-            barGroups: List.generate(_featureValues.length, (i) {
+            barGroups: List.generate(values.length, (i) {
               return BarChartGroupData(x: i, barRods: [
                 BarChartRodData(
-                  toY: _featureValues[i],
-                  color: _featureColors[i],
+                  toY: values[i],
+                  color: _featureColors[i % _featureColors.length],
                   width: 22,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
-                    toY: 15,
-                    color: _featureColors[i].withOpacity(0.1),
+                    toY: maxVal,
+                    color: _featureColors[i % _featureColors.length].withOpacity(0.1),
                   ),
                 ),
               ]);
@@ -300,7 +606,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             borderData: FlBorderData(show: false),
             minY: 0,
-            maxY: 15,
+            maxY: maxVal,
             titlesData: FlTitlesData(
               leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -311,11 +617,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   reservedSize: 30,
                   getTitlesWidget: (value, meta) {
                     final i = value.toInt();
-                    if (i < 0 || i >= _featureLabels.length) return const SizedBox();
+                    if (i < 0 || i >= labels.length) return const SizedBox();
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        _featureLabels[i],
+                        labels[i],
                         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5A5A5A)),
                       ),
                     );
@@ -325,7 +631,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             lineBarsData: [
               LineChartBarData(
-                spots: List.generate(_featureValues.length, (i) => FlSpot(i.toDouble(), _featureValues[i])),
+                spots: List.generate(values.length, (i) => FlSpot(i.toDouble(), values[i])),
                 isCurved: true,
                 color: const Color(0xFF4F8FE0),
                 barWidth: 4,
@@ -348,21 +654,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         );
       case ChartView.pie:
+        final total = values.fold<double>(0, (a, b) => a + b);
+        if (total == 0) {
+          return const Center(child: Text("No feature usage yet", style: TextStyle(color: Colors.grey)));
+        }
         return PieChart(
           PieChartData(
             sectionsSpace: 4,
             centerSpaceRadius: 40,
-            sections: List.generate(_featureValues.length, (i) {
+            sections: List.generate(values.length, (i) {
               return PieChartSectionData(
-                value: _featureValues[i],
-                color: _featureColors[i],
-                title: '${_featureValues[i].toInt()}',
+                value: values[i],
+                color: _featureColors[i % _featureColors.length],
+                title: '${values[i].toInt()}',
                 radius: 50,
                 titleStyle: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
                 badgeWidget: _Badge(
-                  _featureLabels[i].split(' ').first,
+                  labels[i].split(' ').first,
                   size: 30,
-                  borderColor: _featureColors[i],
+                  borderColor: _featureColors[i % _featureColors.length],
                 ),
                 badgePositionPercentageOffset: 1.1,
               );
@@ -370,6 +680,79 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         );
     }
+  }
+
+  Widget _buildTimeOfDayChart(List<double> buckets) {
+    final labels = ["Morning", "Afternoon", "Evening", "Night"];
+    final colors = [
+      const Color(0xFFFFB74D),
+      const Color(0xFF4F8FE0),
+      const Color(0xFF9B7FE8),
+      const Color(0xFF3B4A6B),
+    ];
+    final maxVal = (buckets.isEmpty ? 1.0 : (buckets.reduce((a, b) => a > b ? a : b) * 1.3)).clamp(1.0, double.infinity);
+
+    if (buckets.every((v) => v == 0)) {
+      return const Center(child: Text("No activity logged yet", style: TextStyle(color: Colors.grey)));
+    }
+
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxVal,
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipPadding: const EdgeInsets.all(8),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${rod.toY.toInt()}',
+                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              getTitlesWidget: (value, meta) {
+                final i = value.toInt();
+                if (i < 0 || i >= labels.length) return const SizedBox();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    labels[i],
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5A5A5A)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        barGroups: List.generate(buckets.length, (i) {
+          return BarChartGroupData(x: i, barRods: [
+            BarChartRodData(
+              toY: buckets[i],
+              color: colors[i % colors.length],
+              width: 28,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+              backDrawRodData: BackgroundBarChartRodData(
+                show: true,
+                toY: maxVal,
+                color: colors[i % colors.length].withOpacity(0.1),
+              ),
+            ),
+          ]);
+        }),
+      ),
+    );
   }
 
   Widget _statCard(IconData icon, Color color, String label, String value) {
@@ -481,7 +864,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           } else if (item["label"] == "Hydration Hub") {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
                           } else if (item["label"] == "Nutrition Tracker") {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNutritionTrackerScreen()));
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionTrackerScreen()));
                           } else if (item["label"] == "Monthly Tracking") {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMonthlyTrackingScreen()));
                           }
@@ -525,7 +908,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 }
 
-class _Badge extends StatelessWidget {
+class _Badge extends StatefulWidget {
   final String text;
   final double size;
   final Color borderColor;
@@ -533,7 +916,16 @@ class _Badge extends StatelessWidget {
   const _Badge(this.text, {required this.size, required this.borderColor});
 
   @override
+  State<_Badge> createState() => _BadgeState();
+}
+
+class _BadgeState extends State<_Badge> {
+  @override
   Widget build(BuildContext context) {
+    final text = widget.text;
+    final size = widget.size;
+    final borderColor = widget.borderColor;
+
     return AnimatedContainer(
       duration: PieChart.defaultDuration,
       width: size * 1.5,

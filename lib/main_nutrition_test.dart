@@ -9,12 +9,17 @@ import 'view/nutrition_tracker_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MealTestApp());
+  runApp(const NutritionTestApp());
 }
 
-class MealTestApp extends StatelessWidget {
-  const MealTestApp({super.key});
+class NutritionTestApp extends StatefulWidget {
+  const NutritionTestApp({super.key});
 
+  @override
+  State<NutritionTestApp> createState() => _NutritionTestAppState();
+}
+
+class _NutritionTestAppState extends State<NutritionTestApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(

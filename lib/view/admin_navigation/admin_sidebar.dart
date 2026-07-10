@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import '../admin_dashboard_screen.dart';
 import '../admin_skin_journal_screen.dart';
 import '../admin_hydration_hub_screen.dart';
-import '../admin_nutrition_tracker_screen.dart';
+import '../nutrition_tracker_screen.dart';
 import '../dashboard_card/admin/admin_monthly_tracking_screen.dart';
 
-class AdminSidebar extends StatelessWidget {
+class AdminSidebar extends StatefulWidget {
   const AdminSidebar({super.key});
 
+  @override
+  State<AdminSidebar> createState() => _AdminSidebarState();
+}
+
+class _AdminSidebarState extends State<AdminSidebar> {
   @override
   Widget build(BuildContext context) {
     final items = [
@@ -20,7 +25,7 @@ class AdminSidebar extends StatelessWidget {
       {"icon": Icons.calendar_month, "label": "Monthly Tracking"},
       {"icon": Icons.book, "label": "Skin Journal"},
       {"icon": Icons.water_drop, "label": "Hydration Hub"},
-      {"icon": Icons.restaurant_menu, "label": "Meal Tracker"},
+      {"icon": Icons.restaurant_menu, "label": "Nutrition Tracker"},
       {"icon": Icons.feedback, "label": "Feedback"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
@@ -49,7 +54,7 @@ class AdminSidebar extends StatelessWidget {
                 children: items.map((item) {
                   // If we need to mark active states, we can pass the current active label to AdminSidebar.
                   // For now we assume no item is "active" unless we add a parameter.
-                  final isActive = false; 
+                  final isActive = false;
                   return Container(
                     color: isActive ? const Color(0xFF4F8FE0).withOpacity(0.15) : Colors.transparent,
                     child: ListTile(
@@ -63,8 +68,8 @@ class AdminSidebar extends StatelessWidget {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSkinJournalScreen()));
                         } else if (item["label"] == "Hydration Hub") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
-                        } else if (item["label"] == "Meal Tracker") {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNutritionTrackerScreen()));
+                        } else if (item["label"] == "Nutrition Tracker") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionTrackerScreen()));
                         } else if (item["label"] == "Monthly Tracking") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMonthlyTrackingScreen()));
                         }

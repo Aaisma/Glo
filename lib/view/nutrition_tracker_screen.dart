@@ -11,23 +11,35 @@ class NutritionTrackerScreen extends StatefulWidget {
   State<NutritionTrackerScreen> createState() => _NutritionTrackerScreenState();
 }
 
-class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with SingleTickerProviderStateMixin {
+class _NutritionTrackerScreenState extends State<NutritionTrackerScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _itemsController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   late AnimationController _fadeController;
 
-  final List<String> _tagOptions = ["Sugar-Free", "Dairy-Free", "Gluten-Free", "High Protein", "Veggies", "Fruit", "Whole Grain"];
+  final List<String> _tagOptions = [
+    "Sugar-Free",
+    "Dairy-Free",
+    "Gluten-Free",
+    "High Protein",
+    "Veggies",
+    "Fruit",
+    "Whole Grain",
+  ];
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
     _fadeController.forward();
 
     Future.microtask(() async {
       final vm = context.read<NutritionTrackerViewModel>();
-      if (vm.userId != null) {
-        await vm.loadToday(vm.userId!);
+      await vm.ensureUserId();
+      if (mounted) {
         _noteController.text = vm.note;
       }
     });
@@ -54,7 +66,9 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
           builder: (context, setSheetState) {
             return Container(
               padding: EdgeInsets.only(
-                left: 24, right: 24, top: 20,
+                left: 24,
+                right: 24,
+                top: 20,
                 bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
               ),
               decoration: const BoxDecoration(
@@ -67,8 +81,12 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                 children: [
                   Center(
                     child: Container(
-                      width: 50, height: 5,
-                      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 25),
@@ -76,21 +94,44 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                     children: [
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: AppColors.lightPink, borderRadius: BorderRadius.circular(15)),
-                        child: Icon(_iconForMeal(type), color: AppColors.pink, size: 28),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightPink,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Icon(
+                          _iconForMeal(type),
+                          color: AppColors.pink,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 15),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Add $type", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.text)),
-                          const Text("Skin-loving nutrition ✨", style: TextStyle(fontSize: 12, color: AppColors.grey)),
+                          Text(
+                            "Add $type",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.text,
+                            ),
+                          ),
+                          const Text(
+                            "Skin-loving nutrition ✨",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 30),
-                  const Text("What are you fueling with?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    "What are you fueling with?",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _itemsController,
@@ -99,12 +140,18 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                       hintText: "e.g. Berry smoothie, Almonds, Salmon bowl",
                       filled: true,
                       fillColor: AppColors.cardPink,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
                       contentPadding: const EdgeInsets.all(20),
                     ),
                   ),
                   const SizedBox(height: 25),
-                  const Text("Nutrient Focus", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    "Nutrient Focus",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 10,
@@ -112,14 +159,26 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                     children: _tagOptions.map((tag) {
                       final isSelected = selectedTags.contains(tag);
                       return ChoiceChip(
-                        label: Text(tag, style: TextStyle(color: isSelected ? Colors.white : AppColors.text, fontSize: 12, fontWeight: FontWeight.w600)),
+                        label: Text(
+                          tag,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : AppColors.text,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         selected: isSelected,
                         selectedColor: AppColors.pink,
                         backgroundColor: AppColors.lightPink.withOpacity(0.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide.none,
+                        ),
                         onSelected: (_) {
                           setSheetState(() {
-                            isSelected ? selectedTags.remove(tag) : selectedTags.add(tag);
+                            isSelected
+                                ? selectedTags.remove(tag)
+                                : selectedTags.add(tag);
                           });
                         },
                       );
@@ -131,16 +190,32 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                       backgroundColor: AppColors.pink,
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(60),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: () {
                       if (_itemsController.text.trim().isEmpty) return;
-                      final items = _itemsController.text.split(",").map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-                      context.read<NutritionTrackerViewModel>().addMeal(type, items, List<String>.from(selectedTags));
+                      final items = _itemsController.text
+                          .split(",")
+                          .map((s) => s.trim())
+                          .where((s) => s.isNotEmpty)
+                          .toList();
+                      context.read<NutritionTrackerViewModel>().addMeal(
+                        type,
+                        items,
+                        List<String>.from(selectedTags),
+                      );
                       Navigator.pop(context);
                     },
-                    child: const Text("Log to Journey 🌸", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Log to Journey 🌸",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -153,10 +228,14 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
 
   IconData _iconForMeal(String type) {
     switch (type) {
-      case "Breakfast": return Icons.spa_outlined;
-      case "Lunch": return Icons.restaurant_outlined;
-      case "Dinner": return Icons.eco_outlined;
-      default: return Icons.auto_awesome_outlined;
+      case "Breakfast":
+        return Icons.spa_outlined;
+      case "Lunch":
+        return Icons.restaurant_outlined;
+      case "Dinner":
+        return Icons.eco_outlined;
+      default:
+        return Icons.auto_awesome_outlined;
     }
   }
 
@@ -167,14 +246,20 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Nutrition Tracker", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text(
+          "Nutrition Tracker",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         backgroundColor: AppColors.pink,
         centerTitle: true,
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.history_rounded, color: Colors.white),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionHistoryScreen())),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NutritionHistoryScreen()),
+            ),
           ),
         ],
       ),
@@ -189,20 +274,34 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
                 decoration: const BoxDecoration(
                   color: AppColors.pink,
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(50), bottomRight: Radius.circular(50)),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(50),
+                    bottomRight: Radius.circular(50),
+                  ),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.favorite_rounded, color: Colors.white, size: 50),
+                    const Icon(
+                      Icons.favorite_rounded,
+                      color: Colors.white,
+                      size: 50,
+                    ),
                     const SizedBox(height: 15),
                     const Text(
                       "Eat for your Glow",
-                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       "${vm.meals.length} items logged today",
-                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -213,7 +312,14 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Daily Timeline", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.text)),
+                    const Text(
+                      "Daily Timeline",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text,
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     _mealCard("Breakfast", vm),
                     _mealCard("Lunch", vm),
@@ -221,44 +327,74 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                     _mealCard("Snacks", vm),
 
                     const SizedBox(height: 30),
-                    const Text("Journal & Reflections", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Journal & Reflections",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _noteController,
                       maxLines: 4,
                       onChanged: vm.updateNote,
                       decoration: InputDecoration(
-                        hintText: "How's your energy? Did you notice any skin triggers today?",
+                        hintText:
+                        "How's your energy? Did you notice any skin triggers today?",
                         filled: true,
                         fillColor: AppColors.cardPink,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
+                        ),
                         contentPadding: const EdgeInsets.all(20),
                       ),
                     ),
 
                     const SizedBox(height: 35),
                     ElevatedButton(
-                      onPressed: (vm.isLoading || vm.userId == null) ? null : () async {
-                        await vm.saveToday(vm.userId!);
+                      onPressed: (vm.isLoading)
+                          ? null
+                          : () async {
+                        await vm.saveToday();
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(vm.errorMessage ?? "Nutrition progress saved! 🌸"),
-                            backgroundColor: vm.errorMessage != null ? Colors.red : AppColors.pink,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          ));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                vm.errorMessage ??
+                                    "Nutrition progress saved! 🌸",
+                              ),
+                              backgroundColor: vm.errorMessage != null
+                                  ? Colors.red
+                                  : AppColors.pink,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.pink,
                         minimumSize: const Size.fromHeight(60),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         elevation: 5,
                         shadowColor: AppColors.pink.withOpacity(0.3),
                       ),
                       child: vm.isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text("Save Today's Log", style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                          : const Text(
+                        "Save Today's Log",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 50),
                   ],
@@ -273,7 +409,7 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
 
   Widget _mealCard(String type, NutritionTrackerViewModel vm) {
     final typedMeals = vm.meals.where((m) => m["type"] == type).toList();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(24),
@@ -281,7 +417,13 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: AppColors.borderPink.withOpacity(0.4)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -289,15 +431,33 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: AppColors.lightPink, borderRadius: BorderRadius.circular(15)),
-                child: Icon(_iconForMeal(type), color: AppColors.pink, size: 24),
+                decoration: BoxDecoration(
+                  color: AppColors.lightPink,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  _iconForMeal(type),
+                  color: AppColors.pink,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 15),
-              Text(type, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.text)),
+              Text(
+                type,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.text,
+                ),
+              ),
               const Spacer(),
               IconButton(
                 onPressed: () => _showAddMealSheet(type),
-                icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.pink, size: 28),
+                icon: const Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: AppColors.pink,
+                  size: 28,
+                ),
               ),
             ],
           ),
@@ -319,17 +479,43 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(items.join(", "), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.text)),
+                          Text(
+                            items.join(", "),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.text,
+                            ),
+                          ),
                           if (tags.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Wrap(
                                 spacing: 6,
-                                children: tags.map((t) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: AppColors.lightPink, borderRadius: BorderRadius.circular(8)),
-                                  child: Text(t, style: const TextStyle(fontSize: 10, color: AppColors.pink, fontWeight: FontWeight.bold)),
-                                )).toList(),
+                                children: tags
+                                    .map(
+                                      (t) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.lightPink,
+                                      borderRadius: BorderRadius.circular(
+                                        8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.pink,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                    .toList(),
                               ),
                             ),
                         ],
@@ -338,7 +524,11 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
                     const SizedBox(width: 10),
                     GestureDetector(
                       onTap: () => vm.removeMeal(index),
-                      child: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.grey),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 20,
+                        color: AppColors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -347,7 +537,14 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen> with Si
           ] else
             Padding(
               padding: const EdgeInsets.only(top: 15),
-              child: Text("Waiting for your logs... 🍽️", style: TextStyle(color: Colors.grey[400], fontSize: 13, fontStyle: FontStyle.italic)),
+              child: Text(
+                "Waiting for your logs... 🍽️",
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ),
         ],
       ),

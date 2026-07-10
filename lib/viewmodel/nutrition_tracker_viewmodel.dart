@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../model/nutrition_entry_model.dart';
 import '../repo/nutrition_repo.dart';
@@ -9,8 +10,9 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   NutritionTrackerViewModel(this._repo);
 
   void updateUserId(String? newUserId) {
-    if (_userId != newUserId) {
-      _userId = newUserId;
+    final resolvedUserId = newUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (_userId != resolvedUserId) {
+      _userId = resolvedUserId;
       if (_userId != null) {
         loadToday(_userId!);
         loadHistory();
@@ -20,6 +22,26 @@ class NutritionTrackerViewModel extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  Future<void> ensureUserId() async {
+    final resolvedUserId = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (resolvedUserId == null || resolvedUserId.isEmpty) {
+      meals = [];
+      history = [];
+      note = '';
+      errorMessage = 'Please sign in to save nutrition progress.';
+      notifyListeners();
+      return;
+    }
+
+    if (_userId != resolvedUserId) {
+      _userId = resolvedUserId;
+      notifyListeners();
+    }
+
+    await loadToday(_userId!);
+    await loadHistory();
   }
 
   String? get userId => _userId;
@@ -34,6 +56,15 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   String _todayDate() => DateTime.now().toIso8601String().split("T")[0];
 
   Future<void> loadToday(String userId) async {
+    if (userId.isEmpty) {
+      meals = [];
+      note = '';
+      errorMessage = 'No user selected.';
+      isLoading = false;
+      notifyListeners();
+      return;
+    }
+
     isLoading = true;
     errorMessage = null;
     notifyListeners();
@@ -80,14 +111,23 @@ class NutritionTrackerViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveToday(String userId) async {
+  Future<void> saveToday([String? userId]) async {
+    final resolvedUserId =
+        userId ?? _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (resolvedUserId == null || resolvedUserId.isEmpty) {
+      errorMessage = 'Please sign in to save nutrition progress.';
+      notifyListeners();
+      return;
+    }
+
+    _userId = resolvedUserId;
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
       final entry = NutritionEntryModel(
-        userId: userId,
+        userId: resolvedUserId,
         date: _todayDate(),
         meals: meals,
         note: note,
