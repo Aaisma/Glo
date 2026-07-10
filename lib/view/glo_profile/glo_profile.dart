@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import 'package:glo/view/components/bottom_navigation.dart';
+import 'package:glo/view/components/top_navigation.dart';
 import 'package:glo/view/calendar_screen.dart';
 import 'package:glo/viewmodel/profile_viewmodel.dart';
 
@@ -23,7 +23,6 @@ class GloProfileScreen extends StatefulWidget {
 }
 
 class _GloProfileScreenState extends State<GloProfileScreen> {
-  final int _currentIndex = 4;
   bool _profileLoaded = false;
 
   static const pink = Color(0xFFE85D8A);
@@ -108,26 +107,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     );
   }
 
-  void _onBottomTap(int index) {
-    if (index == _currentIndex) return;
-
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => CalendarScreen()),
-      );
-      return;
-    }
-
-    if (index == 3) {
-      Navigator.pushReplacementNamed(context, '/history');
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Screen not connected yet")),
-    );
-  }
 
   Future<void> _pickProfileImage() async {
     final messenger = ScaffoldMessenger.of(context);
@@ -525,10 +504,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     final imagePath = _resolvedImagePath(vm);
 
     return Scaffold(
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onBottomTap,
-      ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -547,7 +522,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
               child: Column(
                 children: [
-                  const _ProfileHeader(),
+                  TopNavigation(isLoggedIn: true, userName: fullName),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 188,
@@ -582,27 +557,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   }
 }
 
-class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 52,
-      child: Center(
-        child: Text(
-          "Profile",
-          style: TextStyle(
-            fontFamily: "Georgia",
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: _GloProfileScreenState.dark,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _ProfileCard extends StatelessWidget {
   final String fullName;

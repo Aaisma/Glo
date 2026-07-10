@@ -170,39 +170,12 @@ text: 'Cycle Data Export',
 );
 }
 
-void _onBottomTap(BuildContext context, int index) {
-switch (index) {
-case 0:
-Navigator.pushReplacementNamed(context, '/home');
-break;
-case 1:
-Navigator.push(
-context,
-MaterialPageRoute(builder: (_) => CalendarScreen()),
-);
-break;
-case 2:
-Navigator.pushReplacementNamed(context, '/insights');
-break;
-case 3:
-break;
-case 4:
-Navigator.pushReplacement(
-context,
-MaterialPageRoute(builder: (_) => const GloProfileScreen()),
-);
-break;
-}
-}
+
 
 @override
 Widget build(BuildContext context) {
 return Scaffold(
 backgroundColor: HistoryScreen.softPink,
-bottomNavigationBar: _HistoryBottomNavigation(
-currentIndex: 3,
-onTap: (index) => _onBottomTap(context, index),
-),
 body: Container(
 decoration: const BoxDecoration(
 image: DecorationImage(
@@ -579,66 +552,6 @@ class _SoftCard extends StatelessWidget {
         ],
       ),
       child: child,
-    );
-  }
-}
-
-class _HistoryBottomNavigation extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-
-  const _HistoryBottomNavigation({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 78,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.96),
-        border: Border.all(color: const Color(0xFFFFD9E3)),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          currentIndex: currentIndex,
-          onTap: onTap,
-          selectedItemColor: HistoryScreen.pink,
-          unselectedItemColor: Colors.black45,
-          selectedFontSize: 10,
-          unselectedFontSize: 9,
-          iconSize: 23,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              label: "Calendar",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_rounded),
-              label: "Insights",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_rounded),
-              label: "History",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: "Profile",
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
