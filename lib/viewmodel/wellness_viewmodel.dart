@@ -5,8 +5,10 @@ import '../repo/mood_repository.dart';
 import '../repo/mood_repository_impl.dart';
 
 class WellnessViewModel extends ChangeNotifier {
-  final MoodRepository _repository = MoodRepositoryImpl();
+  final MoodRepository _repository;
   StreamSubscription? _moodSubscription;
+
+  WellnessViewModel({required MoodRepository moodRepository}) : _repository = moodRepository;
 
   List<UserModelMood> _moodHistory = [];
   final String _userName = "Shiny";

@@ -64,6 +64,7 @@ flutter:
     - assets/images/survey/last_page/
     - assets/images/survey/skin_type/
     - assets/images/survey/tips/
+    - assets/images/feed/
 
 
     - assets/images/pill.png

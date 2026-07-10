@@ -116,6 +116,12 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
   }
 
   void _saveSymptoms() {
+    if (_viewModel.selectedDate.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot log symptoms for future dates"))
+      );
+      return;
+    }
     _viewModel.saveSymptoms();
     Navigator.pushAndRemoveUntil(
       context,
@@ -126,8 +132,9 @@ class _LogSymptomsPageState extends State<LogSymptomsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final englishDate = DateFormat('E, MMMM d, yyyy').format(DateTime.now());
-    final nepaliDate = NepaliDateFormat('MMMM d, yyyy').format(NepaliDateTime.now());
+    final date = _viewModel.selectedDate;
+    final englishDate = DateFormat('E, MMMM d, yyyy').format(date);
+    final nepaliDate = NepaliDateFormat('MMMM d, yyyy').format(NepaliDateTime.fromDateTime(date));
 
     return AnimatedBuilder(
       animation: _viewModel,

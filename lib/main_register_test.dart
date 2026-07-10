@@ -8,8 +8,8 @@ import 'view/authentication/register_screen.dart';
 import 'view/authentication/login_screen.dart';
 
 // ViewModels & Repos
-import 'viewmodel/auth_view_model.dart';
-import 'viewmodel/user_view_model.dart';
+import 'viewmodel/auth_viewmodel.dart';
+import 'viewmodel/user_viewmodel.dart';
 import 'repo/auth_repo_impl.dart';
 import 'repo/user_repo_impl.dart';
 

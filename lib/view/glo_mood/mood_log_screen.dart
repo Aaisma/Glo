@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/wellness_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 
 class MoodLogScreen extends StatefulWidget {
   const MoodLogScreen({super.key});
@@ -18,7 +21,7 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
     {'id': 'Happy', 'emoji': '😁', 'label': 'Happy'},
     {'id': 'Calm', 'emoji': '😌', 'label': 'Calm'},
     {'id': 'Neutral', 'emoji': '😐', 'label': 'Neutral'},
-    {'id': 'Sed', 'emoji': '🥺', 'label': 'Sed'},
+    {'id': 'Sad', 'emoji': '🥺', 'label': 'Sad'},
     {'id': 'Angry', 'emoji': '😡', 'label': 'Angry'},
   ];
 
@@ -33,23 +36,40 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
     {'id': 'SelfTalk', 'label': 'Self Talk', 'icon': LucideIcons.messageSquare, 'color': Colors.teal},
   ];
 
-  void _saveMood() {
-    final moodData = {
-      'mood': _selectedMood,
-      'note': _noteController.text,
-      'factors': _selectedFactors,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
+  void _saveMood() async {
+    final user = context.read<UserViewModel>().user;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to save your mood.')),
+      );
+      return;
+    }
 
-    debugPrint(moodData.toString());
+    try {
+      await context.read<WellnessViewModel>().logMood(
+        userId: user.id,
+        mood: _selectedMood,
+        note: _noteController.text,
+        factors: _selectedFactors,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Your mood log has been saved! 🌸'),
-        backgroundColor: Color(0xFFFF527B),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Your mood log has been saved! 🌸'),
+            backgroundColor: Color(0xFFFF527B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save mood: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -83,7 +103,7 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black54),
-                      onPressed: () {},
+                      onPressed: () => Navigator.pop(context),
                     ),
                     const Text(
                       'Mood Tracker',

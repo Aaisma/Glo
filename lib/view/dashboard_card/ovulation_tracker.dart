@@ -6,6 +6,8 @@ import '../../model/tracker_theme.dart';
 import '../../viewmodel/ovulation_view_model.dart';
 import '../../viewmodel/tracker_navigation_view_model.dart';
 import 'log_symptoms_page.dart';
+import 'analytics_history_page.dart';
+import 'daily_log_history_page.dart';
 
 class OvulationTrackerView extends StatelessWidget {
   const OvulationTrackerView({super.key});
@@ -49,11 +51,11 @@ class OvulationTrackerView extends StatelessWidget {
             const SizedBox(height: 16),
             _buildOtherSymptomsButton(context, theme),
             const SizedBox(height: 12),
-            _buildSymptomCards(viewModel, theme),
+            _buildSymptomCards(context, viewModel, theme),
             const SizedBox(height: 16),
             _buildLogButtons(context, viewModel, theme),
             const SizedBox(height: 16),
-            _buildCycleHistory(viewModel, theme, isNepali),
+            _buildCycleHistory(context, viewModel, theme, isNepali),
             const SizedBox(height: 16),
             _buildCycleNotes(context, viewModel, theme),
             const SizedBox(height: 32),
@@ -90,7 +92,7 @@ class OvulationTrackerView extends StatelessWidget {
     );
   }
 
-  Widget _buildSymptomCards(OvulationViewModel viewModel, ThemeColors theme) {
+  Widget _buildSymptomCards(BuildContext context, OvulationViewModel viewModel, ThemeColors theme) {
     final items = [
       {"icon": Icons.water_drop, "label": "Cervical\nMucus", "key": "Cervical Mucus"},
       {"icon": Icons.health_and_safety, "label": "Ovulation\nPain", "key": "Ovulation Pain"},
@@ -111,7 +113,13 @@ class OvulationTrackerView extends StatelessWidget {
         final isActive = viewModel.logForSelectedDate?.symptoms[dbKey] == true;
 
         return GestureDetector(
-          onTap: () => viewModel.toggleSymptom(dbKey),
+          onTap: () {
+            if (viewModel.selectedDate.isAfter(DateTime.now())) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+              return;
+            }
+            viewModel.toggleSymptom(dbKey);
+          },
           child: Container(
             width: 80,
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -149,6 +157,10 @@ class OvulationTrackerView extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTap: () {
+               if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                 return;
+               }
                _showBBTDialog(context, viewModel, theme);
             },
             child: Container(
@@ -173,6 +185,10 @@ class OvulationTrackerView extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTap: () {
+               if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                 return;
+               }
                _showSexDriveDialog(context, viewModel, theme);
             },
             child: Container(
@@ -275,7 +291,7 @@ class OvulationTrackerView extends StatelessWidget {
     );
   }
 
-  Widget _buildCycleHistory(OvulationViewModel viewModel, ThemeColors theme, bool isNepali) {
+  Widget _buildCycleHistory(BuildContext context, OvulationViewModel viewModel, ThemeColors theme, bool isNepali) {
     final ovulationLogs = viewModel.logs.where((l) => l.isOvulationDay).toList();
     ovulationLogs.sort((a, b) => b.date.compareTo(a.date)); // descending, latest first
     
@@ -287,47 +303,55 @@ class OvulationTrackerView extends StatelessWidget {
           : DateFormat('MMM dd, yyyy').format(latestDate);
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.event_note, color: theme.headerText),
-              const SizedBox(width: 8),
-              Text(
-                isNepali ? "चक्र इतिहास" : "Cycle History",
-                style: TextStyle(
-                  color: theme.headerText,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => AnalyticsHistoryPage(theme: theme)),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.border),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.event_note, color: theme.headerText),
+                const SizedBox(width: 8),
+                Text(
+                  isNepali ? "चक्र इतिहास" : "Cycle History",
+                  style: TextStyle(
+                    color: theme.headerText,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isNepali ? "अन्तिम डिम्बोत्सर्जन मिति:" : "Last Ovulation Date:",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF333333)),
-              ),
-              Text(
-                dateStr,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.headerText),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isNepali ? "अन्तिम डिम्बोत्सर्जन मिति:" : "Last Ovulation Date:",
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF333333)),
+                ),
+                Text(
+                  dateStr,
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.headerText),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -384,7 +408,10 @@ class OvulationTrackerView extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('History feature coming soon!')));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => DailyLogHistoryPage(theme: theme)),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -397,6 +424,10 @@ class OvulationTrackerView extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
+                  if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.saveNote(noteController.text);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Note Saved!')));
                 },
@@ -779,6 +810,10 @@ class OvulationTrackerView extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
+                  if (currentDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.selectDate(currentDate);
                   if (!isConfirmedOvulationDay && !isConfirmedFertileWindow) {
                     viewModel.logOvulationRange(currentDate);
@@ -789,10 +824,18 @@ class OvulationTrackerView extends StatelessWidget {
                   }
                 },
                 onDoubleTap: () {
+                  if (currentDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.selectDate(currentDate);
                   viewModel.toggleFertileWindow();
                 },
                 onLongPress: () {
+                  if (currentDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.selectDate(currentDate);
                   viewModel.toggleOvulationDay();
                 },

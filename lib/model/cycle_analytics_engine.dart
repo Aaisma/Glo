@@ -37,6 +37,7 @@ class CycleAnalyticsResult {
   final String nextPredictedEventText;
   final DateTime? nextPredictedEventDate;
   final List<CycleData> pastCycles;
+  final CycleData? currentCycle;
   final DateTime? lastPeriodStartDate;
 
   CycleAnalyticsResult({
@@ -51,6 +52,7 @@ class CycleAnalyticsResult {
     required this.nextPredictedEventText,
     this.nextPredictedEventDate,
     required this.pastCycles,
+    this.currentCycle,
     this.lastPeriodStartDate,
   });
 }
@@ -196,6 +198,7 @@ class CycleAnalyticsEngine {
     String currentPhase = "Follicular";
     String nextEventText = "Log period to predict cycle";
     DateTime? nextEventDate;
+    CycleData? currentCycleData;
 
     if (lastPeriodStart != null) {
       currentCycleDay = today.difference(lastPeriodStart).inDays + 1;
@@ -231,6 +234,25 @@ class CycleAnalyticsEngine {
 
       final activeFertileStart = predictedOvulation.subtract(const Duration(days: 3));
       final activeFertileEnd = predictedOvulation.add(const Duration(days: 2));
+
+      // Build CycleData for current cycle
+      final currentPeriodDays = periodDays.where((d) => !d.isBefore(lastPeriodStart)).toList();
+      final currentFertileDays = <DateTime>[];
+      for (int offset = -3; offset <= 2; offset++) {
+        currentFertileDays.add(predictedOvulation.add(Duration(days: offset)));
+      }
+
+      currentCycleData = CycleData(
+        number: pastCycles.length + 1,
+        startDate: lastPeriodStart,
+        endDate: nextPeriod.subtract(const Duration(days: 1)),
+        lengthInDays: avgCycleLength,
+        periodLength: currentPeriodDays.length,
+        ovulationDate: predictedOvulation,
+        isOvulationConfirmed: isCurrentOvulationConfirmed,
+        periodDays: currentPeriodDays,
+        fertileDays: currentFertileDays,
+      );
 
       // Phase identification
       final todayNormalized = DateTime(today.year, today.month, today.day);
@@ -279,6 +301,7 @@ class CycleAnalyticsEngine {
       nextPredictedEventText: nextEventText,
       nextPredictedEventDate: nextEventDate,
       pastCycles: pastCycles,
+      currentCycle: currentCycleData,
       lastPeriodStartDate: lastPeriodStart,
     );
   }

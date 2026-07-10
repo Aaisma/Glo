@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';
-import 'nutrition_tracker_screen.dart';
-import './dashboard_card/admin/admin_monthly_tracking_screen.dart';
+import 'package:glo/view/nutrition_tracker_screen.dart';
+import 'package:glo/view/dashboard_card/admin/admin_monthly_tracking_screen.dart';
 
 // ============================================================================
 // ASSUMED FIRESTORE SCHEMA — adjust the collection/field names below (in

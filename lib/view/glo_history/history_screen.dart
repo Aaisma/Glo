@@ -9,6 +9,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
+import '../dashboard_card/analytics_history_page.dart';
+import 'symptoms_history_page.dart';
+import '../../model/tracker_theme.dart';
+
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -63,6 +67,17 @@ final List<Map<String, dynamic>> historyItems = [
 ],
 "details":
 "Cycle duration stable at 5 days. April showed a shorter cycle — monitor next two months for pattern consistency.",
+},
+{
+"id": "symptoms_history",
+"type": "symptoms",
+"title": "Symptoms History",
+"icon": Icons.sick_outlined,
+"content": [
+"All recorded symptoms",
+"Periods & Ovulation",
+],
+"details": "View your logged symptoms across days.",
 },
 {
 "id": "acne_history",
@@ -221,15 +236,29 @@ _exportButton(context),
 }
 
 Widget _buildSection(
-BuildContext context, {
-required String title,
-required IconData icon,
-required List<String> content,
-required String details,
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  required List<String> content,
+  required String details,
 }) {
-return GestureDetector(
-onTap: () => _showDetailsDialog(context, title, details),
-child: _SoftCard(
+  return GestureDetector(
+    onTap: () {
+      if (title == "Cycle History") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => AnalyticsHistoryPage(theme: periodTheme)),
+        );
+      } else if (title == "Symptoms History") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SymptomsHistoryPage()),
+        );
+      } else {
+        _showDetailsDialog(context, title, details);
+      }
+    },
+    child: _SoftCard(
 margin: const EdgeInsets.only(bottom: 12),
 padding: const EdgeInsets.all(14),
 child: Row(

@@ -10,6 +10,7 @@ import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
 import '../viewmodel/user_viewmodel.dart';
+import 'glo_derma_visit/derma_visit.dart';
 import 'glo_journal/JournalEntryScreen.dart';
 import 'glo_profile/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
@@ -24,8 +25,8 @@ import 'dashboard_card/ovulation_period_page.dart';
 import 'water_tracker.dart';
 import '../view/glo_medication/medication_screen.dart';
 import 'acne_tracker.dart';
-import '../../view/cards/skin_derma_page.dart';
 import '../view/glo_mood/wellness_dashboard_screen.dart';
+import 'package:glo/view/nutrition_tracker_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -80,6 +81,7 @@ class DashboardHome extends StatelessWidget {
       {"title": "Skin Tracker", "image": "assets/images/dashboard/acnetracker.png"},
       {"title": "Visit Derma", "image": "assets/images/dashboard/skinderma.png"},
       {"title": "Mood and Wellness", "image": "assets/images/dashboard/stressandsleep.png"},
+      {"title": "Meal Tracker", "image": "assets/images/dashboard/mealtracker.png"},
     ];
 
     return Container(
@@ -217,17 +219,20 @@ class DashboardHome extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));
                               break;
                             case "Medications":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationScreen(userId: '123'
-                                ,)));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => MedicationScreen(userId: user?.id ?? '123'
+                                )));
                               break;
                             case "Skin Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const AcneTrackerPage()));
                               break;
-                            case "Skin Derma":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
+                            case "Visit Derma":
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => DermaVisitScreen(userId: user?.id ?? '123')));
                               break;
                             case "Mood and Wellness":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WellnessDashboardScreen()));
+                              break;
+                            case "Meal Tracker":
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionTrackerScreen()));
                               break;
                           }
                         },

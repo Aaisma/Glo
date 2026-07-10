@@ -9,10 +9,13 @@ import 'package:glo/view/components/top_navigation.dart';
 import 'package:glo/view/calendar_screen.dart';
 import 'package:glo/viewmodel/profile_viewmodel.dart';
 
+import '../authentication/authentication_page.dart';
 import 'glo_about_us_screen.dart';
 import 'glo_goal_screen.dart';
 import 'help_support_page.dart';
 import 'personal_info_page.dart';
+import 'manage_password_page.dart';
+import 'package:glo/view/authentication/login_screen.dart';
 import 'package:glo/view/glo_profile/glo_feedback/feedback_welcome_screen.dart';
 
 class GloProfileScreen extends StatefulWidget {
@@ -428,7 +431,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     }
 
     if (title == "Change Password") {
-      _changePassword();
+      _openPage(const ManagePasswordPage());
       return;
     }
 
@@ -480,7 +483,10 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 if (!mounted || !dialogContext.mounted) return;
 
                 dialogNavigator.pop();
-                navigator.pushNamedAndRemoveUntil('/login', (_) => false);
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthenticationPage()),
+                  (_) => false,
+                );
               },
               child: const Text(
                 "Logout",

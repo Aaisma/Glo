@@ -10,7 +10,6 @@ import '../repo/period_repo_impl.dart';
 class OvulationViewModel extends ChangeNotifier {
   final OvulationRepo _repo;
   final PeriodRepo _periodRepo;
-<<<<<<< HEAD
   String _userId;
 
   OvulationViewModel({required OvulationRepo ovulationRepo, PeriodRepo? periodRepo, FirebaseAuth? auth})
@@ -29,31 +28,7 @@ class OvulationViewModel extends ChangeNotifier {
       _userId = id;
       fetchLogs();
     }
-=======
-  String? userId;
-
-  OvulationViewModel(this._repo, {PeriodRepo? periodRepo, FirebaseAuth? auth})
-      : _periodRepo = periodRepo ?? PeriodRepoImpl(),
-        userId = (auth ?? FirebaseAuth.instance).currentUser?.uid {
-    if (userId != null) fetchLogs();
->>>>>>> pranisha_branch
   }
-
-  void updateUserId(String? newUserId) {
-    if (userId != newUserId) {
-      userId = newUserId;
-      if (userId != null) {
-        fetchLogs();
-      } else {
-        _logs = [];
-        _periodLogs = [];
-        _analyticsResult = null;
-        notifyListeners();
-      }
-    }
-  }
-
-  String get userId => userId ?? 'guest';
 
   DateTime _currentMonth = DateTime.now();
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -72,10 +47,10 @@ class OvulationViewModel extends ChangeNotifier {
 
   OvulationLogModel? get logForSelectedDate {
     try {
-      return _logs.firstWhere((log) => 
-        log.date.year == _selectedDate.year &&
-        log.date.month == _selectedDate.month &&
-        log.date.day == _selectedDate.day
+      return _logs.firstWhere((log) =>
+      log.date.year == _selectedDate.year &&
+          log.date.month == _selectedDate.month &&
+          log.date.day == _selectedDate.day
       );
     } catch (e) {
       return null;
@@ -83,8 +58,8 @@ class OvulationViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchLogs() async {
-    _logs = await _repo.getLogsForUser(userId);
-    _periodLogs = await _periodRepo.getLogsForUser(userId);
+    _logs = await _repo.getLogsForUser(_userId);
+    _periodLogs = await _periodRepo.getLogsForUser(_userId);
     _analyticsResult = CycleAnalyticsEngine.calculate(
       periodLogs: _periodLogs,
       ovulationLogs: _logs,
@@ -117,7 +92,7 @@ class OvulationViewModel extends ChangeNotifier {
 
   Future<void> logOvulationRange(DateTime ovulationDate) async {
     final now = DateTime.now();
-    
+
     // Log ovulation day
     await _updateOrAddLogForDate(ovulationDate, (l) => l.copyWith(isOvulationDay: true, isFertileWindow: true));
 
@@ -146,7 +121,7 @@ class OvulationViewModel extends ChangeNotifier {
     } else {
       final newLog = updateFn(OvulationLogModel(
         id: '',
-        userId: userId,
+        userId: _userId,
         date: date,
         createdAt: now,
         updatedAt: now,
@@ -158,9 +133,9 @@ class OvulationViewModel extends ChangeNotifier {
   OvulationLogModel? _getLogForDate(DateTime date) {
     try {
       return _logs.firstWhere((l) =>
-        l.date.year == date.year &&
-        l.date.month == date.month &&
-        l.date.day == date.day
+      l.date.year == date.year &&
+          l.date.month == date.month &&
+          l.date.day == date.day
       );
     } catch (e) {
       return null;
@@ -194,7 +169,7 @@ class OvulationViewModel extends ChangeNotifier {
     if (existingLog != null) {
       final updatedLog = updateFn(existingLog).copyWith(updatedAt: now);
       await _repo.updateLog(updatedLog);
-      
+
       final index = _logs.indexWhere((l) => l.id == updatedLog.id);
       if (index != -1) {
         _logs[index] = updatedLog;
@@ -202,12 +177,12 @@ class OvulationViewModel extends ChangeNotifier {
     } else {
       final newLog = updateFn(OvulationLogModel(
         id: '',
-        userId: userId,
+        userId: _userId,
         date: _selectedDate,
         createdAt: now,
         updatedAt: now,
       ));
-      
+
       await _repo.addLog(newLog);
     }
     await fetchLogs();

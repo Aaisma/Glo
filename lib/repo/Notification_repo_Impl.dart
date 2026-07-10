@@ -25,47 +25,76 @@ class NotificationRepoImpl implements NotificationRepo {
   }
 
   @override
-  Future<void> updateReadStatus(String id, bool isRead) async {
+  Future<void> addNotification({
+    required String title,
+    required String desc,
+    required String badge,
+    required String icon,
+  }) async {
+    try {
+      await _db.collection("notifications").add({
+        "title": title,
+        "desc": desc,
+        "badge": badge,
+        "icon": icon,
+        "unread": true,
+        "day": "Today",
+        "time": "Just now",
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+      debugPrint("✅ Notification added: $title");
+    } catch (e) {
+      debugPrint("❌ Error adding notification: $e");
+    }
+  }
+
+  @override
+  Future<void> updateNotificationReadStatus(String id, bool isRead) async {
     try {
       await _db.collection("notifications").doc(id).update({
-        "unread": false, // ✅ explicitly mark as read
+        "unread": !isRead,
       });
+      debugPrint("✅ Notification read status updated: $id");
     } catch (e) {
-      debugPrint("❌ Error updating read status: $e");
+      debugPrint("❌ Error updating notification read status: $e");
     }
   }
 
   @override
-  Future<NotificationModel> saveNotification(NotificationModel notification) async {
+  Future<void> markAllAsRead() async {
     try {
-      final docRef = await _db.collection("notifications").add({
-        "title": notification.title,
-        "desc": notification.desc,
-        "time": notification.time,
-        "day": notification.day,
-        "badge": notification.badge,
-        "icon": notification.icon,
-        "unread": notification.unread,
-        "createdAt": Timestamp.fromDate(notification.createdAt),
-      });
+      final snapshot = await _db
+          .collection("notifications")
+          .where("unread", isEqualTo: true)
+          .get();
 
-      debugPrint("✅ Notification saved successfully with ID: ${docRef.id}");
-      return notification.copyWith(id: docRef.id);
+      if (snapshot.docs.isEmpty) return;
+
+      final batch = _db.batch();
+      for (var doc in snapshot.docs) {
+        batch.update(doc.reference, {"unread": false});
+      }
+      await batch.commit();
+      debugPrint("✅ All notifications marked as read");
     } catch (e) {
-      debugPrint("❌ Error saving notification: $e");
-      return notification;
+      debugPrint("❌ Error marking all notifications as read: $e");
     }
   }
 
   @override
-  Future<void> addNotification({required String title, required String desc, required String badge, required String icon}) {
-    // TODO: implement addNotification
-    throw UnimplementedError();
-  }
+  Future<void> clearAll() async {
+    try {
+      final snapshot = await _db.collection("notifications").get();
+      if (snapshot.docs.isEmpty) return;
 
-  @override
-  Future<void> updateNotificationReadStatus(String id, bool isRead) {
-    // TODO: implement updateNotificationReadStatus
-    throw UnimplementedError();
+      final batch = _db.batch();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      debugPrint("✅ All notifications cleared");
+    } catch (e) {
+      debugPrint("❌ Error clearing all notifications: $e");
+    }
   }
 }

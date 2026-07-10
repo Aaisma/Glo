@@ -9,7 +9,7 @@ class LogSymptomsViewModel extends ChangeNotifier {
 
   late Map<String, bool> _localSymptoms;
   late Map<String, bool> _initialSymptoms;
-  
+
   String _note = "";
   String _initialNote = "";
 
@@ -36,8 +36,10 @@ class LogSymptomsViewModel extends ChangeNotifier {
     _initialNote = _note;
   }
 
+  DateTime get selectedDate => isPeriod ? periodViewModel!.selectedDate : ovulationViewModel!.selectedDate;
+
   String get note => _note;
-  
+
   void updateNote(String newNote) {
     _note = newNote;
     notifyListeners();

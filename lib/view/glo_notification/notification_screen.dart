@@ -87,7 +87,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ? _buildEmptyState(viewModel.selectedTab)
                   : _buildNotificationList(filteredList, viewModel),
             ),
-            _buildBottomActionBar(),
+            _buildBottomActionBar(viewModel),
           ],
         ),
       ),
@@ -185,7 +185,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildBottomActionBar() {
+  Widget _buildBottomActionBar(NotificationViewModel viewModel) {
     return Container(
       margin: const EdgeInsets.all(16.0),
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -197,7 +197,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         children: [
           Expanded(
             child: TextButton.icon(
-              onPressed: () {},
+              onPressed: () => viewModel.clearAll(),
               icon: const Icon(Icons.delete_outline, color: primaryPink, size: 18),
               label: const Text("Clear all", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w600)),
             ),
@@ -205,7 +205,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Container(height: 24, width: 1, color: primaryPink.withOpacity(0.3)),
           Expanded(
             child: TextButton.icon(
-              onPressed: () {},
+              onPressed: () => viewModel.markAllAsRead(),
               icon: const Icon(Icons.done_all, color: primaryPink, size: 18),
               label: const Text("Mark all as read", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w600)),
             ),

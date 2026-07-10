@@ -7,6 +7,8 @@ import '../../model/period_log_model.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/tracker_navigation_view_model.dart';
 import 'log_symptoms_page.dart';
+import 'analytics_history_page.dart';
+import 'daily_log_history_page.dart';
 
 class PeriodTrackerView extends StatelessWidget {
   const PeriodTrackerView({super.key});
@@ -50,11 +52,11 @@ class PeriodTrackerView extends StatelessWidget {
             const SizedBox(height: 16),
             _buildOtherSymptomsButton(context, theme),
             const SizedBox(height: 12),
-            _buildSymptomCards(viewModel, theme),
+            _buildSymptomCards(context, viewModel, theme),
             const SizedBox(height: 16),
             _buildLogButtons(context, viewModel, theme),
             const SizedBox(height: 16),
-            _buildCycleHistory(viewModel, theme, isNepali),
+            _buildCycleHistory(context, viewModel, theme, isNepali),
             const SizedBox(height: 16),
             _buildCycleNotes(context, viewModel, theme),
             const SizedBox(height: 32),
@@ -91,7 +93,7 @@ class PeriodTrackerView extends StatelessWidget {
     );
   }
 
-  Widget _buildSymptomCards(PeriodViewModel viewModel, ThemeColors theme) {
+  Widget _buildSymptomCards(BuildContext context, PeriodViewModel viewModel, ThemeColors theme) {
     final items = [
       {"label": "Cramps", "icon": Icons.sick, "key": "Cramps"},
       {"label": "Bloating", "icon": Icons.air, "key": "Bloating"},
@@ -113,7 +115,13 @@ class PeriodTrackerView extends StatelessWidget {
         final isActive = viewModel.logForSelectedDate?.symptoms[dbKey] == true;
 
         return GestureDetector(
-          onTap: () => viewModel.toggleSymptom(dbKey),
+          onTap: () {
+            if (viewModel.selectedDate.isAfter(DateTime.now())) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+              return;
+            }
+            viewModel.toggleSymptom(dbKey);
+          },
           child: Container(
             width: 80,
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -132,9 +140,9 @@ class PeriodTrackerView extends StatelessWidget {
                   label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 10, 
-                    fontWeight: FontWeight.bold, 
-                    color: isActive ? Colors.white : const Color(0xFF333333)
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : const Color(0xFF333333)
                   ),
                 ),
               ],
@@ -151,8 +159,12 @@ class PeriodTrackerView extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTap: () {
-               // Show dialog to enter BBT
-               _showBBTDialog(context, viewModel, theme);
+              if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                return;
+              }
+              // Show dialog to enter BBT
+              _showBBTDialog(context, viewModel, theme);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -176,7 +188,11 @@ class PeriodTrackerView extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTap: () {
-               _showFlowDialog(context, viewModel, theme);
+              if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                return;
+              }
+              _showFlowDialog(context, viewModel, theme);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -203,134 +219,142 @@ class PeriodTrackerView extends StatelessWidget {
   void _showBBTDialog(BuildContext context, PeriodViewModel viewModel, ThemeColors theme) {
     double temp = viewModel.logForSelectedDate?.bbt ?? 98.6;
     showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Log BBT for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
-          content: StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("${temp.toStringAsFixed(1)} °F", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: temp,
-                  min: 96.0,
-                  max: 100.0,
-                  divisions: 40,
-                  activeColor: theme.headerText,
-                  onChanged: (val) => setState(() => temp = val),
-                ),
-              ],
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Log BBT for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
+            content: StatefulBuilder(
+              builder: (context, setState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("${temp.toStringAsFixed(1)} °F", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Slider(
+                    value: temp,
+                    min: 96.0,
+                    max: 100.0,
+                    divisions: 40,
+                    activeColor: theme.headerText,
+                    onChanged: (val) => setState(() => temp = val),
+                  ),
+                ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: theme.buttonBg),
-              onPressed: () {
-                viewModel.updateBBT(temp);
-                Navigator.pop(context);
-              },
-              child: const Text("Save", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      }
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: theme.buttonBg),
+                onPressed: () {
+                  viewModel.updateBBT(temp);
+                  Navigator.pop(context);
+                },
+                child: const Text("Save", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        }
     );
   }
 
   void _showFlowDialog(BuildContext context, PeriodViewModel viewModel, ThemeColors theme) {
     String currentFlow = viewModel.logForSelectedDate?.flow ?? 'Light';
     showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Log Flow for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
-          content: StatefulBuilder(
-            builder: (context, setState) => RadioGroup<String>(
-              groupValue: currentFlow,
-              onChanged: (val) => setState(() => currentFlow = val!),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: ['Light', 'Medium', 'Heavy'].map((flow) {
-                  return RadioListTile<String>(
-                    title: Text(flow),
-                    value: flow,
-                    activeColor: theme.headerText,
-                  );
-                }).toList(),
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Log Flow for ${DateFormat('MMM dd').format(viewModel.selectedDate)}"),
+            content: StatefulBuilder(
+              builder: (context, setState) => RadioGroup<String>(
+                groupValue: currentFlow,
+                onChanged: (val) => setState(() => currentFlow = val!),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: ['Light', 'Medium', 'Heavy'].map((flow) {
+                    return RadioListTile<String>(
+                      title: Text(flow),
+                      value: flow,
+                      activeColor: theme.headerText,
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: theme.buttonBg),
-              onPressed: () {
-                viewModel.updateFlow(currentFlow);
-                Navigator.pop(context);
-              },
-              child: const Text("Save", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      }
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: theme.buttonBg),
+                onPressed: () {
+                  viewModel.updateFlow(currentFlow);
+                  Navigator.pop(context);
+                },
+                child: const Text("Save", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        }
     );
   }
 
-  Widget _buildCycleHistory(PeriodViewModel viewModel, ThemeColors theme, bool isNepali) {
+  Widget _buildCycleHistory(BuildContext context, PeriodViewModel viewModel, ThemeColors theme, bool isNepali) {
     final lastPeriodStart = viewModel.lastPeriodStart;
-    
+
     final String dateStr;
     if (lastPeriodStart != null) {
-      dateStr = isNepali 
+      dateStr = isNepali
           ? NepaliDateFormat('MMMM d, yyyy', Language.nepali).format(NepaliDateTime.fromDateTime(lastPeriodStart))
           : DateFormat('MMMM dd, yyyy').format(lastPeriodStart);
     } else {
       dateStr = isNepali ? "हालसम्म कुनै डेटा उपलब्ध छैन" : "No history available yet";
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.event_note, color: theme.headerText),
-              const SizedBox(width: 8),
-              Text(
-                isNepali ? "महिनावारी इतिहास" : "Cycle History",
-                style: TextStyle(
-                  color: theme.headerText,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => AnalyticsHistoryPage(theme: theme)),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.border),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.event_note, color: theme.headerText),
+                const SizedBox(width: 8),
+                Text(
+                  isNepali ? "महिनावारी इतिहास" : "Cycle History",
+                  style: TextStyle(
+                    color: theme.headerText,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isNepali ? "अन्तिम महिनावारी सुरु मिति:" : "Last Period Start Date:",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF333333)),
-              ),
-              Text(
-                dateStr,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.headerText),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isNepali ? "अन्तिम महिनावारी सुरु मिति:" : "Last Period Start Date:",
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF333333)),
+                ),
+                Text(
+                  dateStr,
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.headerText),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -387,8 +411,10 @@ class PeriodTrackerView extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  // View history dummy action
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('History feature coming soon!')));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => DailyLogHistoryPage(theme: theme)),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -401,6 +427,10 @@ class PeriodTrackerView extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
+                  if (viewModel.selectedDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.saveNote(noteController.text);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Note Saved!')));
                 },
@@ -501,19 +531,19 @@ class PeriodTrackerView extends StatelessWidget {
     if (analytics == null) return const SizedBox.shrink();
 
     final nextPeriodStr = analytics.lastPeriodStartDate != null
-        ? (isNepali 
-            ? NepaliDateFormat('MMMM d', Language.nepali).format(NepaliDateTime.fromDateTime(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength))))
-            : DateFormat('MMM dd').format(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength))))
-        : "--";
-        
-    final nextOvulationStr = analytics.lastPeriodStartDate != null
         ? (isNepali
-            ? NepaliDateFormat('MMMM d', Language.nepali).format(NepaliDateTime.fromDateTime(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength)).subtract(const Duration(days: 14))))
-            : DateFormat('MMM dd').format(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength)).subtract(const Duration(days: 14))))
+        ? NepaliDateFormat('MMMM d', Language.nepali).format(NepaliDateTime.fromDateTime(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength))))
+        : DateFormat('MMM dd').format(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength))))
         : "--";
 
-    final cycleLengthVal = isNepali 
-        ? "${_toNepaliDigits(analytics.averageCycleLength.toString())} दिन" 
+    final nextOvulationStr = analytics.lastPeriodStartDate != null
+        ? (isNepali
+        ? NepaliDateFormat('MMMM d', Language.nepali).format(NepaliDateTime.fromDateTime(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength)).subtract(const Duration(days: 14))))
+        : DateFormat('MMM dd').format(analytics.lastPeriodStartDate!.add(Duration(days: analytics.averageCycleLength)).subtract(const Duration(days: 14))))
+        : "--";
+
+    final cycleLengthVal = isNepali
+        ? "${_toNepaliDigits(analytics.averageCycleLength.toString())} दिन"
         : "${analytics.averageCycleLength} Days";
 
     return Container(
@@ -574,7 +604,7 @@ class PeriodTrackerView extends StatelessWidget {
   Widget _buildInteractiveCalendar(BuildContext context, PeriodViewModel viewModel, ThemeColors theme) {
     final navViewModel = context.watch<TrackerNavigationViewModel>();
     final isNepali = navViewModel.isNepaliCalendar;
-    
+
     final now = viewModel.currentMonth;
     final int offset;
     final int daysInMonth;
@@ -587,7 +617,7 @@ class PeriodTrackerView extends StatelessWidget {
       monthHeader = "$nepaliMonthName ($nepaliEnglishMonthName)";
 
       final firstDay = NepaliDateTime(currentNepali.year, currentNepali.month, 1);
-      offset = firstDay.weekday - 1; 
+      offset = firstDay.weekday - 1;
       daysInMonth = firstDay.totalDays;
     } else {
       monthHeader = DateFormat('MMMM yyyy').format(now);
@@ -600,12 +630,12 @@ class PeriodTrackerView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3EDED),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))
-        ]
+          color: const Color(0xFFF3EDED),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.border, width: 1.5),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))
+          ]
       ),
       child: Column(
         children: [
@@ -709,25 +739,25 @@ class PeriodTrackerView extends StatelessWidget {
                 currentDate = DateTime(now.year, now.month, dayNumber);
               }
 
-              final logList = viewModel.logs.where((l) => 
-                l.date.year == currentDate.year && 
-                l.date.month == currentDate.month && 
-                l.date.day == currentDate.day
+              final logList = viewModel.logs.where((l) =>
+              l.date.year == currentDate.year &&
+                  l.date.month == currentDate.month &&
+                  l.date.day == currentDate.day
               );
               final log = logList.isNotEmpty ? logList.first : null;
               final isConfirmedPeriod = log != null ? log.isPeriodDay : false;
 
-              final isPredictedPeriod = !isConfirmedPeriod && 
+              final isPredictedPeriod = !isConfirmedPeriod &&
                   _isPredictedPeriodDay(
-                    currentDate, 
-                    viewModel.analyticsResult?.lastPeriodStartDate, 
-                    viewModel.analyticsResult?.averageCycleLength ?? 28, 
-                    viewModel.analyticsResult?.averagePeriodLength ?? 5
+                      currentDate,
+                      viewModel.analyticsResult?.lastPeriodStartDate,
+                      viewModel.analyticsResult?.averageCycleLength ?? 28,
+                      viewModel.analyticsResult?.averagePeriodLength ?? 5
                   );
 
               final isSelected = viewModel.selectedDate.year == currentDate.year &&
-                                 viewModel.selectedDate.month == currentDate.month &&
-                                 viewModel.selectedDate.day == currentDate.day;
+                  viewModel.selectedDate.month == currentDate.month &&
+                  viewModel.selectedDate.day == currentDate.day;
 
               Color bgColor = Colors.transparent;
               Color textColor = const Color(0xFF333333);
@@ -764,16 +794,20 @@ class PeriodTrackerView extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
+                  if (currentDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.selectDate(currentDate);
                   if (!isConfirmedPeriod) {
-                    viewModel.logPeriodRange(currentDate, 5);
-                    final message = isNepali ? "सफलतापूर्वक अपडेट भयो" : "Updated successfully";
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(message)),
-                    );
+                    _showPeriodConfirmationDialog(context, viewModel, currentDate, theme);
                   }
                 },
                 onDoubleTap: () {
+                  if (currentDate.isAfter(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot log in future dates")));
+                    return;
+                  }
                   viewModel.selectDate(currentDate);
                   viewModel.togglePeriodDay();
                 },
@@ -885,10 +919,10 @@ class PeriodTrackerView extends StatelessWidget {
   int _getPeriodDayIndex(DateTime date, List<PeriodLogModel> logs) {
     final periodDays = logs.where((l) => l.isPeriodDay).map((l) => DateTime(l.date.year, l.date.month, l.date.day)).toList();
     periodDays.sort((a, b) => a.compareTo(b));
-    
+
     final target = DateTime(date.year, date.month, date.day);
     if (!periodDays.contains(target)) return 0;
-    
+
     DateTime start = target;
     while (true) {
       final prev = start.subtract(const Duration(days: 1));
@@ -905,18 +939,18 @@ class PeriodTrackerView extends StatelessWidget {
     if (lastPeriodStart == null) return false;
     final dNormalized = DateTime(date.year, date.month, date.day);
     final todayNormalized = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    
-    if (dNormalized.isBefore(todayNormalized)) return false; 
+
+    if (dNormalized.isBefore(todayNormalized)) return false;
 
     final daysDiff = dNormalized.difference(lastPeriodStart).inDays;
     if (daysDiff < 0) return false;
 
     final cycleIndex = daysDiff ~/ avgCycleLength;
-    if (cycleIndex == 0) return false; 
+    if (cycleIndex == 0) return false;
 
     final cycleStart = lastPeriodStart.add(Duration(days: cycleIndex * avgCycleLength));
     final offsetInCycle = dNormalized.difference(cycleStart).inDays;
-    
+
     return offsetInCycle >= 0 && offsetInCycle < avgPeriodLength;
   }
 

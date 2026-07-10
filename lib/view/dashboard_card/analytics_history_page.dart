@@ -5,6 +5,7 @@ import '../../model/tracker_theme.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';
 import '../../model/cycle_analytics_engine.dart';
+import 'cycle_history_details_page.dart';
 
 class AnalyticsHistoryPage extends StatefulWidget {
   final ThemeColors theme;
@@ -150,11 +151,23 @@ class _AnalyticsHistoryPageState extends State<AnalyticsHistoryPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Last 6 Cycles Summary",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Last 6 Cycles Summary",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+              ),
+              TextButton(
+                onPressed: () => _navigateToHistory(context, analytics),
+                child: const Text(
+                  "View All",
+                  style: TextStyle(color: Color(0xFFFD8CA1), fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           if (cycles.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
@@ -165,7 +178,10 @@ class _AnalyticsHistoryPageState extends State<AnalyticsHistoryPage> {
                 ),
               ),
             ),
-          ...cycles.map((c) => _buildCycleVisualizationRow(c)),
+          ...cycles.map((c) => InkWell(
+                onTap: () => _navigateToHistory(context, analytics),
+                child: _buildCycleVisualizationRow(c),
+              )),
           const SizedBox(height: 12),
           // Legend
           Row(
@@ -349,6 +365,21 @@ class _AnalyticsHistoryPageState extends State<AnalyticsHistoryPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToHistory(BuildContext context, CycleAnalyticsResult analytics) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CycleHistoryDetailsPage(
+          pastCycles: analytics.pastCycles,
+          currentCycle: analytics.currentCycle,
+          lastPeriodStartDate: analytics.lastPeriodStartDate,
+          currentCycleDay: analytics.currentCycleDay,
+          theme: widget.theme,
+        ),
       ),
     );
   }

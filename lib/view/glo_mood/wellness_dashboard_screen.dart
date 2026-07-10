@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:glo/viewmodel/wellness_viewmodel.dart';
 
+import '../../viewmodel/user_viewmodel.dart';
+
 class WellnessDashboardScreen extends StatefulWidget {
   const WellnessDashboardScreen({super.key});
 
@@ -10,6 +12,17 @@ class WellnessDashboardScreen extends StatefulWidget {
 }
 
 class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = context.read<UserViewModel>().user;
+      if (user != null) {
+        context.read<WellnessViewModel>().initUserSync(user.id);
+      }
+    });
+  }
 
   /// Helper to render the correct plant asset stage dynamically based on entry count from MVVM
   String _getGardenPlant(String moodKey, int count) {
