@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD
-import 'package:glo/view/glo_mood/wellness_dashboard_screen.dart';
-
-=======
->>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -14,11 +9,12 @@ import 'package:intl/intl.dart';
 import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
+import '../viewmodel/user_viewmodel.dart';
 import 'glo_journal/JournalEntryScreen.dart';
-import 'navigation_icon/glo_profile.dart';
+import 'glo_profile/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
-import 'navigation_icon/history_page.dart';
-import 'navigation_icon/calendar_screen.dart';
+import 'glo_history/history_screen.dart';
+import 'calendar_screen.dart';
 
 // Wellness pages
 import '../../view/dashboard_card/log_symptoms_page.dart';
@@ -26,17 +22,10 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
-<<<<<<< HEAD
-
-import 'medication_screen.dart';
 import '../view/glo_medication/medication_screen.dart';
-
-=======
-import '../view/glo_medication/medication_screen.dart';
->>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
-import 'glo_mood/wellness_dashboard_screen.dart';
+import '../view/glo_mood/wellness_dashboard_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -52,7 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DashboardHome(),
     const InsightsFeedView(),
     const CalendarScreen(),
-    const HistoryPage(),
+    const HistoryScreen(),
     const GloProfileScreen(),
   ];
 
@@ -81,6 +70,8 @@ class DashboardHome extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final periodViewModel = context.watch<PeriodViewModel>();
+    final userViewModel = context.watch<UserViewModel>();
+    final user = userViewModel.user;
 
     final dashboardItems = [
       {"title": "Daily Journal", "image": "assets/images/dashboard/journal.png"},
@@ -102,7 +93,10 @@ class DashboardHome extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const TopNavigation(),
+              TopNavigation(
+                isLoggedIn: user != null,
+                userName: user?.name,
+              ),
 
               const SizedBox(height: 8),
               Padding(
@@ -180,7 +174,7 @@ class DashboardHome extends StatelessWidget {
                               const Icon(Icons.show_chart, color: Colors.white, size: 16),
                               const SizedBox(width: 6),
                               Text(
-                                  periodViewModel.predictionDate != null 
+                                  periodViewModel.predictionDate != null
                                       ? DateFormat('MMMM dd, yyyy').format(periodViewModel.predictionDate!)
                                       : DateFormat('MMMM dd, yyyy').format(DateTime.now()),
                                   style: const TextStyle(fontSize: 14, color: Colors.white70)),
@@ -224,7 +218,7 @@ class DashboardHome extends StatelessWidget {
                               break;
                             case "Medications":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicationScreen(userId: '123'
-                                  ,)));
+                                ,)));
                               break;
                             case "Skin Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const AcneTrackerPage()));
@@ -232,7 +226,7 @@ class DashboardHome extends StatelessWidget {
                             case "Skin Derma":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const SkinDermaPage()));
                               break;
-                              case "Mood and Wellness":
+                            case "Mood and Wellness":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WellnessDashboardScreen()));
                               break;
                           }

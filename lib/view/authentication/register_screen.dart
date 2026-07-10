@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../viewmodel/auth_view_model.dart';
-import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/auth_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 import '../components/social_button.dart';
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

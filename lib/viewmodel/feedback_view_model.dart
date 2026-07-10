@@ -62,7 +62,7 @@ class FeedbackViewModel extends ChangeNotifier {
         type: _selectedType,
         message: _userMessage,
         ratingIndex: _selectedRatingIndex,
-        timestamp: DateTime.now(),
+        timestamp: DateTime.now(), status: '',
       );
 
       await _repository.submitFeedback(feedbackPayload);

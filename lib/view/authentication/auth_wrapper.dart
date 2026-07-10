@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/user_viewmodel.dart';
+import '../../viewmodel/period_view_model.dart';
+import '../../viewmodel/ovulation_view_model.dart';
 import '../dashboard_page.dart';
 import 'authentication_page.dart';
 import '../survey_page.dart';
-import '../navigation_icon/glo_profile.dart';
+import '../glo_profile/glo_profile.dart';
 import 'package:glo/view/glo_admin/admin_dashboard_screen.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -37,6 +39,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 userVM.setUserId(user.uid);
                 userVM.fetchCurrentUser();
+                // Update other ViewModels with the user ID
+                Provider.of<PeriodViewModel>(context, listen: false).setUserId(user.uid);
+                Provider.of<OvulationViewModel>(context, listen: false).setUserId(user.uid);
               });
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }

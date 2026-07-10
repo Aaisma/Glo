@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../model/onboarding_survey_data.dart';
-import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/user_viewmodel.dart';
 import '../../viewmodel/period_view_model.dart';
 import 'components/onboarding_widgets.dart';
 
@@ -127,7 +127,7 @@ class _SurveyPageState extends State<SurveyPage> {
           userVM.surveyData.inches = double.tryParse(_inchesController.text);
         }
       }
-      
+
       setState(() => _currentStep++);
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -231,32 +231,32 @@ class _SurveyPageState extends State<SurveyPage> {
       bottomNavigationBar: _currentStep == 9
           ? null // Use sticky bottom in Review Profile screen
           : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                child: Row(
-                  children: [
-                    if (_currentStep > 0 && _currentStep < _totalSteps - 1) ...[
-                      Expanded(
-                        child: PrimaryActionButton(
-                          text: "Back",
-                          isSecondary: true,
-                          onPressed: _prevPage,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: PrimaryActionButton(
-                        text: _currentStep == _totalSteps - 1 ? "Start My Journey ✨" : "Next",
-                        onPressed: _isStepValid(data)
-                            ? (_currentStep == _totalSteps - 1 ? _finalizeRegistration : _nextPage)
-                            : null,
-                      ),
-                    ),
-                  ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Row(
+            children: [
+              if (_currentStep > 0 && _currentStep < _totalSteps - 1) ...[
+                Expanded(
+                  child: PrimaryActionButton(
+                    text: "Back",
+                    isSecondary: true,
+                    onPressed: _prevPage,
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: PrimaryActionButton(
+                  text: _currentStep == _totalSteps - 1 ? "Start My Journey ✨" : "Next",
+                  onPressed: _isStepValid(data)
+                      ? (_currentStep == _totalSteps - 1 ? _finalizeRegistration : _nextPage)
+                      : null,
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

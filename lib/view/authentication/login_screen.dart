@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/auth_view_model.dart';
-import '../../viewmodel/user_view_model.dart';
+import '../../viewmodel/auth_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

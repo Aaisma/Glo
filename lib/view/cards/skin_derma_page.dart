@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../viewmodel/user_view_model.dart';
+import '../../../viewmodel/user_viewmodel.dart';
 
 class SkinDermaPage extends StatelessWidget {
   const SkinDermaPage({super.key});

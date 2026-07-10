@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../../viewmodel/user_view_model.dart';
+import '../../../viewmodel/user_viewmodel.dart';
 
 class CycleSettingsPage extends StatefulWidget {
   const CycleSettingsPage({super.key});

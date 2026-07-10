@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/auth_view_model.dart';
+import '../../viewmodel/auth_viewmodel.dart';
 import '../authentication/login_screen.dart';
 
 class LogoutDialog {

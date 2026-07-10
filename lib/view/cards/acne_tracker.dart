@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
-import '../../../viewmodel/user_view_model.dart';
+import '../../../viewmodel/user_viewmodel.dart';
 
 class AcneTrackerPage extends StatefulWidget {
   const AcneTrackerPage({super.key});

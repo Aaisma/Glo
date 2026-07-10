@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'community/admin/community_posts_library_view.dart';
-import 'community/admin/community_moderation_queue_view.dart';
-import 'insight/admin/insights_library_view.dart';
-import 'insight/admin/moderation_queue_view.dart';
+import 'package:glo/view/community/admin/community_posts_library_view.dart';
+import 'package:glo/view/community/admin/community_moderation_queue_view.dart';
+import 'package:glo/view/insight/admin/insights_library_view.dart';
+import 'package:glo/view/insight/admin/moderation_queue_view.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';

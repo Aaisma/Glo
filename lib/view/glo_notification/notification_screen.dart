@@ -33,11 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
     final filteredList = viewModel.filteredNotifications
-<<<<<<< HEAD:lib/view/glo_notification/notification_screen.dart
-        .where((item) => item.createdAt.isAfter(oneWeekAgo))
-=======
-        .where((item) => item?.createdAt.isAfter(oneWeekAgo) ?? false)
->>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c:lib/view/notification_screen.dart
+        .where((item) => item.createdAt.isAfter(oneWeekAgo) ?? false)
         .toList();
 
     return Scaffold(

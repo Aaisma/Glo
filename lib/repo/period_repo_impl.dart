@@ -10,19 +10,19 @@ class PeriodRepoImpl implements PeriodRepo {
 
   @override
   Future<void> addLog(PeriodLogModel log) async {
-    final docRef = _firestore.collection('period').doc();
+    final docRef = _firestore.collection('periods').doc();
     final logWithId = log.copyWith(id: docRef.id);
     await docRef.set(logWithId.toMap());
   }
 
   @override
   Future<void> updateLog(PeriodLogModel log) async {
-    await _firestore.collection('period').doc(log.id).update(log.toMap());
+    await _firestore.collection('periods').doc(log.id).update(log.toMap());
   }
 
   @override
   Future<void> deleteLog(String id) async {
-    await _firestore.collection('period').doc(id).delete();
+    await _firestore.collection('periods').doc(id).delete();
   }
 
   @override
@@ -31,7 +31,7 @@ class PeriodRepoImpl implements PeriodRepo {
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
     final snapshot = await _firestore
-        .collection('period')
+        .collection('periods')
         .where('userId', isEqualTo: userId)
         .where('date', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
         .where('date', isLessThan: endOfDay.toIso8601String())
@@ -46,7 +46,7 @@ class PeriodRepoImpl implements PeriodRepo {
   @override
   Future<List<PeriodLogModel>> getLogsForUser(String userId) async {
     final snapshot = await _firestore
-        .collection('period')
+        .collection('periods')
         .where('userId', isEqualTo: userId)
         .get();
 

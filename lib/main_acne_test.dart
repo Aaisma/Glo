@@ -7,7 +7,7 @@ import 'firebase_options.dart';
 import 'repo/user_repo_impl.dart';
 import 'repo/acne_repo_impl.dart';
 
-import 'viewmodel/user_view_model.dart';
+import 'viewmodel/user_viewmodel.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 
 import 'view/acne_tracker.dart';

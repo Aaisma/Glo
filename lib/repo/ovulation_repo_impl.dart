@@ -10,19 +10,19 @@ class OvulationRepoImpl implements OvulationRepo {
 
   @override
   Future<void> addLog(OvulationLogModel log) async {
-    final docRef = _firestore.collection('ovulation').doc();
+    final docRef = _firestore.collection('ovulations').doc();
     final logWithId = log.copyWith(id: docRef.id);
     await docRef.set(logWithId.toMap());
   }
 
   @override
   Future<void> updateLog(OvulationLogModel log) async {
-    await _firestore.collection('ovulation').doc(log.id).update(log.toMap());
+    await _firestore.collection('ovulations').doc(log.id).update(log.toMap());
   }
 
   @override
   Future<void> deleteLog(String id) async {
-    await _firestore.collection('ovulation').doc(id).delete();
+    await _firestore.collection('ovulations').doc(id).delete();
   }
 
   @override
@@ -31,7 +31,7 @@ class OvulationRepoImpl implements OvulationRepo {
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
     final snapshot = await _firestore
-        .collection('ovulation')
+        .collection('ovulations')
         .where('userId', isEqualTo: userId)
         .where('date', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
         .where('date', isLessThan: endOfDay.toIso8601String())
@@ -46,7 +46,7 @@ class OvulationRepoImpl implements OvulationRepo {
   @override
   Future<List<OvulationLogModel>> getLogsForUser(String userId) async {
     final snapshot = await _firestore
-        .collection('ovulation')
+        .collection('ovulations')
         .where('userId', isEqualTo: userId)
         .get();
 

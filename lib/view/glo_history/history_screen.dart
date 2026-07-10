@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:glo/view/glo_profile/glo_profile.dart';
-import 'package:glo/view/navigation_icon/calendar_screen.dart';
+import 'package:glo/view/calendar_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
@@ -199,7 +199,7 @@ break;
 Widget build(BuildContext context) {
 return Scaffold(
 backgroundColor: HistoryScreen.softPink,
-bottomNavigationBar: BottomNavigation(
+bottomNavigationBar: _HistoryBottomNavigation(
 currentIndex: 3,
 onTap: (index) => _onBottomTap(context, index),
 ),
@@ -217,7 +217,7 @@ child: Padding(
 padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
 child: Column(
 children: [
-const TopNavigation(title: "History"),
+const _HistoryTopNavigation(title: "History"),
 const SizedBox(height: 8),
 Expanded(
 child: SingleChildScrollView(
@@ -403,10 +403,10 @@ Widget _exportButton(BuildContext context) {
 }
 }
 
-class TopNavigation extends StatelessWidget {
+class _HistoryTopNavigation extends StatelessWidget {
   final String title;
 
-  const TopNavigation({super.key, required this.title});
+  const _HistoryTopNavigation({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -583,11 +583,11 @@ class _SoftCard extends StatelessWidget {
   }
 }
 
-class BottomNavigation extends StatelessWidget {
+class _HistoryBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  const BottomNavigation({
+  const _HistoryBottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,

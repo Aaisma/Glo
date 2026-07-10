@@ -10,12 +10,24 @@ import '../repo/period_repo_impl.dart';
 class OvulationViewModel extends ChangeNotifier {
   final OvulationRepo _repo;
   final PeriodRepo _periodRepo;
-  final String _userId;
+  String _userId;
 
-  OvulationViewModel(this._repo, {PeriodRepo? periodRepo, FirebaseAuth? auth})
-      : _periodRepo = periodRepo ?? PeriodRepoImpl(),
+  OvulationViewModel({required OvulationRepo ovulationRepo, PeriodRepo? periodRepo, FirebaseAuth? auth})
+      : _repo = ovulationRepo,
+        _periodRepo = periodRepo ?? PeriodRepoImpl(),
         _userId = (auth ?? FirebaseAuth.instance).currentUser?.uid ?? 'guest' {
-    fetchLogs();
+    if (_userId != 'guest') {
+      fetchLogs();
+    }
+  }
+
+  String get userId => _userId;
+
+  void setUserId(String id) {
+    if (_userId != id) {
+      _userId = id;
+      fetchLogs();
+    }
   }
 
   DateTime _currentMonth = DateTime.now();
