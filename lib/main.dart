@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-
 import 'firebase_options.dart';
 
 // ViewModels
@@ -191,7 +192,7 @@ class GloApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFFF4FBFF),
         ),
 
-        home: const GloProfileScreen(),
+        home: const HistoryScreen(),
 
         routes: {
           // Temporary until OTP/login is connected again.

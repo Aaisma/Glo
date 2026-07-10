@@ -1,9 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glo/model/history_model.dart';
-import 'package:glo/view/glo_profile/glo_profile.dart';
-import 'package:glo/view/navigation_icon/calendar_screen.dart';
-import 'package:glo/view/components/bottom_navigation.dart';
 import 'package:glo/viewmodel/history_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -21,51 +18,10 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  void _onBottomTap(int index) {
-    if (index == 3) return;
-
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/insights');
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CalendarScreen(),
-          ),
-        );
-        break;
-      case 4:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const GloProfileScreen(),
-          ),
-        );
-        break;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Screen not connected yet'),
-          ),
-        );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     return Scaffold(
       backgroundColor: HistoryScreen.softPink,
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: 3,
-        onTap: _onBottomTap,
-      ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -83,13 +39,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   _buildHeader(),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: userId == null
-                        ? _buildMessage(
-                      icon: Icons.person_outline,
-                      title: 'Login required',
-                      message: 'Please login to view your history.',
-                    )
-                        : _buildHistoryList(userId),
+                    child: StreamBuilder<User?>(
+                      stream: FirebaseAuth.instance.authStateChanges(),
+                      builder: (context, authSnapshot) {
+                        if (authSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: HistoryScreen.pink,
+                            ),
+                          );
+                        }
+
+                        final user = authSnapshot.data;
+
+                        if (user == null) {
+                          return _buildMessage(
+                            icon: Icons.person_outline,
+                            title: 'Login required',
+                            message: 'Please login to view your history.',
+                          );
+                        }
+
+                        return _buildHistoryList(user.uid);
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -128,7 +102,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return StreamBuilder<List<HistoryModel>>(
       stream: viewModel.getHistoryStream(userId),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Center(
             child: CircularProgressIndicator(
               color: HistoryScreen.pink,
@@ -171,10 +146,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildSection(HistoryModel item) {
     return GestureDetector(
-      onTap: () => _showDetailsDialog(
-        item.title,
-        item.details,
-      ),
+      onTap: () {
+        _showDetailsDialog(
+          item.title,
+          item.details,
+        );
+      },
       child: _SoftCard(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -340,41 +317,45 @@ class _HistoryScreenState extends State<HistoryScreen> {
       String title,
       String details,
       ) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: HistoryScreen.softPink,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Georgia',
-            color: HistoryScreen.dark,
-            fontWeight: FontWeight.bold,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: HistoryScreen.softPink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-        ),
-        content: Text(
-          details.isEmpty ? 'No details available.' : details,
-          style: const TextStyle(
-            color: HistoryScreen.dark,
-            fontSize: 15,
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Close',
-              style: TextStyle(
-                color: HistoryScreen.pink,
-              ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Georgia',
+              color: HistoryScreen.dark,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
+          content: Text(
+            details.isEmpty ? 'No details available.' : details,
+            style: const TextStyle(
+              color: HistoryScreen.dark,
+              fontSize: 15,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: HistoryScreen.pink,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

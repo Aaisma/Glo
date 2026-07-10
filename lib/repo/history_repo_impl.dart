@@ -12,7 +12,10 @@ class HistoryRepoImpl implements HistoryRepo {
       HistoryModel history,
       String userId,
       ) {
-    return service.addHistory(history, userId);
+    return service.addHistory(
+      history,
+      userId,
+    );
   }
 
   @override
@@ -20,7 +23,10 @@ class HistoryRepoImpl implements HistoryRepo {
       HistoryModel history,
       String userId,
       ) {
-    return service.updateHistory(history, userId);
+    return service.updateHistory(
+      history,
+      userId,
+    );
   }
 
   @override
@@ -28,16 +34,23 @@ class HistoryRepoImpl implements HistoryRepo {
       String userId,
       String historyId,
       ) {
-    return service.deleteHistory(userId, historyId);
+    return service.deleteHistory(
+      userId,
+      historyId,
+    );
   }
 
   @override
-  Future<List<HistoryModel>> getHistory(String userId) {
+  Future<List<HistoryModel>> getHistory(
+      String userId,
+      ) {
     return service.getHistory(userId);
   }
 
   @override
-  Stream<List<HistoryModel>> getHistoryStream(String userId) {
+  Stream<List<HistoryModel>> getHistoryStream(
+      String userId,
+      ) {
     return service.getHistoryStream(userId);
   }
 
@@ -47,7 +60,9 @@ class HistoryRepoImpl implements HistoryRepo {
   }
 
   @override
-  Stream<int> getUserHistoryCountStream(String userId) {
+  Stream<int> getUserHistoryCountStream(
+      String userId,
+      ) {
     return service.getUserHistoryCountStream(userId);
   }
 }

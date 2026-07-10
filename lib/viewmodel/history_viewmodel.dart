@@ -15,18 +15,27 @@ class HistoryViewModel extends ChangeNotifier {
   HistoryViewModel(this.repo);
 
   bool isLoading = false;
+  bool isExporting = false;
+
   String? errorMessage;
+
   List<HistoryModel> historyItems = [];
 
   Future<void> loadHistory(String userId) async {
+    if (userId.trim().isEmpty) {
+      errorMessage = 'User ID is required.';
+      notifyListeners();
+      return;
+    }
+
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
       historyItems = await repo.getHistory(userId);
-    } catch (e) {
-      errorMessage = e.toString();
+    } catch (error) {
+      errorMessage = error.toString();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -34,6 +43,10 @@ class HistoryViewModel extends ChangeNotifier {
   }
 
   Stream<List<HistoryModel>> getHistoryStream(String userId) {
+    if (userId.trim().isEmpty) {
+      return Stream.error('User ID is required.');
+    }
+
     return repo.getHistoryStream(userId);
   }
 
@@ -42,6 +55,10 @@ class HistoryViewModel extends ChangeNotifier {
   }
 
   Stream<int> getUserHistoryCountStream(String userId) {
+    if (userId.trim().isEmpty) {
+      return Stream.error('User ID is required.');
+    }
+
     return repo.getUserHistoryCountStream(userId);
   }
 
@@ -49,83 +66,246 @@ class HistoryViewModel extends ChangeNotifier {
       HistoryModel history,
       String userId,
       ) async {
-    await repo.addHistory(history, userId);
-    await loadHistory(userId);
+    if (userId.trim().isEmpty) {
+      errorMessage = 'User ID is required.';
+      notifyListeners();
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await repo.addHistory(history, userId);
+      historyItems = await repo.getHistory(userId);
+    } catch (error) {
+      errorMessage = error.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> updateHistory(
       HistoryModel history,
       String userId,
       ) async {
-    await repo.updateHistory(history, userId);
-    await loadHistory(userId);
+    if (userId.trim().isEmpty) {
+      errorMessage = 'User ID is required.';
+      notifyListeners();
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await repo.updateHistory(history, userId);
+      historyItems = await repo.getHistory(userId);
+    } catch (error) {
+      errorMessage = error.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteHistory(
       String userId,
       String historyId,
       ) async {
-    await repo.deleteHistory(userId, historyId);
-    await loadHistory(userId);
+    if (userId.trim().isEmpty) {
+      errorMessage = 'User ID is required.';
+      notifyListeners();
+      return;
+    }
+
+    if (historyId.trim().isEmpty) {
+      errorMessage = 'History ID is required.';
+      notifyListeners();
+      return;
+    }
+
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await repo.deleteHistory(userId, historyId);
+      historyItems = await repo.getHistory(userId);
+    } catch (error) {
+      errorMessage = error.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> exportCycleData({required List<HistoryModel> items}) async {
-    final cycleHistory = historyItems.where((item) => item.type == 'cycle').toList();
+  Future<void> exportCycleData({
+    required List<HistoryModel> items,
+  }) async {
+    isExporting = true;
+    errorMessage = null;
+    notifyListeners();
 
-    final cycleData = {
-      "title": cycleHistory.isNotEmpty ? cycleHistory.first.title : "Cycle History",
-      "content": cycleHistory.isNotEmpty ? cycleHistory.first.content : [],
-      "details": cycleHistory.isNotEmpty ? cycleHistory.first.details : "",
-      "date": cycleHistory.isNotEmpty
-          ? cycleHistory.first.date.toIso8601String()
-          : DateTime.now().toIso8601String(),
-    };
+    try {
+      final cycleHistory = items
+          .where(
+            (item) => item.type.trim().toLowerCase() == 'cycle',
+      )
+          .toList()
+        ..sort(
+              (first, second) => second.date.compareTo(first.date),
+        );
 
-    final directory = await getApplicationDocumentsDirectory();
+      if (cycleHistory.isEmpty) {
+        throw Exception('No cycle history is available to export.');
+      }
 
-    final jsonFile = File('${directory.path}/cycle_data.json');
-    await jsonFile.writeAsString(jsonEncode(cycleData));
+      final exportData = {
+        'title': 'Cycle History',
+        'exportedAt': DateTime.now().toIso8601String(),
+        'totalRecords': cycleHistory.length,
+        'records': cycleHistory.map((item) {
+          return {
+            'title': item.title,
+            'content': item.content,
+            'details': item.details,
+            'date': item.date.toIso8601String(),
+          };
+        }).toList(),
+      };
 
-    final pdf = pw.Document();
+      final directory = await getApplicationDocumentsDirectory();
 
-    pdf.addPage(
-      pw.Page(
-        build: (_) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              cycleData['title'].toString(),
-              style: pw.TextStyle(
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            pw.SizedBox(height: 20),
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
 
-            if (cycleData['content'] is List)
-              ...(cycleData['content'] as List).map(
-                    (item) => pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 6),
-                  child: pw.Text(item.toString()),
+      final jsonFile = File(
+        '${directory.path}/cycle_data_$timestamp.json',
+      );
+
+      const jsonEncoder = JsonEncoder.withIndent('  ');
+
+      await jsonFile.writeAsString(
+        jsonEncoder.convert(exportData),
+      );
+
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.MultiPage(
+          build: (_) {
+            return [
+              pw.Text(
+                'Cycle History',
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
                 ),
               ),
-
-            pw.SizedBox(height: 12),
-            pw.Text(cycleData['details'].toString()),
-          ],
+              pw.SizedBox(height: 8),
+              pw.Text(
+                'Total records: ${cycleHistory.length}',
+                style: const pw.TextStyle(
+                  fontSize: 12,
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              ...cycleHistory.map(
+                    (item) => _buildCyclePdfSection(item),
+              ),
+            ];
+          },
         ),
+      );
+
+      final pdfFile = File(
+        '${directory.path}/cycle_data_$timestamp.pdf',
+      );
+
+      await pdfFile.writeAsBytes(
+        await pdf.save(),
+      );
+
+      await Share.shareXFiles(
+        [
+          XFile(jsonFile.path),
+          XFile(pdfFile.path),
+        ],
+        text: 'Cycle Data Export',
+        subject: 'Cycle History',
+      );
+    } catch (error) {
+      errorMessage = error.toString();
+    } finally {
+      isExporting = false;
+      notifyListeners();
+    }
+  }
+
+  pw.Widget _buildCyclePdfSection(HistoryModel item) {
+    return pw.Container(
+      width: double.infinity,
+      margin: const pw.EdgeInsets.only(bottom: 16),
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            item.title,
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 6),
+          pw.Text(
+            _formatDate(item.date),
+            style: const pw.TextStyle(
+              fontSize: 11,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+          ...item.content.map(
+                (contentItem) => pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 5),
+              child: pw.Text(
+                contentItem,
+                style: const pw.TextStyle(
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          if (item.details.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Text(
+              item.details,
+              style: const pw.TextStyle(
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ],
       ),
     );
+  }
 
-    final pdfFile = File('${directory.path}/cycle_data.pdf');
-    await pdfFile.writeAsBytes(await pdf.save());
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
 
-    await Share.shareXFiles(
-      [
-        XFile(jsonFile.path),
-        XFile(pdfFile.path),
-      ],
-      text: 'Cycle Data Export',
-    );
+    return '${date.year}-$month-$day';
+  }
+
+  void clearError() {
+    errorMessage = null;
+    notifyListeners();
   }
 }

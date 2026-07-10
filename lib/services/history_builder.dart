@@ -1,172 +1,237 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistoryBuilder {
+  static final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance;
+
+  /// Builds and saves a new history document.
+  ///
+  /// Every call creates a new document, so repeated updates do not
+  /// overwrite previous history records.
+  static Future<void> save({
+    required String collectionName,
+    required String docId,
+    required Map<String, dynamic> data,
+    required String action,
+  }) async {
+    final historyData = build(
+      collectionName: collectionName,
+      docId: docId,
+      data: data,
+      action: action,
+    );
+
+    if (historyData == null) {
+      return;
+    }
+
+    final historyId = historyData['id'] as String;
+
+    await _firestore
+        .collection('history')
+        .doc(historyId)
+        .set(historyData);
+  }
+
+  /// Creates the history data map.
   static Map<String, dynamic>? build({
     required String collectionName,
     required String docId,
     required Map<String, dynamic> data,
     required String action,
   }) {
-    final userId = data['userId'];
+    final userId = data['userId']?.toString().trim();
 
-    if (userId == null || userId.toString().trim().isEmpty) {
+    if (userId == null || userId.isEmpty) {
       return null;
     }
 
-    final historyId = '${collectionName}_${docId}_$action';
+    final normalizedCollectionName =
+    collectionName.trim().toLowerCase();
 
-    switch (collectionName) {
+    final normalizedAction = action.trim().toLowerCase();
+
+    final isCreated = normalizedAction == 'created';
+    final isDeleted = normalizedAction == 'deleted';
+
+    // Creates a new unique ID for every history record.
+    final historyId =
+        _firestore.collection('history').doc().id;
+
+    final commonData = <String, dynamic>{
+      'id': historyId,
+      'userId': userId,
+      'relatedId': docId,
+      'relatedCollection': normalizedCollectionName,
+      'action': normalizedAction,
+      'date': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    switch (normalizedCollectionName) {
       case 'medications':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'medication',
-          'title': action == 'created'
+          'title': isCreated
               ? 'Medication Added'
+              : isDeleted
+              ? 'Medication Deleted'
               : 'Medication Updated',
           'content': [
-            '${data['name'] ?? 'Medication'}${data['dosage'] != null ? ' - ${data['dosage']}' : ''}',
-            if (data['type'] != null) 'Type: ${data['type']}',
-            if (data['schedule'] != null) 'Schedule: ${data['schedule']}',
+            '${data['name'] ?? 'Medication'}'
+                '${data['dosage'] != null ? ' - ${data['dosage']}' : ''}',
+            if (data['type'] != null)
+              'Type: ${data['type']}',
+            if (data['schedule'] != null)
+              'Schedule: ${data['schedule']}',
           ],
-          'details': action == 'created'
+          'details': isCreated
               ? '${data['name'] ?? 'Medication'} was added to your medication list.'
+              : isDeleted
+              ? '${data['name'] ?? 'Medication'} was removed from your medication list.'
               : '${data['name'] ?? 'Medication'} was updated in your medication list.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
         };
 
       case 'visits':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'visit',
-          'title': action == 'created' ? 'Visit Added' : 'Visit Updated',
+          'title': isCreated
+              ? 'Visit Added'
+              : isDeleted
+              ? 'Visit Deleted'
+              : 'Visit Updated',
           'content': [
-            if (data['doctorName'] != null) 'Doctor: ${data['doctorName']}',
-            if (data['treatment'] != null) 'Treatment: ${data['treatment']}',
-            if (data['visitDate'] != null) 'Visit Date: ${data['visitDate']}',
+            if (data['doctorName'] != null)
+              'Doctor: ${data['doctorName']}',
+            if (data['treatment'] != null)
+              'Treatment: ${data['treatment']}',
+            if (data['visitDate'] != null)
+              'Visit Date: ${data['visitDate']}',
             if (data['followUpDate'] != null)
               'Follow-up: ${data['followUpDate']}',
           ],
-          'details': action == 'created'
+          'details': isCreated
               ? 'A doctor visit was added to your history.'
+              : isDeleted
+              ? 'A doctor visit was removed.'
               : 'A doctor visit was updated in your history.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
         };
 
       case 'journals':
       case 'journal':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'journal',
-          'title': action == 'created'
+          'title': isCreated
               ? 'Journal Added'
+              : isDeleted
+              ? 'Journal Deleted'
               : 'Journal Updated',
           'content': [
-            data['title'] ?? 'Journal entry saved',
+            data['title']?.toString() ??
+                'Journal entry saved',
           ],
-          'details':
-          data['note'] ?? data['details'] ?? 'A journal note was saved.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
+          'details': isDeleted
+              ? 'A journal entry was removed.'
+              : data['note']?.toString() ??
+              data['details']?.toString() ??
+              'A journal note was saved.',
         };
 
       case 'cycle':
       case 'cycles':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'cycle',
-          'title': action == 'created' ? 'Cycle Added' : 'Cycle Updated',
+          'title': isCreated
+              ? 'Cycle Added'
+              : isDeleted
+              ? 'Cycle Deleted'
+              : 'Cycle Updated',
           'content': [
             if (data['lastPeriod'] != null)
               'Last Period: ${data['lastPeriod']}',
-            if (data['duration'] != null) 'Duration: ${data['duration']}',
+            if (data['duration'] != null)
+              'Duration: ${data['duration']}',
             if (data['irregularity'] != null)
               'Irregularity: ${data['irregularity']}',
           ],
-          'details': 'Cycle information was saved.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
+          'details': isDeleted
+              ? 'Cycle information was removed.'
+              : 'Cycle information was saved.',
         };
 
       case 'acne':
       case 'acne_records':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'acne',
-          'title': action == 'created'
+          'title': isCreated
               ? 'Acne Record Added'
+              : isDeleted
+              ? 'Acne Record Deleted'
               : 'Acne Record Updated',
           'content': [
-            if (data['severity'] != null) 'Severity: ${data['severity']}',
-            if (data['trigger'] != null) 'Trigger: ${data['trigger']}',
-            if (data['treatment'] != null) 'Treatment: ${data['treatment']}',
+            if (data['severity'] != null)
+              'Severity: ${data['severity']}',
+            if (data['trigger'] != null)
+              'Trigger: ${data['trigger']}',
+            if (data['treatment'] != null)
+              'Treatment: ${data['treatment']}',
           ],
-          'details': 'An acne record was saved to your history.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
+          'details': isDeleted
+              ? 'An acne record was removed.'
+              : 'An acne record was saved to your history.',
         };
 
       case 'mood':
       case 'moods':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'mood',
-          'title': action == 'created' ? 'Mood Logged' : 'Mood Updated',
+          'title': isCreated
+              ? 'Mood Logged'
+              : isDeleted
+              ? 'Mood Deleted'
+              : 'Mood Updated',
           'content': [
-            if (data['mood'] != null) 'Mood: ${data['mood']}',
-            if (data['note'] != null) 'Note: ${data['note']}',
+            if (data['mood'] != null)
+              'Mood: ${data['mood']}',
+            if (data['note'] != null)
+              'Note: ${data['note']}',
           ],
-          'details': 'A mood entry was saved to your history.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
+          'details': isDeleted
+              ? 'A mood entry was removed.'
+              : 'A mood entry was saved to your history.',
         };
 
       case 'images':
       case 'skin_images':
         return {
-          'id': historyId,
-          'userId': userId,
+          ...commonData,
           'type': 'acne',
-          'title': action == 'created'
+          'title': isCreated
               ? 'Skin Image Uploaded'
+              : isDeleted
+              ? 'Skin Image Deleted'
               : 'Skin Image Updated',
           'content': [
-            'Skin progress image saved',
-            if (data['category'] != null) 'Category: ${data['category']}',
-            if (data['note'] != null) 'Note: ${data['note']}',
+            isDeleted
+                ? 'Skin progress image removed'
+                : 'Skin progress image saved',
+            if (data['category'] != null)
+              'Category: ${data['category']}',
+            if (data['note'] != null)
+              'Note: ${data['note']}',
           ],
-          'details': 'A skin progress image was saved to your history.',
-          'relatedId': docId,
-          'relatedCollection': collectionName,
-          'imageUrl': data['imageUrl'] ?? data['url'] ?? '',
-          'date': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
+          'details': isDeleted
+              ? 'A skin progress image was removed.'
+              : 'A skin progress image was saved to your history.',
+          'imageUrl':
+          data['imageUrl'] ?? data['url'] ?? '',
         };
 
       default:
