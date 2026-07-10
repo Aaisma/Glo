@@ -3,7 +3,10 @@ import '../model/acne_tracker_model.dart';
 import 'acne_repo.dart';
 
 class AcneRepoImpl implements AcneRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  AcneRepoImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<void> saveEntry(AcneTrackerModel model) async {
@@ -23,7 +26,6 @@ class AcneRepoImpl implements AcneRepo {
         .collection("acne_tracker")
         .doc(date)
         .get();
-
     if (!doc.exists) return null;
     return AcneTrackerModel.fromMap(doc.id, doc.data()!);
   }
@@ -34,9 +36,7 @@ class AcneRepoImpl implements AcneRepo {
         .collection("users")
         .doc(userId)
         .collection("acne_tracker")
-        .orderBy("date", descending: true)
         .get();
-
     return snapshot.docs
         .map((doc) => AcneTrackerModel.fromMap(doc.id, doc.data()))
         .toList();

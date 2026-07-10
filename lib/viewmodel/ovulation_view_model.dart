@@ -10,13 +10,29 @@ import '../repo/period_repo_impl.dart';
 class OvulationViewModel extends ChangeNotifier {
   final OvulationRepo _repo;
   final PeriodRepo _periodRepo;
-  final String _userId;
+  String? userId;
 
   OvulationViewModel(this._repo, {PeriodRepo? periodRepo, FirebaseAuth? auth})
       : _periodRepo = periodRepo ?? PeriodRepoImpl(),
-        _userId = (auth ?? FirebaseAuth.instance).currentUser?.uid ?? 'guest' {
-    fetchLogs();
+        userId = (auth ?? FirebaseAuth.instance).currentUser?.uid {
+    if (userId != null) fetchLogs();
   }
+
+  void updateUserId(String? newUserId) {
+    if (userId != newUserId) {
+      userId = newUserId;
+      if (userId != null) {
+        fetchLogs();
+      } else {
+        _logs = [];
+        _periodLogs = [];
+        _analyticsResult = null;
+        notifyListeners();
+      }
+    }
+  }
+
+  String get userId => userId ?? 'guest';
 
   DateTime _currentMonth = DateTime.now();
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -46,8 +62,8 @@ class OvulationViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchLogs() async {
-    _logs = await _repo.getLogsForUser(_userId);
-    _periodLogs = await _periodRepo.getLogsForUser(_userId);
+    _logs = await _repo.getLogsForUser(userId);
+    _periodLogs = await _periodRepo.getLogsForUser(userId);
     _analyticsResult = CycleAnalyticsEngine.calculate(
       periodLogs: _periodLogs,
       ovulationLogs: _logs,
@@ -109,7 +125,7 @@ class OvulationViewModel extends ChangeNotifier {
     } else {
       final newLog = updateFn(OvulationLogModel(
         id: '',
-        userId: _userId,
+        userId: userId,
         date: date,
         createdAt: now,
         updatedAt: now,
@@ -165,7 +181,7 @@ class OvulationViewModel extends ChangeNotifier {
     } else {
       final newLog = updateFn(OvulationLogModel(
         id: '',
-        userId: _userId,
+        userId: userId,
         date: _selectedDate,
         createdAt: now,
         updatedAt: now,

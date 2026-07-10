@@ -107,123 +107,167 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDECEF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Text("Register",
-                  style: TextStyle(color: primaryPink, fontSize: 28, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text("Hey, Lovely!",
-                  style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 12),
-              Text("♡.･:* Your 'Glow' Begins Here! *:･.♡",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.w500)),
-
-              const SizedBox(height: 28),
-
-              // Full Name
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: "Full Name",
-                  prefixIcon: Icon(Icons.person_outline, color: primaryPink),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Email
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: "Email",
-                  prefixIcon: Icon(Icons.mail_outline, color: primaryPink),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Password
-              TextField(
-                controller: passwordController,
-                obscureText: obscurePassword,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: "Password",
-                  prefixIcon: Icon(Icons.lock_outline, color: primaryPink),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => obscurePassword = !obscurePassword),
-                    icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.grey),
-                  ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Register Button
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  onPressed: registerUser,
-                  child: const Text("Register",
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              Text("Already with Us, Darling? Shine Back In ( > . < )✧!",
-                  style: TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.w500)),
-
-              const SizedBox(height: 25),
-
-              Row(
-                children: const [
-                  Expanded(child: Divider(color: Colors.black26, thickness: 1)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text("Looking for more options?", style: TextStyle(color: Colors.black54, fontSize: 12)),
-                  ),
-                  Expanded(child: Divider(color: Colors.black26, thickness: 1)),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Social Buttons
-              SocialButton(icon: Icons.g_mobiledata, text: "Register with Google", color: primaryPink, onTap: registerWithGoogle),
-              const SizedBox(height: 14),
-              SocialButton(icon: Icons.facebook, text: "Register with Facebook", color: primaryPink, onTap: registerWithFacebook),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFFFFF), // White at top
+              Color(0xFFFDECEF), // Light pink at bottom
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
+                  ),
+                ),
+                
+                const SizedBox(height: 10),
+
+                Text("Register",
+                    style: TextStyle(color: primaryPink, fontSize: 32, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                const Text("Hey, Lovely!",
+                    style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 12),
+                Text("♡.･:* Your 'Glow' Begins Here! *:･.♡",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: primaryPink, fontSize: 13, fontWeight: FontWeight.w500)),
+
+                const SizedBox(height: 32),
+
+                // Full Name
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: "Full Name",
+                    prefixIcon: Icon(Icons.person_outline, color: primaryPink),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Email
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: "Email",
+                    prefixIcon: Icon(Icons.mail_outline, color: primaryPink),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Password
+                TextField(
+                  controller: passwordController,
+                  obscureText: obscurePassword,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: "Password",
+                    prefixIcon: Icon(Icons.lock_outline, color: primaryPink),
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                      icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: Colors.grey),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Register Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 58,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    onPressed: registerUser,
+                    child: const Text("Register",
+                        style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      children: [
+                        const TextSpan(
+                          text: "Already with Us, Darling? ",
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                        TextSpan(
+                          text: "Shine Back In ( > . < )✧!",
+                          style: TextStyle(color: primaryPink, decoration: TextDecoration.underline),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Options, Darling! Divider
+                Row(
+                  children: const [
+                    Expanded(child: Divider(color: Colors.black26, thickness: 1)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text("Options, Darling!", style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ),
+                    Expanded(child: Divider(color: Colors.black26, thickness: 1)),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+                
+                Text("⋆✧⋆ Because One Size Never Fits All ⋆✧⋆",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.w600)),
+
+                const SizedBox(height: 28),
+
+                // Social Buttons
+                SocialButton(icon: Icons.g_mobiledata, text: "Login with Google", color: primaryPink, onTap: registerWithGoogle),
+                const SizedBox(height: 16),
+                SocialButton(icon: Icons.facebook, text: "Login with Facebook", color: primaryPink, onTap: registerWithFacebook),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

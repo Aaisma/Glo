@@ -1,17 +1,35 @@
 import 'package:flutter/material.dart';
-import '../model/meal_entry_model.dart';
-import '../repo/meal_repo.dart';
+import '../model/nutrition_entry_model.dart';
+import '../repo/nutrition_repo.dart';
 
-class MealTrackerViewModel extends ChangeNotifier {
-  final MealRepo _repo;
+class NutritionTrackerViewModel extends ChangeNotifier {
+  final NutritionRepo _repo;
+  String? _userId;
 
-  MealTrackerViewModel(this._repo);
+  NutritionTrackerViewModel(this._repo);
+
+  void updateUserId(String? newUserId) {
+    if (_userId != newUserId) {
+      _userId = newUserId;
+      if (_userId != null) {
+        loadToday(_userId!);
+        loadHistory();
+      } else {
+        meals = [];
+        history = [];
+        notifyListeners();
+      }
+    }
+  }
+
+  String? get userId => _userId;
 
   bool isLoading = false;
   String? errorMessage;
 
   List<Map<String, dynamic>> meals = [];
   String note = "";
+  List<NutritionEntryModel> history = [];
 
   String _todayDate() => DateTime.now().toIso8601String().split("T")[0];
 
@@ -25,12 +43,25 @@ class MealTrackerViewModel extends ChangeNotifier {
       if (entry != null) {
         meals = entry.meals;
         note = entry.note;
+      } else {
+        meals = [];
+        note = "";
       }
     } catch (e) {
       errorMessage = "Failed to load today's entry: $e";
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> loadHistory() async {
+    if (_userId == null) return;
+    try {
+      history = await _repo.getAllEntries(_userId!);
+      notifyListeners();
+    } catch (e) {
+      errorMessage = "Failed to load history: $e";
     }
   }
 
@@ -55,13 +86,14 @@ class MealTrackerViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final entry = MealEntryModel(
+      final entry = NutritionEntryModel(
         userId: userId,
         date: _todayDate(),
         meals: meals,
         note: note,
       );
       await _repo.saveEntry(entry);
+      await loadHistory();
     } catch (e) {
       errorMessage = "Failed to save entry: $e";
     } finally {

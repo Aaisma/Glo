@@ -3,14 +3,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/admin_analytics_viewmodel.dart';
 
-class AdminSkinJournalScreen extends StatefulWidget {
-  const AdminSkinJournalScreen({super.key});
+class AdminNutritionTrackerScreen extends StatefulWidget {
+  const AdminNutritionTrackerScreen({super.key});
 
   @override
-  State<AdminSkinJournalScreen> createState() => _AdminSkinJournalScreenState();
+  State<AdminNutritionTrackerScreen> createState() => _AdminNutritionTrackerScreenState();
 }
 
-class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
+class _AdminNutritionTrackerScreenState extends State<AdminNutritionTrackerScreen> {
   @override
   void initState() {
     super.initState();
@@ -20,22 +20,35 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<AdminAnalyticsViewModel>();
-    final colors = {
-      "Clear": const Color(0xFF6FC3F7),
-      "Mild": const Color(0xFFFFB74D),
-      "Moderate": const Color(0xFFEF8FA8),
-      "Severe": const Color(0xFF9B7FE8),
+    final tagColors = [
+      const Color(0xFFFFB74D),
+      const Color(0xFF6FC3F7),
+      const Color(0xFF9B7FE8),
+      const Color(0xFFEF8FA8),
+      const Color(0xFF7AC74F),
+    ];
+    final mealColors = {
+      "Breakfast": const Color(0xFFFFB74D),
+      "Lunch": const Color(0xFF6FC3F7),
+      "Dinner": const Color(0xFF9B7FE8),
+      "Snack": const Color(0xFFEF8FA8),
     };
-    final total = vm.severityDistribution.values.fold(0, (a, b) => a + b);
-    final changeText = vm.severeChangePercent >= 0
-        ? "Severe cases up ${vm.severeChangePercent.toStringAsFixed(0)}% this week. Monitor closely."
-        : "Severe cases down ${vm.severeChangePercent.abs().toStringAsFixed(0)}% this week. Good progress.";
 
-    String mostCommon = "—";
-    if (total > 0) {
-      final sorted = vm.severityDistribution.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-      mostCommon = sorted.first.key;
-    }
+    final tagEntries = vm.tagFrequency.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final mealTotal = vm.mealTypeDistribution.values.fold(0, (a, b) => a + b);
+
+    final avgMealsPerUser = vm.distinctMealUsers == 0 ? 0.0 : vm.mealEntries / vm.distinctMealUsers;
+
+    final homeCookedCount = vm.tagFrequency["Home-cooked"] ?? 0;
+    final totalTagsLogged = vm.tagFrequency.values.fold(0, (a, b) => a + b);
+    final homeCookedPercent = totalTagsLogged == 0 ? 0.0 : (homeCookedCount / totalTagsLogged) * 100;
+
+    String topTag = tagEntries.isEmpty ? "—" : tagEntries.first.key;
+    final topTagPercent = totalTagsLogged == 0 || tagEntries.isEmpty ? 0.0 : (tagEntries.first.value / totalTagsLogged) * 100;
+
+    final maxMealsTrend = vm.mealsLoggedTrend.values.isEmpty
+        ? 1.0
+        : vm.mealsLoggedTrend.values.reduce((a, b) => a > b ? a : b);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0FFFF),
@@ -44,7 +57,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF4F8FE0)),
         title: const Text(
-          "Skin Analytics",
+          "Nutrition Analytics",
           style: TextStyle(color: Color(0xFF4F8FE0), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -83,12 +96,14 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(color: const Color(0xFFEAF3FD), shape: BoxShape.circle),
-                    child: const Icon(Icons.insights, color: Color(0xFF4F8FE0), size: 20),
+                    child: const Icon(Icons.info_outline, color: Color(0xFF4F8FE0), size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      changeText,
+                      tagEntries.isEmpty
+                          ? "No nutrition tags logged yet."
+                          : "'\$topTag' is the most logged tag, appearing in ${topTagPercent.toStringAsFixed(0)}% of tagged logs.",
                       style: const TextStyle(fontSize: 14, color: Color(0xFF2A2A2A), fontWeight: FontWeight.w500, height: 1.4),
                     ),
                   ),
@@ -106,14 +121,13 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
               mainAxisSpacing: 14,
               childAspectRatio: 2.2,
               children: [
-                _statCard(Icons.face_retouching_natural, const Color(0xFF9B7FE8), "Total Entries", "${vm.acneEntries}"),
-                _statCard(Icons.people, const Color(0xFF6FC3F7), "Active Users", "${vm.distinctAcneUsers}"),
-                _statCard(Icons.today, const Color(0xFF7AC74F), "Logged Today", "${vm.todayAcneEntries}"),
-                _statCard(Icons.warning_amber, const Color(0xFFFF7D7D), "Severe Cases", "${vm.severityDistribution['Severe'] ?? 0}"),
-                _statCard(Icons.trending_up, const Color(0xFFFFB74D), "Most Common", mostCommon),
-                _statCard(Icons.checklist, const Color(0xFFEF8FA8), "Avg Routine", "${vm.averageChecklistCompletion.toStringAsFixed(0)}%"),
-                _statCard(Icons.camera_alt, const Color(0xFF6FC3F7), "Photo Attach", "${vm.photoAttachmentRate.toStringAsFixed(0)}%"),
-                _statCard(Icons.shopping_bag, const Color(0xFFFFB74D), "Avg Products", vm.averageProductsPerEntry.toStringAsFixed(1)),
+                _statCard(Icons.restaurant_menu, const Color(0xFF9B7FE8), "Total Logs", "${vm.mealEntries}"),
+                _statCard(Icons.people, const Color(0xFF6FC3F7), "Active Users", "${vm.distinctMealUsers}"),
+                _statCard(Icons.today, const Color(0xFF7AC74F), "Logged Today", "${vm.todayMealEntries}"),
+                _statCard(Icons.repeat, const Color(0xFFFFB74D), "Avg Logs/User", avgMealsPerUser.toStringAsFixed(1)),
+                _statCard(Icons.home, const Color(0xFF7AC74F), "Home-cooked", "${homeCookedPercent.toStringAsFixed(0)}%"),
+                _statCard(Icons.label, const Color(0xFFEF8FA8), "Top Tag", topTag),
+                _statCard(Icons.local_fire_department, const Color(0xFFFF7D7D), "Consistency", "${vm.mealLoggingConsistency.toStringAsFixed(0)}%"),
               ],
             ),
 
@@ -131,12 +145,73 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Severity Breakdown", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
+                  const Text("Nutrition Logs Trend (7 days)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
                   const SizedBox(height: 20),
-                  total == 0
+                  SizedBox(
+                    height: 160,
+                    child: LineChart(
+                      LineChartData(
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        minY: 0,
+                        maxY: maxMealsTrend == 0 ? 1 : maxMealsTrend * 1.2,
+                        titlesData: const FlTitlesData(
+                          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: vm.mealsLoggedTrend.entries.toList().asMap().entries.map((e) {
+                              return FlSpot(e.key.toDouble(), e.value.value);
+                            }).toList(),
+                            isCurved: true,
+                            color: const Color(0xFF9B7FE8),
+                            barWidth: 4,
+                            isStrokeCapRound: true,
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                                  radius: 4, color: Colors.white, strokeWidth: 2, strokeColor: const Color(0xFF9B7FE8)
+                              ),
+                            ),
+                            belowBarData: BarAreaData(show: true, color: const Color(0xFF9B7FE8).withOpacity(0.15)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text("Total logs across all users, per day", style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Log Type Distribution", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
+                  const SizedBox(height: 20),
+                  mealTotal == 0
                       ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: Text("No acne entries logged yet", style: TextStyle(color: Colors.grey))),
+                    child: Center(child: Text("No nutrition logs yet", style: TextStyle(color: Colors.grey))),
                   )
                       : SizedBox(
                     height: 180,
@@ -147,10 +222,10 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                             PieChartData(
                               sectionsSpace: 4,
                               centerSpaceRadius: 40,
-                              sections: vm.severityDistribution.entries.where((e) => e.value > 0).map((e) {
+                              sections: vm.mealTypeDistribution.entries.where((e) => e.value > 0).map((e) {
                                 return PieChartSectionData(
                                   value: e.value.toDouble(),
-                                  color: colors[e.key],
+                                  color: mealColors[e.key],
                                   title: "${e.value}",
                                   radius: 40,
                                   titleStyle: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
@@ -163,12 +238,12 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: vm.severityDistribution.entries.map((e) {
+                          children: vm.mealTypeDistribution.entries.map((e) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Row(
                                 children: [
-                                  Container(width: 12, height: 12, decoration: BoxDecoration(color: colors[e.key], shape: BoxShape.circle)),
+                                  Container(width: 12, height: 12, decoration: BoxDecoration(color: mealColors[e.key], shape: BoxShape.circle)),
                                   const SizedBox(width: 8),
                                   Text("${e.key}: ${e.value}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF5A5A5A))),
                                 ],
@@ -197,94 +272,41 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Severity Trend (7 days)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 160,
-                    child: LineChart(
-                      LineChartData(
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        minY: 0,
-                        maxY: 3,
-                        titlesData: const FlTitlesData(
-                          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        ),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: vm.severityTrend.entries.toList().asMap().entries.map((e) {
-                              return FlSpot(e.key.toDouble(), e.value.value);
-                            }).toList(),
-                            isCurved: true,
-                            color: const Color(0xFF9B7FE8),
-                            barWidth: 4,
-                            isStrokeCapRound: true,
-                            dotData: FlDotData(
-                              show: true,
-                              getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                                  radius: 4, color: Colors.white, strokeWidth: 2, strokeColor: const Color(0xFF9B7FE8)
+                  const Text("Most Common Tags", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
+                  const SizedBox(height: 16),
+                  tagEntries.isEmpty
+                      ? const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text("No tags logged yet", style: TextStyle(color: Colors.grey)))
+                      : Column(
+                    children: List.generate(tagEntries.length, (i) {
+                      final e = tagEntries[i];
+                      final maxVal = tagEntries.first.value;
+                      final color = tagColors[i % tagColors.length];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(e.key, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2A2A2A))),
+                                Text("${e.value}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
+                                value: maxVal == 0 ? 0 : e.value / maxVal,
+                                minHeight: 10,
+                                backgroundColor: const Color(0xFFEAF3FD),
+                                color: color,
                               ),
                             ),
-                            belowBarData: BarAreaData(show: true, color: const Color(0xFF9B7FE8).withOpacity(0.15)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text("0 = Clear, 1 = Mild, 2 = Moderate, 3 = Severe", style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Most Logged Products", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
-                  const SizedBox(height: 16),
-                  vm.topProducts.isEmpty
-                      ? const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text("No products logged yet", style: TextStyle(color: Colors.grey)))
-                      : Column(
-                    children: vm.topProducts.map((p) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(child: Text(p["name"], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF2A2A2A)))),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: const Color(0xFFEAF3FD), borderRadius: BorderRadius.circular(10)),
-                                child: Text("${p['count']}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF4F8FE0))),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ),
                 ],
               ),
@@ -306,18 +328,18 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 children: [
                   const Text("Recent Entries", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
                   const SizedBox(height: 16),
-                  vm.recentAcneEntries.isEmpty
+                  vm.recentMealEntries.isEmpty
                       ? const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text("No entries yet", style: TextStyle(color: Colors.grey)))
                       : Column(
-                    children: vm.recentAcneEntries.map((entry) {
+                    children: vm.recentMealEntries.map((entry) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: (colors[entry["severity"]] ?? Colors.grey).withOpacity(0.15), shape: BoxShape.circle),
-                              child: Icon(Icons.face_retouching_natural, size: 20, color: colors[entry["severity"]] ?? Colors.grey),
+                              decoration: BoxDecoration(color: const Color(0xFF9B7FE8).withOpacity(0.15), shape: BoxShape.circle),
+                              child: const Icon(Icons.restaurant_menu, size: 20, color: Color(0xFF9B7FE8)),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -325,7 +347,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text("User ${vm.maskId(entry['userId'])}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2A2A2A))),
-                                  Text(entry["severity"], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colors[entry["severity"]] ?? Colors.grey)),
+                                  Text("${entry['mealCount']} logs", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF9B7FE8))),
                                 ],
                               ),
                             ),

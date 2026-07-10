@@ -10,6 +10,7 @@ import 'view/authentication/auth_wrapper.dart';
 import 'view/authentication/authentication_page.dart';
 import 'view/authentication/login_screen.dart';
 import 'view/authentication/register_screen.dart';
+import 'view/nutrition_tracker_screen.dart';
 import 'view/survey_page.dart';
 import 'view/navigation_icon/glo_profile.dart';
 import 'view/dashboard_page.dart';
@@ -27,6 +28,8 @@ import 'repo/insights_moderation_repo_impl.dart';
 import 'repo/community_moderation_repo_impl.dart';
 import 'repo/acne_repo_impl.dart';
 import 'repo/admin_monthly_tracking_repo.dart';
+import 'repo/water_tracker_repo_impl.dart';
+import 'repo/nutrition_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_view_model.dart';
@@ -39,6 +42,8 @@ import 'viewmodel/moderation_view_model.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
+import 'viewmodel/water_tracker_viewmodel.dart';
+import 'viewmodel/nutrition_tracker_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,10 +74,29 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
-        ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
-        ChangeNotifierProvider(create: (_) => OvulationViewModel(OvulationRepoImpl())),
+        
+        ChangeNotifierProxyProvider<UserViewModel, PeriodViewModel>(
+          create: (_) => PeriodViewModel(PeriodRepoImpl()),
+          update: (_, userVM, periodVM) => periodVM!..updateUserId(userVM.userId),
+        ),
+        ChangeNotifierProxyProvider<UserViewModel, OvulationViewModel>(
+          create: (_) => OvulationViewModel(OvulationRepoImpl()),
+          update: (_, userVM, ovulationVM) => ovulationVM!..updateUserId(userVM.userId),
+        ),
+        ChangeNotifierProxyProvider<UserViewModel, AcneTrackerViewModel>(
+          create: (_) => AcneTrackerViewModel(AcneRepoImpl()),
+          update: (_, userVM, acneVM) => acneVM!..updateUserId(userVM.userId),
+        ),
+        ChangeNotifierProxyProvider<UserViewModel, WaterTrackerViewModel>(
+          create: (_) => WaterTrackerViewModel(WaterTrackerRepoImpl()),
+          update: (_, userVM, waterVM) => waterVM!..updateUserId(userVM.userId),
+        ),
+        ChangeNotifierProxyProvider<UserViewModel, NutritionTrackerViewModel>(
+          create: (_) => NutritionTrackerViewModel(NutritionRepoImpl()),
+          update: (_, userVM, nutritionVM) => nutritionVM!..updateUserId(userVM.userId),
+        ),
+
         ChangeNotifierProvider(create: (_) => TrackerNavigationViewModel()),
-        ChangeNotifierProvider(create: (_) => AcneTrackerViewModel(AcneRepoImpl())),
 
         // Insights Module ViewModels
         ChangeNotifierProvider(create: (_) => InsightsFeedViewModel(InsightsRepoImpl())),
@@ -102,7 +126,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const DebugMenuScreen(),
+        home: const RegisterScreen(),
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/authWrapper': (context) => const AuthWrapper(),

@@ -11,13 +11,29 @@ import '../repo/ovulation_repo_impl.dart';
 class PeriodViewModel extends ChangeNotifier {
   final PeriodRepo _repo;
   final OvulationRepo _ovulationRepo;
-  final String _userId;
+  String? userId;
 
   PeriodViewModel(this._repo, {OvulationRepo? ovulationRepo, FirebaseAuth? auth})
       : _ovulationRepo = ovulationRepo ?? OvulationRepoImpl(),
-        _userId = (auth ?? FirebaseAuth.instance).currentUser?.uid ?? 'guest' {
-    fetchLogs();
+        userId = (auth ?? FirebaseAuth.instance).currentUser?.uid {
+    if (userId != null) fetchLogs();
   }
+
+  void updateUserId(String? newUserId) {
+    if (userId != newUserId) {
+      userId = newUserId;
+      if (userId != null) {
+        fetchLogs();
+      } else {
+        _logs = [];
+        _ovulationLogs = [];
+        _analyticsResult = null;
+        notifyListeners();
+      }
+    }
+  }
+
+  String get userId => userId ?? 'guest';
 
   DateTime _currentMonth = DateTime.now();
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -50,8 +66,8 @@ class PeriodViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchLogs() async {
-    _logs = await _repo.getLogsForUser(_userId);
-    _ovulationLogs = await _ovulationRepo.getLogsForUser(_userId);
+    _logs = await _repo.getLogsForUser(userId);
+    _ovulationLogs = await _ovulationRepo.getLogsForUser(userId);
     _analyticsResult = CycleAnalyticsEngine.calculate(
       periodLogs: _logs,
       ovulationLogs: _ovulationLogs,
@@ -101,7 +117,7 @@ class PeriodViewModel extends ChangeNotifier {
       } else {
         final newLog = PeriodLogModel(
           id: '',
-          userId: _userId,
+          userId: userId,
           date: date,
           isPeriodDay: true,
           createdAt: now,
@@ -148,7 +164,7 @@ class PeriodViewModel extends ChangeNotifier {
     } else {
       final newLog = updateFn(PeriodLogModel(
         id: '',
-        userId: _userId,
+        userId: userId,
         date: _selectedDate,
         createdAt: now,
         updatedAt: now,

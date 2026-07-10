@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../admin_dashboard_screen.dart';
 import '../admin_skin_journal_screen.dart';
 import '../admin_hydration_hub_screen.dart';
-import '../admin_meal_tracker_screen.dart';
+import '../admin_nutrition_tracker_screen.dart';
 import '../dashboard_card/admin/admin_monthly_tracking_screen.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -64,7 +64,7 @@ class AdminSidebar extends StatelessWidget {
                         } else if (item["label"] == "Hydration Hub") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
                         } else if (item["label"] == "Meal Tracker") {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMealTrackerScreen()));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNutritionTrackerScreen()));
                         } else if (item["label"] == "Monthly Tracking") {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMonthlyTrackingScreen()));
                         }
