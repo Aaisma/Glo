@@ -45,7 +45,7 @@ lib/view/dashboard_card/* merge=ours
 lib/view/insight/* merge=ours
 
 lib/viewmodel/auth_viewmodel.dart merge=ours
-lib/viewmodel/auth_viewmodel.dart merge=ours
+lib/viewmodel/user_viewmodel.dart merge=ours
 
 lib/viewmodel/admin_analytics_viewmodel.dart merge=ours
 lib/viewmodel/admin_monthly_tracking_viewmodel.dart merge=ours
