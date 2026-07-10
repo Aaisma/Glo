@@ -9,8 +9,24 @@ class AcneTrackerViewModel extends ChangeNotifier {
   final AcneRepo _repo;
   final CloudinaryService _cloudinaryService = CloudinaryService();
   final AcneClassifierService _classifier = AcneClassifierService();
+  String? _userId;
 
   AcneTrackerViewModel(this._repo);
+
+  void updateUserId(String? newUserId) {
+    if (_userId != newUserId) {
+      _userId = newUserId;
+      if (_userId != null) {
+        loadToday(_userId!);
+        loadHistory(_userId!);
+      } else {
+        history = [];
+        notifyListeners();
+      }
+    }
+  }
+
+  String? get userId => _userId;
 
   bool isLoading = false;
   String? errorMessage;

@@ -3,12 +3,14 @@ class WaterTrackerModel {
   final String date;
   final double intake;
   final double goal;
+  final String note;
 
   WaterTrackerModel({
     required this.userId,
     required this.date,
     required this.intake,
     required this.goal,
+    this.note = "",
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class WaterTrackerModel {
       "date": date,
       "intake": intake,
       "goal": goal,
+      "note": note,
     };
   }
 
@@ -26,6 +29,7 @@ class WaterTrackerModel {
       date: map["date"] ?? "",
       intake: (map["intake"] as num?)?.toDouble() ?? 0,
       goal: (map["goal"] as num?)?.toDouble() ?? 3.0,
+      note: map["note"] ?? "",
     );
   }
 }

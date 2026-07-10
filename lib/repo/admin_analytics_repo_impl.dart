@@ -412,4 +412,21 @@ class AdminAnalyticsRepoImpl {
 
     return (daysWithEntries.length / 7) * 100;
   }
+
+  /// Maps userId -> display name, read from the top-level `users` collection.
+  /// Assumes each user doc's ID matches the userId used elsewhere (i.e. the
+  /// same ID that appears as doc.reference.parent.parent?.id above) and has
+  /// a `name` field. Adjust the field name below if yours differs (e.g.
+  /// `displayName` or `fullName`).
+  Future<Map<String, String>> getUserNames() async {
+    final snapshot = await _firestore.collection('users').get();
+    final Map<String, String> names = {};
+    for (final doc in snapshot.docs) {
+      final name = doc.data()['name'] as String?;
+      if (name != null && name.isNotEmpty) {
+        names[doc.id] = name;
+      }
+    }
+    return names;
+  }
 }
