@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../model/onboarding_survey_data.dart';
-import '../services/survey/onboarding_tracker_initializer.dart';
+// import '../services/survey/onboarding_tracker_initializer.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserRepo _userRepo;
@@ -99,10 +99,10 @@ class UserViewModel extends ChangeNotifier {
       setUserId(user.uid);
 
       // 2. initializeTrackers()
-      await OnboardingTrackerInitializer.initializeAllTrackers(
-        userId: user.uid,
-        surveyData: _surveyData,
-      );
+      // await OnboardingTrackerInitializer.initializeAllTrackers(
+      //   userId: user.uid,
+      //   surveyData: _surveyData,
+      // );
 
       // 3. saveSurveyAnswers() & markOnboardingComplete()
       await updateSurvey(
