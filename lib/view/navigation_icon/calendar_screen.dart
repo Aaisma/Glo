@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
-import 'package:gloclone/view/navigation_icon/calendar_screen.dart';
-import 'package:gloclone/view/navigation_icon/notification_page.dart';
+import 'package:glo/view/navigation_icon/calendar_screen.dart';
+import 'package:glo/view/navigation_icon/notification_page.dart';
 
 
 class CalendarScreen extends StatelessWidget {
