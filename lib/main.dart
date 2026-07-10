@@ -1,4 +1,16 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:glo/repo/feedback_repo.dart';
+import 'package:glo/repo/feedback_repo_impl.dart';
+import 'package:glo/viewmodel/admin_feedback_view_model.dart';
+import 'package:glo/view/glo_admin/admin_feedback/admin_feedback_dashboard_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+=======
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -60,6 +72,7 @@ void main() async {
   await Hive.openBox('hidden_content_box');
   await Hive.openBox('onboarding_box');
 
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
   runApp(const MyApp());
 }
 
@@ -70,6 +83,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+<<<<<<< HEAD
+        Provider<FeedbackRepo>(
+          create: (_) => FeedbackRepoImpl(),
+        ),
+        ChangeNotifierProvider<AdminFeedbackViewModel>(
+          create: (context) => AdminFeedbackViewModel(
+            repository: context.read<FeedbackRepo>(),
+          ),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Glo Wellness Portal',
+        debugShowCheckedModeBanner: false,
+=======
         ChangeNotifierProvider(create: (_) => UserViewModel(userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => AuthViewModel(authRepo: AuthRepoImpl(), userRepo: UserRepoImpl())),
         ChangeNotifierProvider(create: (_) => PeriodViewModel(PeriodRepoImpl())),
@@ -102,10 +129,18 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Glo Project',
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
         theme: ThemeData(
           primarySwatch: Colors.pink,
-          scaffoldBackgroundColor: Colors.white,
+          useMaterial3: true,
         ),
+<<<<<<< HEAD
+        home: const AdminFeedbackDashboardScreen(),
+      ),
+    );
+  }
+}
+=======
         home: const AdminDashboardScreen(),
         routes: {
           '/splash': (context) => const SplashScreen(),
@@ -161,3 +196,4 @@ class DebugMenuScreen extends StatelessWidget {
     );
   }
 }
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c

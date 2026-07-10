@@ -6,7 +6,7 @@ import '../dashboard_page.dart';
 import 'authentication_page.dart';
 import '../survey_page.dart';
 import '../navigation_icon/glo_profile.dart';
-import 'package:glo/view/admin_dashboard_screen.dart';
+import 'package:glo/view/glo_admin/admin_dashboard_screen.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});

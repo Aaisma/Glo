@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/medication_model.dart';
+import 'medication_repo.dart';
 
-class MedicationsService {
+class MedicationRepoImpl implements MedicationRepo {
   final FirebaseFirestore _db;
 
-  MedicationsService({FirebaseFirestore? firestore})
+  MedicationRepoImpl({FirebaseFirestore? firestore})
       : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _medicationsRef =>
@@ -22,15 +23,16 @@ class MedicationsService {
     }
   }
 
-  Future<void> addMedication(MedicationModel med, String userId) async {
+  @override
+  Future<void> addMedication(MedicationModel medication, String userId) async {
     _validateUserId(userId);
 
     final docRef = _medicationsRef.doc();
-    med.id = docRef.id;
-    med.userId = userId;
+    medication.id = docRef.id;
+    medication.userId = userId;
 
     await docRef.set({
-      ...med.toMap(),
+      ...medication.toMap(),
       'id': docRef.id,
       'userId': userId,
       'createdAt': FieldValue.serverTimestamp(),
@@ -38,24 +40,27 @@ class MedicationsService {
     });
   }
 
-  Future<void> updateMedication(MedicationModel med, String userId) async {
+  @override
+  Future<void> updateMedication(MedicationModel medication, String userId) async {
     _validateUserId(userId);
-    _validateMedicationId(med.id);
+    _validateMedicationId(medication.id);
 
-    med.userId = userId;
+    medication.userId = userId;
 
-    await _medicationsRef.doc(med.id).set({
-      ...med.toMap(),
+    await _medicationsRef.doc(medication.id).set({
+      ...medication.toMap(),
       'userId': userId,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 
-  Future<void> deleteMedication(String id) async {
-    _validateMedicationId(id);
-    await _medicationsRef.doc(id).delete();
+  @override
+  Future<void> deleteMedication(String medicationId) async {
+    _validateMedicationId(medicationId);
+    await _medicationsRef.doc(medicationId).delete();
   }
 
+  @override
   Future<List<MedicationModel>> getMedications(String userId) async {
     _validateUserId(userId);
 
@@ -69,7 +74,7 @@ class MedicationsService {
         .toList();
   }
 
-
+  @override
   Stream<List<MedicationModel>> getMedicationsStream(String userId) {
     _validateUserId(userId);
 
@@ -81,16 +86,17 @@ class MedicationsService {
         snapshot.docs.map((doc) => MedicationModel.fromMap(doc.data(), doc.id)).toList());
   }
 
-  // ✅ Renamed to match repo
+  @override
   Stream<int> getMedicationCountStream(String userId) {
     _validateUserId(userId);
+
     return _medicationsRef
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
   }
 
-  // ✅ Renamed to match repo
+  @override
   Stream<int> getAllMedicationCountStream() {
     return _medicationsRef.snapshots().map((snapshot) => snapshot.docs.length);
   }

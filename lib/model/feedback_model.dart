@@ -1,42 +1,47 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class FeedbackModel {
+  final String? id;
   final String category;
   final String type;
   final String message;
   final int ratingIndex;
   final DateTime timestamp;
+  final String status;
 
   FeedbackModel({
+    this.id,
     required this.category,
     required this.type,
     required this.message,
     required this.ratingIndex,
     required this.timestamp,
+    required this.status,
   });
 
-  /// Convert to Firestore‑friendly JSON
   Map<String, dynamic> toJson() {
     return {
       'category': category,
       'type': type,
       'message': message,
       'rating_index': ratingIndex,
-      // Store as Firestore Timestamp for easier querying
       'timestamp': timestamp,
+      'status': status,
     };
   }
 
-  /// Create model from Firestore JSON
-  factory FeedbackModel.fromJson(Map<String, dynamic> json) {
+  factory FeedbackModel.fromJson(Map<String, dynamic> json, {String? docId}) {
     return FeedbackModel(
+      id: docId,
       category: json['category'] ?? '',
       type: json['type'] ?? '',
       message: json['message'] ?? '',
       ratingIndex: json['rating_index'] ?? -1,
       timestamp: _parseTimestamp(json['timestamp']),
+      status: json['status'] ?? 'New',
     );
   }
 
-  /// Helper to handle both String and Firestore Timestamp
   static DateTime _parseTimestamp(dynamic value) {
     if (value == null) return DateTime.now();
     if (value is String) {
@@ -45,10 +50,10 @@ class FeedbackModel {
     if (value is DateTime) {
       return value;
     }
-    // Firestore Timestamp type
-    if (value is dynamic && value.toDate != null) {
+    try {
       return value.toDate();
+    } catch (_) {
+      return DateTime.now();
     }
-    return DateTime.now();
   }
 }

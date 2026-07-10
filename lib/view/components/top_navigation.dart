@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../notification_screen.dart';
+import '../glo_notification/notification_screen.dart';
 
 class TopNavigation extends StatelessWidget {
   final bool isLoggedIn;

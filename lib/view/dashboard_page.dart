@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+<<<<<<< HEAD
+import 'package:glo/view/glo_mood/wellness_dashboard_screen.dart';
+
+=======
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 
 import '../../view/components/dashboard_card.dart';
 import '../../view/components/top_navigation.dart';
@@ -9,7 +14,7 @@ import 'package:intl/intl.dart';
 import '../viewmodel/period_view_model.dart';
 
 // Navigation pages
-import 'JournalEntryScreen.dart';
+import 'glo_journal/JournalEntryScreen.dart';
 import 'navigation_icon/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'navigation_icon/history_page.dart';
@@ -21,10 +26,17 @@ import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
 import 'water_tracker.dart';
+<<<<<<< HEAD
+
+import 'medication_screen.dart';
 import '../view/glo_medication/medication_screen.dart';
+
+=======
+import '../view/glo_medication/medication_screen.dart';
+>>>>>>> b7a7f4b5c1b50b82a24e5667b8b9a51d459ff70c
 import 'acne_tracker.dart';
 import '../../view/cards/skin_derma_page.dart';
-import '../view/wellness_dashboard_screen.dart';
+import 'glo_mood/wellness_dashboard_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

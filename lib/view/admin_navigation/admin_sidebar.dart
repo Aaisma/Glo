@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../admin_dashboard_screen.dart';
-import '../admin_skin_journal_screen.dart';
-import '../admin_hydration_hub_screen.dart';
-import '../admin_meal_tracker_screen.dart';
+import '../glo_admin/admin_dashboard_screen.dart';
+import '../glo_admin/admin_skin_journal_screen.dart';
+import '../glo_admin/admin_hydration_hub_screen.dart';
+import '../glo_admin/admin_meal_tracker_screen.dart';
 import '../dashboard_card/admin/admin_monthly_tracking_screen.dart';
 import '../community/admin/community_posts_library_view.dart';
 import '../community/admin/community_moderation_queue_view.dart';
