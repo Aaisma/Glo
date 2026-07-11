@@ -8,6 +8,8 @@ import '../community/admin/community_posts_library_view.dart';
 import '../community/admin/community_moderation_queue_view.dart';
 import '../insight/admin/insights_library_view.dart';
 import '../insight/admin/moderation_queue_view.dart';
+import '../glo_admin/admin_users_page.dart';
+import '../authentication/logout.dart';
 
 class AdminSidebar extends StatefulWidget {
   const AdminSidebar({super.key});
@@ -146,6 +148,13 @@ class _AdminSidebarState extends State<AdminSidebar> {
                               builder: (_) => const AdminDashboardScreen(),
                             ),
                           );
+                        } else if (item["label"] == "Users") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AdminUsersPage(),
+                            ),
+                          );
                         } else if (item["label"] == "Skin Journal") {
                           Navigator.push(
                             context,
@@ -175,6 +184,8 @@ class _AdminSidebarState extends State<AdminSidebar> {
                               const AdminMonthlyTrackingScreen(),
                             ),
                           );
+                        } else if (item["label"] == "Logout") {
+                          LogoutDialog.show(context);
                         }
                       },
                     ),

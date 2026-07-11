@@ -122,6 +122,8 @@ class AcneTrackerViewModel extends ChangeNotifier {
 
   Future<void> uploadPhoto(File file) async {
     isLoading = true;
+    errorMessage = null;
+    imagePath = file.path; // Assign local path immediately for instant preview
     notifyListeners();
 
     try {
@@ -138,8 +140,6 @@ class AcneTrackerViewModel extends ChangeNotifier {
       final url = await _cloudinaryService.uploadImage(file);
       if (url != null) {
         imagePath = url;
-      } else {
-        errorMessage = "Photo upload failed";
       }
     } catch (e) {
       errorMessage = "Photo upload failed: $e";

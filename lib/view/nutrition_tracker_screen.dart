@@ -75,149 +75,151 @@ class _NutritionTrackerScreenState extends State<NutritionTrackerScreen>
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 5,
                         decoration: BoxDecoration(
-                          color: AppColors.lightPink,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Icon(
-                          _iconForMeal(type),
-                          color: AppColors.pink,
-                          size: 28,
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      const SizedBox(width: 15),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Add $type",
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.text,
-                            ),
-                          ),
-                          const Text(
-                            "Skin-loving nutrition ✨",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    "What are you fueling with?",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _itemsController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      hintText: "e.g. Berry smoothie, Almonds, Salmon bowl",
-                      filled: true,
-                      fillColor: AppColors.cardPink,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.all(20),
                     ),
-                  ),
-                  const SizedBox(height: 25),
-                  const Text(
-                    "Nutrient Focus",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: _tagOptions.map((tag) {
-                      final isSelected = selectedTags.contains(tag);
-                      return ChoiceChip(
-                        label: Text(
-                          tag,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.text,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                    const SizedBox(height: 25),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.lightPink,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            _iconForMeal(type),
+                            color: AppColors.pink,
+                            size: 28,
                           ),
                         ),
-                        selected: isSelected,
-                        selectedColor: AppColors.pink,
-                        backgroundColor: AppColors.lightPink.withOpacity(0.5),
+                        const SizedBox(width: 15),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Add $type",
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.text,
+                              ),
+                            ),
+                            const Text(
+                              "Skin-loving nutrition ✨",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    const Text(
+                      "What are you fueling with?",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _itemsController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: "e.g. Berry smoothie, Almonds, Salmon bowl",
+                        filled: true,
+                        fillColor: AppColors.cardPink,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(20),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    const Text(
+                      "Nutrient Focus",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: _tagOptions.map((tag) {
+                        final isSelected = selectedTags.contains(tag);
+                        return ChoiceChip(
+                          label: Text(
+                            tag,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : AppColors.text,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          selected: isSelected,
+                          selectedColor: AppColors.pink,
+                          backgroundColor: AppColors.lightPink.withOpacity(0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide.none,
+                          ),
+                          onSelected: (_) {
+                            setSheetState(() {
+                              isSelected
+                                  ? selectedTags.remove(tag)
+                                  : selectedTags.add(tag);
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 35),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.pink,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(60),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: BorderSide.none,
                         ),
-                        onSelected: (_) {
-                          setSheetState(() {
-                            isSelected
-                                ? selectedTags.remove(tag)
-                                : selectedTags.add(tag);
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 35),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.pink,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(60),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      if (_itemsController.text.trim().isEmpty) return;
-                      final items = _itemsController.text
-                          .split(",")
-                          .map((s) => s.trim())
-                          .where((s) => s.isNotEmpty)
-                          .toList();
-                      context.read<NutritionTrackerViewModel>().addMeal(
-                        type,
-                        items,
-                        List<String>.from(selectedTags),
-                      );
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      "Log to Journey 🌸",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      onPressed: () {
+                        if (_itemsController.text.trim().isEmpty) return;
+                        final items = _itemsController.text
+                            .split(",")
+                            .map((s) => s.trim())
+                            .where((s) => s.isNotEmpty)
+                            .toList();
+                        context.read<NutritionTrackerViewModel>().addMeal(
+                          type,
+                          items,
+                          List<String>.from(selectedTags),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Log to Journey 🌸",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

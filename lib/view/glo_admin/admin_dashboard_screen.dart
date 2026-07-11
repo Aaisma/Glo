@@ -6,6 +6,8 @@ import 'admin_skin_journal_screen.dart';
 import 'admin_hydration_hub_screen.dart';
 import 'package:glo/view/nutrition_tracker_screen.dart';
 import 'package:glo/view/dashboard_card/admin/admin_monthly_tracking_screen.dart';
+import 'admin_users_page.dart';
+import '../authentication/logout.dart';
 
 // ============================================================================
 // ASSUMED FIRESTORE SCHEMA — adjust the collection/field names below (in
@@ -859,7 +861,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         borderRadius: BorderRadius.circular(12),
                         onTap: () {
                           Navigator.pop(context);
-                          if (item["label"] == "Skin Journal") {
+                          if (item["label"] == "Users") {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminUsersPage()));
+                          } else if (item["label"] == "Skin Journal") {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSkinJournalScreen()));
                           } else if (item["label"] == "Hydration Hub") {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
@@ -867,6 +871,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionTrackerScreen()));
                           } else if (item["label"] == "Monthly Tracking") {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMonthlyTrackingScreen()));
+                          } else if (item["label"] == "Logout") {
+                            LogoutDialog.show(context);
                           }
                         },
                         child: AnimatedContainer(

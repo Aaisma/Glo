@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/acne_tracker_viewmodel.dart';
@@ -59,7 +60,9 @@ class AcneHistoryScreen extends StatelessWidget {
                       if (entry.imagePath.isNotEmpty)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(15),
-                          child: Image.network(entry.imagePath, height: 150, width: double.infinity, fit: BoxFit.cover),
+                          child: entry.imagePath.startsWith('http')
+                              ? Image.network(entry.imagePath, height: 150, width: double.infinity, fit: BoxFit.cover)
+                              : Image.file(File(entry.imagePath), height: 150, width: double.infinity, fit: BoxFit.cover),
                         ),
                       const SizedBox(height: 15),
                       if (entry.checklist.isNotEmpty) ...[

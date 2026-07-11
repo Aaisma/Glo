@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../viewmodel/user_viewmodel.dart';
 import '../../viewmodel/period_view_model.dart';
 import '../../viewmodel/ovulation_view_model.dart';
+import '../../viewmodel/acne_tracker_viewmodel.dart';
+import '../../viewmodel/nutrition_tracker_viewmodel.dart';
+import '../../viewmodel/water_tracker_viewmodel.dart';
 import '../dashboard_page.dart';
 import 'authentication_page.dart';
 import '../survey_page.dart';
@@ -29,6 +32,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
         
         final user = snapshot.data;
         if (user == null) {
+          final userVM = Provider.of<UserViewModel>(context, listen: false);
+          if (userVM.userId != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              userVM.clearUser();
+              Provider.of<PeriodViewModel>(context, listen: false).setUserId("");
+              Provider.of<OvulationViewModel>(context, listen: false).setUserId("");
+              Provider.of<AcneTrackerViewModel>(context, listen: false).updateUserId(null);
+              Provider.of<NutritionTrackerViewModel>(context, listen: false).updateUserId(null);
+              Provider.of<WaterTrackerViewModel>(context, listen: false).updateUserId(null);
+            });
+          }
           return const AuthenticationPage();
         }
 
@@ -42,6 +56,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 // Update other ViewModels with the user ID
                 Provider.of<PeriodViewModel>(context, listen: false).setUserId(user.uid);
                 Provider.of<OvulationViewModel>(context, listen: false).setUserId(user.uid);
+                Provider.of<AcneTrackerViewModel>(context, listen: false).updateUserId(user.uid);
+                Provider.of<NutritionTrackerViewModel>(context, listen: false).updateUserId(user.uid);
+                Provider.of<WaterTrackerViewModel>(context, listen: false).updateUserId(user.uid);
               });
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
@@ -52,9 +69,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
             if (userVM.user == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                userVM.createDefaultProfile();
+                FirebaseAuth.instance.signOut();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Account has been removed by admin"),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
               });
-              return const Scaffold(body: Center(child: CircularProgressIndicator()));
+              return const AuthenticationPage();
             }
 
             final userModel = userVM.user!;
@@ -63,15 +86,23 @@ class _AuthWrapperState extends State<AuthWrapper> {
               return const AdminDashboardScreen();
             }
             
+            if (userModel.role == 'user') {
+              if (!userModel.surveyCompleted) {
+                return const SurveyPage();
+              }
+              if (!userModel.profileCompleted) {
+                return const GloProfileScreen();
+              }
+              return const DashboardScreen();
+            }
+
+            // Fallback for empty or other roles
             if (!userModel.surveyCompleted) {
               return const SurveyPage();
             }
-            
             if (!userModel.profileCompleted) {
               return const GloProfileScreen();
             }
-
-            // User is fully onboarded
             return const DashboardScreen();
           },
         );

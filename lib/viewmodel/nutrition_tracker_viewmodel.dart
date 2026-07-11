@@ -141,4 +141,38 @@ class NutritionTrackerViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> saveEntryForDate(String date, List<Map<String, dynamic>> dateMeals, String dateNote) async {
+    final resolvedUserId = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (resolvedUserId == null || resolvedUserId.isEmpty) {
+      errorMessage = 'Please sign in to save nutrition progress.';
+      notifyListeners();
+      return;
+    }
+
+    _userId = resolvedUserId;
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final entry = NutritionEntryModel(
+        userId: resolvedUserId,
+        date: date,
+        meals: dateMeals,
+        note: dateNote,
+      );
+      await _repo.saveEntry(entry);
+      if (date == _todayDate()) {
+        meals = dateMeals;
+        note = dateNote;
+      }
+      await loadHistory();
+    } catch (e) {
+      errorMessage = "Failed to save entry for $date: $e";
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }
