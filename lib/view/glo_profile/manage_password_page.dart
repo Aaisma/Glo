@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/ayd_colour.dart';
+import '../../viewmodel/profile_viewmodel.dart';
 
 class ManagePasswordPage extends StatefulWidget {
   const ManagePasswordPage({super.key});
@@ -22,6 +24,8 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
   bool _hasLowercase = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
+
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -169,7 +173,7 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
 
   Widget _buildStrengthBars() {
     final score = _strengthScore;
-    
+
     // Mapping colors sequentially based on score
     List<Color> activeColors = [
       Colors.red,
@@ -193,6 +197,64 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
         );
       }),
     );
+  }
+
+  Future<void> _handleSave() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    final current = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    final confirm = _confirmPasswordController.text;
+
+    if (current.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Please enter your current password")),
+      );
+      return;
+    }
+
+    // Enforce the same requirements shown in the checklist below, so the
+    // UI never promises rules it doesn't actually check.
+    if (_strengthScore < 5) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text("New password doesn't meet all requirements yet"),
+        ),
+      );
+      return;
+    }
+
+    if (newPassword != confirm) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("New passwords do not match")),
+      );
+      return;
+    }
+
+    final vm = context.read<ProfileViewModel>();
+
+    setState(() => _isSaving = true);
+
+    final success = await vm.changePassword(
+      currentPassword: current,
+      newPassword: newPassword,
+      confirmPassword: confirm,
+    );
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    if (success) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Password changed successfully")),
+      );
+      navigator.pop();
+    } else {
+      messenger.showSnackBar(
+        SnackBar(content: Text(vm.errorMessage ?? "Failed to change password")),
+      );
+    }
   }
 
   @override
@@ -231,7 +293,7 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Title & Subtitle
               const Text(
                 "Update Your Password",
@@ -266,7 +328,7 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
                 },
               ),
               const SizedBox(height: 20),
-              
+
               _buildPasswordField(
                 label: "New Password",
                 hint: "Enter new password",
@@ -353,9 +415,7 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Logic to save changes would go here
-                  },
+                  onPressed: _isSaving ? null : _handleSave,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AydColors.ctaPink,
                     shape: RoundedRectangleBorder(
@@ -363,7 +423,16 @@ class _ManagePasswordPageState extends State<ManagePasswordPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
+                  child: _isSaving
+                      ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
                     "Save Changes",
                     style: TextStyle(
                       color: Colors.white,

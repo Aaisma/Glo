@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:glo/view/dashboard_page.dart';
+import 'package:glo/view/authentication/auth_wrapper.dart';
 import 'package:provider/provider.dart';
 
 // Firebase options
 import 'firebase_options.dart';
 
-// Views
-
 // Repos
 import 'repo/user_repo.dart';
 import 'repo/user_repo_impl.dart';
+import 'repo/auth_repo.dart';
+import 'repo/auth_repo_impl.dart';
 import 'repo/period_repo.dart';
 import 'repo/period_repo_impl.dart';
 import 'repo/ovulation_repo.dart';
@@ -38,6 +38,8 @@ import 'repo/Notification_repo_Impl.dart';
 
 // ViewModels
 import 'viewmodel/user_viewmodel.dart';
+import 'viewmodel/auth_viewmodel.dart';
+import 'viewmodel/otp_viewmodel.dart';
 import 'viewmodel/period_view_model.dart';
 import 'viewmodel/ovulation_view_model.dart';
 import 'viewmodel/insight_view_model.dart';
@@ -69,6 +71,7 @@ class MyApp extends StatelessWidget {
       providers: [
         // Repos
         Provider<UserRepo>(create: (_) => UserRepoImpl()),
+        Provider<AuthRepo>(create: (_) => AuthRepoImpl()),
         Provider<PeriodRepo>(create: (_) => PeriodRepoImpl()),
         Provider<OvulationRepo>(create: (_) => OvulationRepoImpl()),
         Provider<InsightsRepo>(create: (_) => InsightsRepoImpl()),
@@ -84,6 +87,8 @@ class MyApp extends StatelessWidget {
 
         // ViewModels
         ChangeNotifierProvider(create: (ctx) => UserViewModel(userRepo: ctx.read<UserRepo>())),
+        ChangeNotifierProvider(create: (ctx) => AuthViewModel(authRepo: ctx.read<AuthRepo>(), userRepo: ctx.read<UserRepo>())),
+        ChangeNotifierProvider(create: (_) => OtpViewModel()),
         ChangeNotifierProvider(create: (ctx) => PeriodViewModel(periodRepo: ctx.read<PeriodRepo>(), ovulationRepo: ctx.read<OvulationRepo>())),
         ChangeNotifierProvider(create: (ctx) => OvulationViewModel(ovulationRepo: ctx.read<OvulationRepo>(), periodRepo: ctx.read<PeriodRepo>())),
         ChangeNotifierProvider(create: (ctx) => InsightsFeedViewModel(ctx.read<InsightsRepo>())),
@@ -109,7 +114,11 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           useMaterial3: true,
         ),
-        home: const DashboardScreen(),
+        home: const AuthWrapper(),
+        routes: {
+          '/authWrapper': (context) => const AuthWrapper(),
+          '/home': (context) => const AuthWrapper(),
+        },
       ),
     );
   }

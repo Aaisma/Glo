@@ -1,379 +1,301 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/auth_viewmodel.dart';
-import '../../viewmodel/user_viewmodel.dart';
+import 'package:glo/constants/ayd_colour.dart';
+import 'login_component.dart';
+import 'register_screen.dart';
+import 'package:glo/viewmodel/auth_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// Called once email/password (or Google/Facebook, via
+  /// [LoginOptionsSection]) sign-in succeeds. Your `AuthWrapper` already
+  /// listens to `FirebaseAuth.instance.authStateChanges()` and handles
+  /// fetching the profile and routing to Survey / Profile / Dashboard /
+  /// Admin, so just hand off to it here, e.g.:
+  /// `Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false)`.
+  final VoidCallback? onAuthenticated;
+
+  const LoginScreen({super.key, this.onAuthenticated});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  bool obscurePassword = true;
-  final Color primaryPink = const Color(0xFFFF3E63);
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void loginUser() async {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please enter both email and password")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email and password.')),
+      );
       return;
     }
 
-    final authVM = context.read<AuthViewModel>();
-    final userVM = context.read<UserViewModel>();
+    final authViewModel = context.read<AuthViewModel>();
 
     try {
-      final user = await authVM.signInWithEmail(email, password);
-      if (user != null) {
-        userVM.setUserId(user.uid);
-        await userVM.fetchCurrentUser();
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
-        }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authVM.error ?? "Incorrect username or password")),
-        );
+      await authViewModel.login(context, email, password);
+      if (mounted && authViewModel.user != null) {
+        widget.onAuthenticated?.call();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Incorrect username or password")),
+          SnackBar(content: Text(_friendlyAuthError(e))),
         );
       }
     }
   }
 
-  void loginWithGoogle() async {
-    final authVM = context.read<AuthViewModel>();
-    final userVM = context.read<UserViewModel>();
+  Future<void> _handleForgotPassword() async {
+    final emailController = TextEditingController();
+
+    final email = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Forgot Password'),
+          content: TextField(
+            controller: emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'Enter your registered email',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value = emailController.text.trim();
+                if (value.isEmpty) return;
+                Navigator.pop(dialogContext, value);
+              },
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        );
+      },
+    );
+
+    emailController.dispose();
+
+    if (email == null || email.isEmpty || !mounted) return;
+
     try {
-      final user = await authVM.signInWithGoogle();
-      if (user != null) {
-        userVM.setUserId(user.uid);
-        await userVM.createDefaultProfile();
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
-        }
-      } else if (mounted) {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Google sign in failed")),
+          const SnackBar(content: Text('Password reset link sent to your email.')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          const SnackBar(content: Text('Failed to send reset link. Please try again.')),
         );
       }
     }
   }
 
-  void loginWithFacebook() async {
-    final authVM = context.read<AuthViewModel>();
-    final userVM = context.read<UserViewModel>();
-    try {
-      final user = await authVM.signInWithFacebook();
-      if (user != null) {
-        userVM.setUserId(user.uid);
-        await userVM.createDefaultProfile();
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
-        }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Facebook sign in failed")),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
+  String _friendlyAuthError(Object e) {
+    if (e is FirebaseAuthException) {
+      return e.message ?? 'Login failed. Please try again.';
     }
+    return 'Login failed. Please try again.';
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthViewModel>().loading;
+    final h = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFDECEF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.black54,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_ios_new,
+                        color: Color(0xFF3A2A30)),
+                  ),
+                ),
+                SizedBox(height: h * 0.01),
+                const Text(
+                  'Login',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: AydColors.titlePink,
+                  ),
+                ),
+                SizedBox(height: h * 0.02),
+                const Text(
+                  'Welcome Back, Lovely!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF3A2A30),
+                  ),
+                ),
+                SizedBox(height: h * 0.005),
+                Text(
+                  '.✧♡✦ We Missed You. Time to Step In! ✦♡✧.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.pink.shade300,
+                  ),
+                ),
+                SizedBox(height: h * 0.04),
+                RoundedTextField(
+                  controller: _emailController,
+                  hintText: 'Email',
+                  icon: Icons.mail_outline,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                SizedBox(height: h * 0.02),
+                RoundedTextField(
+                  controller: _passwordController,
+                  hintText: 'Password',
+                  icon: Icons.lock_outline,
+                  obscureText: _obscurePassword,
+                  trailing: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: AydColors.hintGrey,
                       size: 20,
                     ),
+                    onPressed: () {
+                      setState(() => _obscurePassword = !_obscurePassword);
+                    },
                   ),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  "Login",
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Welcome Back, Lovely!",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "°｡⋆⸜ 💕 We Missed You. Time To Step In! 💕 ⸝⋆｡°",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: "Email",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.mail_outline,
-                      color: primaryPink,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                TextField(
-                  controller: passwordController,
-                  obscureText: obscurePassword,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: "Password",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: primaryPink,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          obscurePassword = !obscurePassword;
-                        });
-                      },
-                      icon: Icon(
-                        obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
+                SizedBox(height: h * 0.01),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/forgotPasswordOTP');
-                    },
+                  child: TextButton(
+                    onPressed: _handleForgotPassword,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: Text(
-                      "Forgot Password?",
+                      'Forgot Password?',
                       style: TextStyle(
-                        color: primaryPink,
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        color: Colors.pink.shade300,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                SizedBox(height: h * 0.015),
                 SizedBox(
-                  width: double.infinity,
-                  height: 55,
+                  height: 54,
                   child: ElevatedButton(
+                    onPressed: isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryPink,
-                      elevation: 0,
+                      backgroundColor: AydColors.primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      shadowColor: AydColors.primaryPink.withOpacity(0.4),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: loginUser,
-                    child: const Text(
-                      "Login",
+                    child: isLoading
+                        ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                        : const Text(
+                      'Login',
                       style: TextStyle(
-                        color: Colors.white,
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "New Here, Darling? ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 12,
+                SizedBox(height: h * 0.02),
+                Center(
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF3A2A30),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
-                      child: Text(
-                        "Join the 'Glow'",
-                        style: TextStyle(
-                          color: primaryPink,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      children: [
+                        const TextSpan(text: 'New Here, Darling? '),
+                        TextSpan(
+                          text: 'Join the \'Glo\' (｡>ᴗ<)◈!',
+                          style: TextStyle(
+                            color: Colors.pink.shade400,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen(),
+                                ),
+                              );
+                            },
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 25),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        "Options, Darling!",
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Divider(
-                        color: Colors.black26,
-                        thickness: 1,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "°✧⋆ Because One Size Never Fits All ⋆✧°",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: primaryPink,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 24),
-                socialButton(
-                  icon: Icons.g_mobiledata,
-                  text: "Login with Google",
-                  onTap: loginWithGoogle,
+                SizedBox(height: h * 0.03),
+                LoginOptionsSection(
+                  onAuthenticated: () {
+                    widget.onAuthenticated?.call();
+                  },
                 ),
-                const SizedBox(height: 14),
-                socialButton(
-                  icon: Icons.facebook,
-                  text: "Login with Facebook",
-                  onTap: loginWithFacebook,
-                ),
-                const SizedBox(height: 30),
+                SizedBox(height: h * 0.015),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget socialButton({
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: BorderSide(
-            color: primaryPink.withOpacity(0.5),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        icon: Icon(
-          icon,
-          color: primaryPink,
-          size: 24,
-        ),
-        label: Text(
-          text,
-          style: TextStyle(
-            color: primaryPink,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

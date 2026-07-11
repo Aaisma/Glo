@@ -21,9 +21,9 @@ class LogoutDialog {
               final authViewModel = context.read<AuthViewModel>();
               await authViewModel.signOut();
               if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/authWrapper',
+                  (route) => false,
                 );
               }
             },

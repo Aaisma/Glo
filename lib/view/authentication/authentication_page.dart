@@ -4,6 +4,7 @@ import 'login_screen.dart';
 import 'register_screen.dart';
 import '../glo_profile/help_support_page.dart';
 import '../glo_profile/glo_about_us_screen.dart';
+import '../survey_page.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});
@@ -74,7 +75,11 @@ class AuthenticationPage extends StatelessWidget {
                       context,
                       "Register",
                       const Color(0xFFFA4E6F),
-                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen(
+                        onRegisterSuccess: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const SurveyPage()));
+                        },
+                      ))),
                     ),
                   ],
                 ),

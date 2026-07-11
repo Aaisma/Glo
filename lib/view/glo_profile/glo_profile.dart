@@ -6,8 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:glo/view/components/top_navigation.dart';
-import 'package:glo/view/calendar_screen.dart';
 import 'package:glo/viewmodel/profile_viewmodel.dart';
+import 'package:glo/viewmodel/user_viewmodel.dart';
+import 'package:glo/viewmodel/auth_viewmodel.dart';
 
 import '../authentication/authentication_page.dart';
 import 'glo_about_us_screen.dart';
@@ -289,135 +290,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     });
   }
 
-  Future<void> _changePassword() async {
-    final currentController = TextEditingController();
-    final newController = TextEditingController();
-    final confirmController = TextEditingController();
-
-    bool isLoading = false;
-    bool hideCurrent = true;
-    bool hideNew = true;
-    bool hideConfirm = true;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            return AlertDialog(
-              backgroundColor: softPink,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
-              ),
-              title: const _DialogTitle("Change Password"),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _PasswordField(
-                      controller: currentController,
-                      label: "Current Password",
-                      obscure: hideCurrent,
-                      onToggle: () {
-                        setDialogState(() => hideCurrent = !hideCurrent);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _PasswordField(
-                      controller: newController,
-                      label: "New Password",
-                      obscure: hideNew,
-                      onToggle: () {
-                        setDialogState(() => hideNew = !hideNew);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _PasswordField(
-                      controller: confirmController,
-                      label: "Confirm New Password",
-                      obscure: hideConfirm,
-                      onToggle: () {
-                        setDialogState(() => hideConfirm = !hideConfirm);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => Navigator.pop(dialogContext),
-                  child: const Text("Cancel", style: TextStyle(color: pink)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: pink),
-                  onPressed: isLoading
-                      ? null
-                      : () async {
-                    final navigator = Navigator.of(dialogContext);
-                    final messenger = ScaffoldMessenger.of(context);
-                    final vm = context.read<ProfileViewModel>();
-
-                    setDialogState(() => isLoading = true);
-
-                    final success = await vm.changePassword(
-                      currentPassword: currentController.text,
-                      newPassword: newController.text,
-                      confirmPassword: confirmController.text,
-                    );
-
-                    if (!mounted || !dialogContext.mounted) return;
-
-                    setDialogState(() => isLoading = false);
-
-                    if (success) {
-                      navigator.pop();
-
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Password changed successfully",
-                          ),
-                        ),
-                      );
-                    } else {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            vm.errorMessage ??
-                                "Failed to change password",
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  child: isLoading
-                      ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                      : const Text(
-                    "Update",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    currentController.dispose();
-    newController.dispose();
-    confirmController.dispose();
-  }
 
   void _onMenuTap(String title) {
     if (title == "My Goal") {
@@ -455,6 +327,31 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     );
   }
 
+  bool _finishingSetup = false;
+
+  Future<void> _finishSetup() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final userVM = context.read<UserViewModel>();
+
+    setState(() => _finishingSetup = true);
+
+    final success = await userVM.completeProfile();
+
+    if (!mounted) return;
+    setState(() => _finishingSetup = false);
+
+    if (success) {
+      navigator.pushNamedAndRemoveUntil('/authWrapper', (route) => false);
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(userVM.error ?? 'Failed to complete setup'),
+        ),
+      );
+    }
+  }
+
   void _logout() {
     showDialog(
       context: context,
@@ -476,15 +373,15 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
               onPressed: () async {
                 final navigator = Navigator.of(context);
                 final dialogNavigator = Navigator.of(dialogContext);
-                final vm = context.read<ProfileViewModel>();
+                final authVm = context.read<AuthViewModel>();
 
-                await vm.logout();
+                await authVm.signOut();
 
                 if (!mounted || !dialogContext.mounted) return;
 
                 dialogNavigator.pop();
-                navigator.pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const AuthenticationPage()),
+                navigator.pushNamedAndRemoveUntil(
+                  '/authWrapper',
                   (_) => false,
                 );
               },
@@ -502,12 +399,18 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileViewModel>();
+    final userVM = context.watch<UserViewModel>();
 
     final fullName = _resolvedName(vm);
     final email = _authEmail;
     final username = _usernameFromEmail(email);
     final bio = _resolvedBio(vm);
     final imagePath = _resolvedImagePath(vm);
+
+    // AuthWrapper routes brand-new users here until profileCompleted is
+    // true. Existing users (profileCompleted already true) just see the
+    // normal settings hub with no banner.
+    final needsSetup = userVM.user != null && !userVM.user!.profileCompleted;
 
     return Scaffold(
       body: Container(
@@ -530,6 +433,13 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 children: [
                   TopNavigation(isLoggedIn: true, userName: fullName),
                   const SizedBox(height: 8),
+                  if (needsSetup) ...[
+                    _FinishSetupBanner(
+                      isLoading: _finishingSetup,
+                      onTap: _finishingSetup ? null : _finishSetup,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   SizedBox(
                     height: 188,
                     child: _ProfileCard(
@@ -1000,6 +910,73 @@ class _RoundIcon extends StatelessWidget {
   }
 }
 
+class _FinishSetupBanner extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback? onTap;
+
+  const _FinishSetupBanner({required this.isLoading, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: _GloProfileScreenState.pink.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _GloProfileScreenState.borderPink),
+        ),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Text(
+                "You're almost there! Review your profile below, then finish setup to reach your dashboard.",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _GloProfileScreenState.dark,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              height: 36,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _GloProfileScreenState.pink,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                onPressed: onTap,
+                child: isLoading
+                    ? const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : const Text(
+                  "Finish Setup",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _LogoutButton extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -1096,39 +1073,6 @@ class _DialogTitle extends StatelessWidget {
         fontFamily: "Georgia",
         fontWeight: FontWeight.bold,
         color: _GloProfileScreenState.dark,
-      ),
-    );
-  }
-}
-
-class _PasswordField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final bool obscure;
-  final VoidCallback onToggle;
-
-  const _PasswordField({
-    required this.controller,
-    required this.label,
-    required this.obscure,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      decoration: InputDecoration(
-        labelText: label,
-        suffixIcon: IconButton(
-          onPressed: onToggle,
-          icon: Icon(
-            obscure
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-          ),
-        ),
       ),
     );
   }

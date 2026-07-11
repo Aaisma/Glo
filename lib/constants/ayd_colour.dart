@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AydColors {
+  //Register/Login
+
+  static const Color primaryauthPink = Color(0xFFED5A80);
+  static const Color titlePink = Color(0xFFEE3B6C);
+  static const Color hintGrey = Color(0xFFB0AAAE);
+
   // Ovulation & Period Features Colors
   static const Color background = Color(0xFFF9F6F2);
   static const Color card = Color(0xFFFFFCF9);

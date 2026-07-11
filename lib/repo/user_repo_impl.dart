@@ -46,6 +46,17 @@ class UserRepoImpl implements UserRepo {
   }
 
   @override
+  Future<void> markProfileCompleted(String userId) {
+    // Merge-only write: touches nothing but this one flag, so it can never
+    // clobber fields owned by ProfileViewModel (bio, username, profileImagePath)
+    // or survey data written by updateSurvey().
+    return firestore.collection("users").doc(userId).set(
+      {'profileCompleted': true},
+      SetOptions(merge: true),
+    );
+  }
+
+  @override
   Future<List<UserModel>> getAllUser() async {
     final users = await firestore.collection("users").get();
     return users.docs.map((doc) => UserModel.fromMap(doc.data(), doc.id)).toList();

@@ -262,6 +262,30 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
+  /// Flips `profileCompleted` to true for the current user without touching
+  /// any other field, then refreshes `user` so AuthWrapper can route past
+  /// GloProfileScreen on its next rebuild.
+  Future<bool> completeProfile() async {
+    final id = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (id == null) {
+      setError('No logged-in user found');
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await _userRepo.markProfileCompleted(id);
+      await fetchCurrentUser();
+      return true;
+    } catch (e) {
+      setError(e.toString());
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   Future<void> editProfile(UserModel userModel) async {
     setLoading(true);
     try {
