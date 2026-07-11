@@ -8,6 +8,21 @@ import 'firebase_options.dart';
 
 // Views
 
+
+import 'view/glo_splash/glo_splash_screen.dart';
+import 'view/authentication/auth_wrapper.dart';
+import 'view/authentication/authentication_page.dart';
+import 'view/authentication/login_screen.dart';
+import 'view/authentication/register_screen.dart';
+import 'view/nutrition_tracker_screen.dart';
+import 'view/survey_page.dart';
+import 'view/navigation_icon/glo_profile.dart';
+import 'view/dashboard_page.dart';
+import 'package:glo/view/dashboard_card/admin/admin_dashboard_page.dart';
+import 'view/admin_dashboard_screen.dart';
+
+
+
 // Repos
 import 'repo/user_repo.dart';
 import 'repo/user_repo_impl.dart';
@@ -50,6 +65,13 @@ import 'viewmodel/notification_view_model.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/profile_viewmodel.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
+import 'viewmodel/log_symptoms_view_model.dart';
+import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
+import 'viewmodel/water_tracker_viewmodel.dart';
+import 'viewmodel/nutrition_tracker_viewmodel.dart';
+// admin analytics viewmodel removed
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,7 +98,10 @@ class MyApp extends StatelessWidget {
         Provider<InsightsModerationRepo>(create: (_) => InsightsModerationRepoImpl()),
         Provider<CommunityModerationRepo>(create: (_) => CommunityModerationRepoImpl()),
         Provider<WaterTrackerRepo>(create: (_) => WaterTrackerRepoImpl()),
+
         Provider<MoodRepository>(create: (_) => MoodRepositoryImpl()),
+
+
         Provider<NutritionRepo>(create: (_) => NutritionRepoImpl()),
         Provider<AcneRepo>(create: (_) => AcneRepoImpl()),
         Provider<MedicationRepo>(create: (_) => MedicationRepoImpl()),
@@ -95,9 +120,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => DiscussionDetailViewModel(ctx.read<CommunityRepo>(), ctx.read<CommunityModerationRepo>())),
         ChangeNotifierProvider(create: (ctx) => WellnessViewModel(moodRepository: ctx.read<MoodRepository>())),
         ChangeNotifierProvider(create: (ctx) => WaterTrackerViewModel(ctx.read<WaterTrackerRepo>())),
+
         ChangeNotifierProvider(create: (ctx) => NutritionTrackerViewModel(ctx.read<NutritionRepo>())),
         ChangeNotifierProvider(create: (ctx) => MedicationViewModel(repo: ctx.read<MedicationRepo>())),
         ChangeNotifierProvider(create: (ctx) => NotificationViewModel(notificationRepo: ctx.read<NotificationRepo>())),
+
+        ChangeNotifierProvider(create: (ctx) => NutritionTrackerViewModel(ctx.read<MealRepo>())),
+        ChangeNotifierProvider(create: (ctx) => MedicationViewModel()),
+
         ChangeNotifierProvider(create: (ctx) => AcneTrackerViewModel(ctx.read<AcneRepo>())),
         ChangeNotifierProvider(create: (ctx) => ProfileViewModel()),
         ChangeNotifierProvider(create: (ctx) => TrackerNavigationViewModel()),
