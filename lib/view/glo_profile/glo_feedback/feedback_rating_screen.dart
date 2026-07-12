@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/feedback_view_model.dart';
 import 'feedback_category_screen.dart';
 
 class FeedbackRatingScreen extends StatefulWidget {
@@ -186,6 +188,7 @@ class _FeedbackRatingScreenState extends State<FeedbackRatingScreen> {
                         onPressed: _selectedRating == 0
                             ? null
                             : () {
+                          context.read<FeedbackViewModel>().updateRatingIndex(_selectedRating);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const FeedbackCategoryScreen()),

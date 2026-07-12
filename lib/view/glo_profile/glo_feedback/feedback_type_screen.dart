@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/feedback_view_model.dart';
 import 'feedback_form_screen.dart';
 
 class FeedbackTypeScreen extends StatefulWidget {
@@ -215,6 +217,7 @@ class _FeedbackTypeScreenState extends State<FeedbackTypeScreen> {
                         onPressed: _selectedTypeIndex == -1
                             ? null
                             : () {
+                          context.read<FeedbackViewModel>().updateType(_feedbackTypes[_selectedTypeIndex]["title"]!);
                           Navigator.push(
                             context,
                             MaterialPageRoute(

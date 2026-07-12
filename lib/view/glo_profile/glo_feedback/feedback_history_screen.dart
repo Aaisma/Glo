@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:glo/model/feedback_model.dart';
-import 'package:glo/viewmodel/feedback_view_model.dart';
 import '../../../repo/feedback_repo.dart';
 import 'feedback_success_screen.dart';
 

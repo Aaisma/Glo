@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../viewmodel/journal_viewmodel.dart';
-import '../../repo/journal_repo.dart';
-import '../../model/journal_model.dart';
+import '../../viewmodel/journal_home_viewmodel.dart';
+import '../../model/journal_entry_model.dart';
 
 import 'JournalMenuScreen.dart';
 import 'WriteJournalScreen.dart';
@@ -18,10 +18,11 @@ class JournalHomeScreen extends StatefulWidget {
 class _JournalHomeScreenState extends State<JournalHomeScreen> {
   final Color primaryPink = const Color(0xFFFF2D65);
   final Color backgroundLight = const Color(0xFFFFF5F6);
-  String selectedMood = '';
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<JournalHomeViewModel>();
+
     return Scaffold(
       backgroundColor: backgroundLight,
       appBar: AppBar(
@@ -99,11 +100,11 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildMoodItem('🤩', 'Amazing'),
-                  _buildMoodItem('😀', 'Happy'),
-                  _buildMoodItem('😐', 'Calm'),
-                  _buildMoodItem('😢', 'Sad'),
-                  _buildMoodItem('😡', 'Angry'),
+                  _buildMoodItem(viewModel, '🤩', 'Amazing'),
+                  _buildMoodItem(viewModel, '😀', 'Happy'),
+                  _buildMoodItem(viewModel, '😐', 'Calm'),
+                  _buildMoodItem(viewModel, '😢', 'Sad'),
+                  _buildMoodItem(viewModel, '😡', 'Angry'),
                 ],
               ),
               const Spacer(),
@@ -205,13 +206,11 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
     );
   }
 
-  Widget _buildMoodItem(String emoji, String label) {
-    bool isSelected = selectedMood == label;
+  Widget _buildMoodItem(JournalHomeViewModel viewModel, String emoji, String label) {
+    bool isSelected = viewModel.selectedMood == label;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedMood = label;
-        });
+        viewModel.updateMood(label);
       },
       child: Column(
         children: [

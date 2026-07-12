@@ -14,7 +14,7 @@ class MoodRepositoryImpl implements MoodRepository {
         .collection('users')
         .doc(userId)
         .collection('mood_logs')
-        .orderBy('timestamp', descending: true)
+        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs

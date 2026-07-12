@@ -4,35 +4,21 @@ import '../repo/water_tracker_repo.dart';
 
 class WaterTrackerViewModel extends ChangeNotifier {
   final WaterTrackerRepo _repo;
-  String? _userId;
 
   WaterTrackerViewModel(this._repo);
-
-  void updateUserId(String? newUserId) {
-    if (_userId != newUserId) {
-      _userId = newUserId;
-      if (_userId != null) {
-        loadToday(_userId!);
-      } else {
-        intake = 0;
-        history = [];
-        notifyListeners();
-      }
-    }
-  }
-
-  String? get userId => _userId;
 
   bool isLoading = false;
   String? errorMessage;
 
   double intake = 0;
   double goal = 3.0;
-  String note = "";
+
   TimeOfDay? reminderTime;
 
-  List<WaterTrackerModel> history = [];
-  double lastAddedAmount = 0.0;
+  // tracks which thresholds we've already shown motivation for today,
+  // so the same message doesn't repeat every time intake updates
+  final Set<int> _celebratedThresholds = {};
+  String? motivationMessage;
 
   String _todayDate() => DateTime.now().toIso8601String().split("T")[0];
 
@@ -40,56 +26,47 @@ class WaterTrackerViewModel extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
+
     try {
       final entry = await _repo.getEntry(userId, _todayDate());
       if (entry != null) {
         intake = entry.intake;
         goal = entry.goal;
-        note = entry.note;
-      } else {
-        intake = 0;
-        final hist = await _repo.getHistory(userId);
-        if (hist.isNotEmpty) {
-          goal = hist.first.goal;
-        } else {
-          goal = 2.5;
-        }
-        note = "";
       }
-      history = await _repo.getHistory(userId);
     } catch (e) {
-      errorMessage = "Failed to load: $e";
+      errorMessage = "Failed to load today's data: $e";
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
+  double get progress => goal <= 0 ? 0 : (intake / goal).clamp(0.0, 1.0);
+  double get percent => progress * 100;
+  double get remaining => (goal - intake) < 0 ? 0 : (goal - intake);
+
   void addIntake(double amount) {
     intake += amount;
     if (intake < 0) intake = 0;
-    lastAddedAmount = amount;
+    _checkMotivation();
     notifyListeners();
   }
 
   void subtractIntake(double amount) {
     intake -= amount;
     if (intake < 0) intake = 0;
-    lastAddedAmount = 0.0;
     notifyListeners();
   }
 
-  void undoLastIntake() {
-    if (lastAddedAmount > 0) {
-      intake -= lastAddedAmount;
-      if (intake < 0) intake = 0;
-      lastAddedAmount = 0.0;
-      notifyListeners();
-    }
+  void setCustomIntake(double value) {
+    intake = value < 0 ? 0 : value;
+    _checkMotivation();
+    notifyListeners();
   }
 
   void setGoal(double newGoal) {
     goal = newGoal <= 0 ? 0.5 : newGoal;
+    _celebratedThresholds.clear();
     notifyListeners();
   }
 
@@ -98,81 +75,43 @@ class WaterTrackerViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateNote(String value) {
-    note = value;
-    notifyListeners();
+  void _checkMotivation() {
+    final pct = percent;
+    final thresholds = [25, 50, 75, 100];
+    for (final t in thresholds) {
+      if (pct >= t && !_celebratedThresholds.contains(t)) {
+        _celebratedThresholds.add(t);
+        if (t == 100) {
+          motivationMessage = "🎉 Goal reached! Amazing hydration today!";
+        } else {
+          motivationMessage = "Great job! You're $t% of the way to your goal 💧";
+        }
+      }
+    }
+  }
+
+  void clearMotivationMessage() {
+    motivationMessage = null;
   }
 
   Future<void> saveToday(String userId) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
+
     try {
       final entry = WaterTrackerModel(
         userId: userId,
         date: _todayDate(),
         intake: intake,
         goal: goal,
-        note: note,
       );
       await _repo.saveEntry(entry);
-      history = await _repo.getHistory(userId);
     } catch (e) {
       errorMessage = "Failed to save: $e";
     } finally {
       isLoading = false;
       notifyListeners();
     }
-  }
-
-  int get streak {
-    if (history.isEmpty) return 0;
-
-    final Map<String, WaterTrackerModel> uniqueEntries = {};
-    for (final entry in history) {
-      if (entry.date.isNotEmpty) {
-        uniqueEntries[entry.date] = entry;
-      }
-    }
-
-    final sorted = uniqueEntries.values.toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-
-    int count = 0;
-    final todayStr = _todayDate();
-
-    bool completedToday = false;
-    for (final entry in sorted) {
-      if (entry.date == todayStr) {
-        if (entry.intake >= entry.goal) {
-          completedToday = true;
-        }
-        break;
-      }
-    }
-
-    DateTime checkDate = completedToday ? DateTime.now() : DateTime.now().subtract(const Duration(days: 1));
-
-    while (true) {
-      final checkStr = checkDate.toIso8601String().split("T")[0];
-
-      final entry = sorted.firstWhere(
-            (e) => e.date == checkStr,
-        orElse: () => WaterTrackerModel(userId: "", date: "", intake: -1, goal: 1),
-      );
-
-      if (entry.intake >= entry.goal) {
-        count++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
-    }
-
-    if (completedToday) {
-      count++;
-    }
-
-    return count;
   }
 }

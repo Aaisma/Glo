@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../../viewmodel/journal_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../viewmodel/write_journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
-import '../../model/journal_model.dart';
+import '../../model/journal_entry_model.dart';
 
 class SelfCareChecklistScreen extends StatefulWidget {
   const SelfCareChecklistScreen({Key? key}) : super(key: key);
@@ -41,35 +42,37 @@ class _SelfCareChecklistScreenState extends State<SelfCareChecklistScreen> {
       return;
     }
 
-    final viewModel = Provider.of<JournalViewModel>(context, listen: false);
-    final userViewModel = Provider.of<UserViewModel>(context, listen: false);
-    
-    final content = "Self-care completed today:\n" + checkedItems.map((e) => "- $e").join("\n");
-    
-    final journal = JournalModel(
-      id: const Uuid().v4(),
-      userId: userViewModel.user?.id ?? 'unknown',
-      userName: userViewModel.user?.name ?? 'Anonymous',
-      title: "Self-care Checklist",
-      content: content,
-      mood: "Productive",
-      emoji: "✅",
-      createdAt: DateTime.now(),
-      category: 'self_care',
-    );
+    final writeVM = context.read<WriteJournalViewModel>();
+    final userVM = context.read<UserViewModel>();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     try {
-      await viewModel.addJournal(journal);
+      final summary = "Self-care items completed:\n" + checkedItems.map((i) => "- $i").join("\n");
+      
+      final journal = JournalEntryModel(
+        id: const Uuid().v4(),
+        userId: userId,
+        userName: userVM.user?.name ?? 'User',
+        title: "Self-care Check-in",
+        content: summary,
+        mood: "Productive",
+        emoji: "✅",
+        createdAt: DateTime.now(),
+        category: 'self_care',
+      );
+
+      await writeVM.repository.addJournal(journal);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Checklist Saved Successfully! ✨')),
+          const SnackBar(content: Text('Checklist Saved! ✨')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save checklist: $e')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
@@ -88,100 +91,40 @@ class _SelfCareChecklistScreenState extends State<SelfCareChecklistScreen> {
         ),
         title: const Text(
           'Self-care Checklist',
-          style: TextStyle(
-            color: Color(0xFF2E2E2E),
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(color: Color(0xFF2E2E2E), fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Today',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Icon(Icons.keyboard_arrow_down, color: primaryPink),
-                ],
-              ),
+              const Text('Today', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 20),
               Expanded(
                 child: ListView.builder(
                   itemCount: _checklistItems.length,
                   itemBuilder: (context, index) {
                     final item = _checklistItems[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        children: [
-                          Theme(
-                            data: Theme.of(context).copyWith(
-                              unselectedWidgetColor: primaryPink.withOpacity(0.4),
-                            ),
-                            child: Checkbox(
-                              value: item['checked'],
-                              activeColor: primaryPink,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  item['checked'] = value ?? false;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              item['title'],
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF2E2E2E),
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            item['icon'],
-                            color: primaryPink,
-                            size: 22,
-                          ),
-                        ],
-                      ),
+                    return CheckboxListTile(
+                      value: item['checked'],
+                      activeColor: primaryPink,
+                      title: Text(item['title'], style: const TextStyle(fontSize: 15)),
+                      secondary: Icon(item['icon'], color: primaryPink),
+                      onChanged: (val) => setState(() => item['checked'] = val),
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveChecklist,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryPink,
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text(
-                  'Save Checklist',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+                child: const Text('Save Checklist', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

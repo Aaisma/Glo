@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../../viewmodel/journal_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../viewmodel/write_journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
-import '../../model/journal_model.dart';
+import '../../model/journal_entry_model.dart';
 
 class GratitudeJournalScreen extends StatefulWidget {
   const GratitudeJournalScreen({Key? key}) : super(key: key);
@@ -43,26 +44,32 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       return;
     }
 
-    final viewModel = Provider.of<JournalViewModel>(context, listen: false);
-    final userViewModel = Provider.of<UserViewModel>(context, listen: false);
-
-    final journal = JournalModel(
-      id: const Uuid().v4(),
-      userId: userViewModel.user?.id ?? 'unknown',
-      userName: userViewModel.user?.name ?? 'Anonymous',
-      title: "Daily Gratitude",
-      content: "I'm grateful for:\n$content",
-      mood: "Grateful",
-      emoji: "💖",
-      createdAt: DateTime.now(),
-      category: 'gratitude',
-    );
+    final writeVM = context.read<WriteJournalViewModel>();
+    final userVM = context.read<UserViewModel>();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final userName = userVM.user?.name ?? 'User';
 
     try {
-      await viewModel.addJournal(journal);
+      final journal = JournalEntryModel(
+        id: const Uuid().v4(),
+        userId: userId,
+        userName: userName,
+        title: "Daily Gratitude",
+        content: "I'm grateful for:\n$content",
+        mood: "Grateful",
+        emoji: "💖",
+        createdAt: DateTime.now(),
+        category: 'gratitude',
+      );
+
+      await writeVM.repository.addJournal(journal);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gratitude Saved Successfully! 🌸')),
+          const SnackBar(
+            content: Text('Gratitude Saved Successfully! 🌸'),
+            backgroundColor: Color(0xFFFF2D65),
+          ),
         );
         Navigator.pop(context);
       }
@@ -83,7 +90,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: primaryPink, size: 24),
+          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFFFF2D65), size: 24),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(

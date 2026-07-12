@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/wellness_viewmodel.dart';
+import 'package:glo/viewmodel/user_viewmodel.dart';
 
 class MoodCalendarScreen extends StatefulWidget {
   const MoodCalendarScreen({super.key});
@@ -105,10 +108,25 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                   final name = mood['name']!;
 
                   return InkWell(
-                    onTap: () {
+                    onTap: () async {
                       setState(() {
                         _userLoggedMoods[_normalizeDate(date)] = emoji;
                       });
+                      final user = Provider.of<UserViewModel>(context, listen: false).user;
+                      if (user != null) {
+                        try {
+                          await Provider.of<WellnessViewModel>(context, listen: false).logMood(
+                            userId: user.id,
+                            mood: name,
+                            note: '',
+                            factors: [],
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to save mood: $e')),
+                          );
+                        }
+                      }
                       Navigator.pop(context);
                     },
                     borderRadius: BorderRadius.circular(16),
@@ -145,13 +163,36 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = Provider.of<UserViewModel>(context, listen: false).user;
+      if (user != null) {
+        Provider.of<WellnessViewModel>(context, listen: false).initUserSync(user.id);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final wellnessVM = Provider.of<WellnessViewModel>(context);
+
+    // Populate calendar from Firestore logs
+    final Map<DateTime, String> userLoggedMoods = Map.from(_userLoggedMoods);
+    for (var log in wellnessVM.moodHistory) {
+      final normalizedDate = _normalizeDate(log.date);
+      String emoji = '✨';
+      if (log.moodType == 'Amazing') emoji = '😍';
+      else if (log.moodType == 'Happy') emoji = '😀';
+      else if (log.moodType == 'Calm') emoji = '😌';
+      else if (log.moodType == 'Neutral') emoji = '😐';
+      else if (log.moodType == 'Sad') emoji = '😢';
+      else if (log.moodType == 'Angry') emoji = '😡';
+      userLoggedMoods[normalizedDate] = emoji;
+    }
+
     final normalizedSelected = _selectedDay != null ? _normalizeDate(_selectedDay!) : null;
-    final selectedEmoji = _userLoggedMoods[normalizedSelected] ?? '✨';
+    final selectedEmoji = userLoggedMoods[normalizedSelected] ?? '✨';
     final dailyQuote = _moodQuotes[selectedEmoji] ?? _moodQuotes['✨']!;
 
     return Scaffold(
@@ -160,7 +201,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {},
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Mood Calendar',
@@ -218,8 +259,8 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                   rowHeight: 76,
                   calendarBuilders: CalendarBuilders(
                     // FIXED: Removed the invalid parameter 'weekendBuilder' completely
-                    defaultBuilder: (context, day, focusedDay) => _buildCell(day, Colors.black),
-                    outsideBuilder: (context, day, focusedDay) => _buildCell(day, Colors.grey.shade400),
+                    defaultBuilder: (context, day, focusedDay) => _buildCell(day, Colors.black, userLoggedMoods),
+                    outsideBuilder: (context, day, focusedDay) => _buildCell(day, Colors.grey.shade400, userLoggedMoods),
                     selectedBuilder: (context, day, focusedDay) {
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -227,7 +268,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
                           border: Border.all(color: Colors.pinkAccent, width: 2),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: _buildCell(day, Colors.black),
+                        child: _buildCell(day, Colors.black, userLoggedMoods),
                       );
                     },
                   ),
@@ -281,8 +322,8 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> {
     );
   }
 
-  Widget _buildCell(DateTime day, Color textColor) {
-    String? emoji = _userLoggedMoods[_normalizeDate(day)];
+  Widget _buildCell(DateTime day, Color textColor, Map<DateTime, String> userLoggedMoods) {
+    String? emoji = userLoggedMoods[_normalizeDate(day)];
     Color glowColor = emoji != null ? _getMoodColor(emoji) : Colors.transparent;
 
     return Container(

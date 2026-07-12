@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/journal_menu_viewmodel.dart';
 import '../../repo/journal_repo.dart';
 
 import 'JournalHistoryScreen.dart';

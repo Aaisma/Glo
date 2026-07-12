@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/feedback_view_model.dart';
 import 'feedback_transition_screen.dart';
 
 class FeedbackFormScreen extends StatefulWidget {
@@ -189,6 +191,7 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
                         onPressed: _charCount < 5
                             ? null
                             : () {
+                          context.read<FeedbackViewModel>().updateMessage(_textController.text);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const FeedbackTransitionScreen()),

@@ -47,10 +47,10 @@ class OvulationViewModel extends ChangeNotifier {
 
   OvulationLogModel? get logForSelectedDate {
     try {
-      return _logs.firstWhere((log) =>
-      log.date.year == _selectedDate.year &&
-          log.date.month == _selectedDate.month &&
-          log.date.day == _selectedDate.day
+      return _logs.firstWhere((log) => 
+        log.date.year == _selectedDate.year &&
+        log.date.month == _selectedDate.month &&
+        log.date.day == _selectedDate.day
       );
     } catch (e) {
       return null;
@@ -92,7 +92,7 @@ class OvulationViewModel extends ChangeNotifier {
 
   Future<void> logOvulationRange(DateTime ovulationDate) async {
     final now = DateTime.now();
-
+    
     // Log ovulation day
     await _updateOrAddLogForDate(ovulationDate, (l) => l.copyWith(isOvulationDay: true, isFertileWindow: true));
 
@@ -133,9 +133,9 @@ class OvulationViewModel extends ChangeNotifier {
   OvulationLogModel? _getLogForDate(DateTime date) {
     try {
       return _logs.firstWhere((l) =>
-      l.date.year == date.year &&
-          l.date.month == date.month &&
-          l.date.day == date.day
+        l.date.year == date.year &&
+        l.date.month == date.month &&
+        l.date.day == date.day
       );
     } catch (e) {
       return null;
@@ -169,7 +169,7 @@ class OvulationViewModel extends ChangeNotifier {
     if (existingLog != null) {
       final updatedLog = updateFn(existingLog).copyWith(updatedAt: now);
       await _repo.updateLog(updatedLog);
-
+      
       final index = _logs.indexWhere((l) => l.id == updatedLog.id);
       if (index != -1) {
         _logs[index] = updatedLog;
@@ -182,7 +182,7 @@ class OvulationViewModel extends ChangeNotifier {
         createdAt: now,
         updatedAt: now,
       ));
-
+      
       await _repo.addLog(newLog);
     }
     await fetchLogs();

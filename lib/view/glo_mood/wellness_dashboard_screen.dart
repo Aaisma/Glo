@@ -55,11 +55,9 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
             };
 
             // Safely iterate through the history once (O(N) instead of O(5N)) to avoid breakdown errors
-            if (viewModel.moodHistory != null) {
-              for (var mood in viewModel.moodHistory) {
-                if (liveMoodCounts.containsKey(mood.moodType)) {
-                  liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
-                }
+            for (var mood in viewModel.moodHistory) {
+              if (liveMoodCounts.containsKey(mood.moodType)) {
+                liveMoodCounts[mood.moodType] = (liveMoodCounts[mood.moodType] ?? 0) + 1;
               }
             }
 
@@ -276,7 +274,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       Expanded(
                         child: _buildMetricCard(
                             'Current Streak',
-                            '${viewModel.currentStreak ?? 0}', // Safe null-check fallback
+                            '${viewModel.currentStreak}',
                             'days', '🔥', Colors.orange[50]!
                         ),
                       ),
@@ -284,7 +282,7 @@ class _WellnessDashboardScreenState extends State<WellnessDashboardScreen> {
                       Expanded(
                         child: _buildMetricCard(
                             'Longest Streak',
-                            '${viewModel.longestStreak ?? 0}', // Safe null-check fallback
+                            '${viewModel.longestStreak}',
                             'days', '🏆', Colors.blue[50]!
                         ),
                       ),

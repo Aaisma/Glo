@@ -11,7 +11,7 @@ import '../viewmodel/period_view_model.dart';
 // Navigation pages
 import '../viewmodel/user_viewmodel.dart';
 import 'glo_derma_visit/derma_visit.dart';
-import 'glo_journal/JournalEntryScreen.dart';
+import 'glo_journal/JournalHomeScreen.dart';
 import 'glo_profile/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'glo_history/history_screen.dart';
@@ -213,7 +213,7 @@ class DashboardHome extends StatelessWidget {
                         onTap: () {
                           switch (item["title"]) {
                             case "Daily Journal":
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const JournalEntryScreen()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const JournalHomeScreen()));
                               break;
                             case "Water Tracker":
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterTrackerScreen()));

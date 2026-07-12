@@ -1,10 +1,10 @@
-// C:/Users/Samjhana/Desktop/samglo/lib/view/glo_journal/JournalHistoryScreen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/journal_viewmodel.dart';
-import '../../model/journal_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../viewmodel/journal_history_viewmodel.dart';
+import '../../viewmodel/favorites_viewmodel.dart';
+import '../../model/journal_entry_model.dart';
 import 'JournalCalendarViewScreen.dart';
 
 class JournalHistoryScreen extends StatefulWidget {
@@ -15,130 +15,217 @@ class JournalHistoryScreen extends StatefulWidget {
 }
 
 class _JournalHistoryScreenState extends State<JournalHistoryScreen> {
-  final Color primaryPink = const Color(0xFFFF2D65);
-  final Color backgroundSoftPink = const Color(0xFFFFF5F6);
+  // screenshot color profile
+  final Color primaryPink = const Color(0xFFFF4B78);
+  final Color backgroundSoftPink = const Color(0xFFFFF9FA);
   bool isTimelineSelected = true;
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
+    final historyVM = context.read<JournalHistoryViewModel>();
+    final favoritesVM = context.read<FavoritesViewModel>();
+    final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     return Scaffold(
       backgroundColor: backgroundSoftPink,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: primaryPink, size: 24),
+          icon: Icon(Icons.arrow_back, color: primaryPink),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Journal History', style: TextStyle(color: Color(0xFF2E2E2E), fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: const Text(
+          'Journal History',
+          style: TextStyle(
+            color: Color(0xFF2E2E2E),
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
       ),
-      body: Column(
-        children: [
-          _buildToggleButtons(),
-          const SizedBox(height: 20),
-          Expanded(
-            child: StreamBuilder<List<JournalModel>>(
-              stream: viewModel.getJournals(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text("No journals found. Start writing!"));
-                }
-
-                final journals = snapshot.data!;
-                // Sort by date descending
-                journals.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  itemCount: journals.length,
-                  itemBuilder: (context, index) {
-                    final journal = journals[index];
-                    return _buildJournalItem(journal);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJournalItem(JournalModel journal) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: Row(
-        children: [
-          Column(
-            children: [
-              Text(DateFormat('dd').format(journal.createdAt), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(DateFormat('MMM').format(journal.createdAt), style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Text(journal.emoji, style: const TextStyle(fontSize: 20)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(journal.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                Text('${DateFormat('hh:mm a').format(journal.createdAt)} • Mood: ${journal.mood}',
-                    style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_outline, color: Colors.red.withOpacity(0.3), size: 20),
-            onPressed: () => Provider.of<JournalViewModel>(context, listen: false).deleteJournal(journal.id),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Container(
-        height: 45,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-        child: Row(
+      body: SafeArea(
+        child: Column(
           children: [
+            const SizedBox(height: 10),
+            _buildToggleBar(),
+            const SizedBox(height: 10),
             Expanded(
-              child: InkWell(
-                onTap: () => setState(() => isTimelineSelected = true),
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isTimelineSelected ? primaryPink : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text('Timeline', style: TextStyle(color: isTimelineSelected ? Colors.white : Colors.black54)),
-                ),
-              ),
-            ),
-            Expanded(
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const JournalCalendarViewScreen()));
+              child: userId.isEmpty
+                  ? const Center(child: Text("Please log in to view history."))
+                  : StreamBuilder<List<JournalEntryModel>>(
+                stream: historyVM.getJournalStream(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator(color: primaryPink));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text("No memories captured yet. ✍️",
+                          style: TextStyle(color: Colors.grey)),
+                    );
+                  }
+
+                  final journals = snapshot.data!;
+
+                  // Group journals by monthYear
+                  Map<String, List<JournalEntryModel>> grouped = {};
+                  for (var j in journals) {
+                    String monthYear = DateFormat('MMMM yyyy').format(j.createdAt);
+                    if (!grouped.containsKey(monthYear)) grouped[monthYear] = [];
+                    grouped[monthYear]!.add(j);
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    itemCount: grouped.keys.length,
+                    itemBuilder: (context, index) {
+                      String month = grouped.keys.elementAt(index);
+                      return _buildMonthSection(month, grouped[month]!, favoritesVM);
+                    },
+                  );
                 },
-                child: Container(
-                  alignment: Alignment.center,
-                  child: const Text('Calendar', style: TextStyle(color: Colors.black54)),
-                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildToggleBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFDEEF1), // Light pink background from screenshot
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            _toggleItem('Timeline', isTimelineSelected, () {
+              setState(() => isTimelineSelected = true);
+            }),
+            _toggleItem('Calendar', !isTimelineSelected, () {
+              // Note: Set state then navigate to ensure highlight sync
+              setState(() => isTimelineSelected = false);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const JournalCalendarViewScreen())
+              ).then((_) => setState(() => isTimelineSelected = true));
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toggleItem(String label, bool isSelected, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: isSelected ? primaryPink : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMonthSection(String month, List<JournalEntryModel> items, FavoritesViewModel favVM) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 20, bottom: 12),
+          child: Text(
+              month,
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87
+              )
+          ),
+        ),
+        ...items.map((item) => _buildJournalItem(item, favVM)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildJournalItem(JournalEntryModel item, FavoritesViewModel favVM) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4)
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  DateFormat('dd').format(item.createdAt),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)
+              ),
+              Text(
+                  DateFormat('MMM').format(item.createdAt),
+                  style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w500)
+              ),
+            ],
+          ),
+          const SizedBox(width: 24), // Wide spacing from screenshot
+          Text(item.emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.title,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                    '${DateFormat('hh:mm a').format(item.createdAt)} • Mood: ${item.mood}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w400)
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+                item.isFavorite ? Icons.bookmark : Icons.bookmark_outline,
+                color: primaryPink,
+                size: 26
+            ),
+            onPressed: () => favVM.toggleFavorite(item),
+          ),
+        ],
       ),
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/feedback_view_model.dart';
 import 'feedback_experience_screen.dart';
 class FeedbackTransitionScreen extends StatefulWidget {
   const FeedbackTransitionScreen({Key? key}) : super(key: key);
@@ -15,15 +17,32 @@ class _FeedbackTransitionScreenState extends State<FeedbackTransitionScreen> {
   @override
   void initState() {
     super.initState();
-    // Simulate a short network save processing delay, then route to the experience screen
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
+    _submitFeedback();
+  }
+
+  Future<void> _submitFeedback() async {
+    final startTime = DateTime.now();
+    final success = await context.read<FeedbackViewModel>().sendFeedback();
+    final elapsed = DateTime.now().difference(startTime);
+    final remainingDelay = const Duration(seconds: 2) - elapsed;
+    
+    if (remainingDelay > Duration.zero) {
+      await Future.delayed(remainingDelay);
+    }
+    
+    if (mounted) {
+      if (success) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const FeedbackExperienceScreen()),
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to submit feedback. Please try again.")),
+        );
+        Navigator.pop(context); // Go back to the form to retry
       }
-    });
+    }
   }
 
   @override

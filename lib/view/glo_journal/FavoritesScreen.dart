@@ -1,155 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/journal_viewmodel.dart';
-import '../../model/journal_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../viewmodel/favorites_viewmodel.dart';
+import '../../model/journal_entry_model.dart';
 
-class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({Key? key}) : super(key: key);
 
-  @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
-}
+void main() => runApp(const MaterialApp(home: FavoritesScreen()));
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
-  final Color primaryPink = const Color(0xFFFF2D65);
-  final Color backgroundSoftPink = const Color(0xFFFFF5F6);
+class FavoritesScreen extends StatelessWidget {
+  const FavoritesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
-
     return Scaffold(
-      backgroundColor: backgroundSoftPink,
+      backgroundColor: const Color(0xFFFFF9F9),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: primaryPink, size: 24),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Favorites',
-          style: TextStyle(
-            color: Color(0xFF2E2E2E),
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+        leading: const Icon(Icons.arrow_back, color: Colors.black),
+        title: const Text("Favorites", style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: StreamBuilder<List<JournalModel>>(
-          stream: viewModel.getJournals(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text("No journals found."));
-            }
-
-            final favorites = snapshot.data!.where((j) => j.isFavorite).toList();
-
-            if (favorites.isEmpty) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.star_border, size: 60, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text("No favorite journals yet.", style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              );
-            }
-
-            // Sort by date descending
-            favorites.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              itemCount: favorites.length,
-              itemBuilder: (context, index) {
-                final journal = favorites[index];
-                return _buildFavoriteItem(journal);
-              },
-            );
-          },
-        ),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: 4, // Replace with your list length
+        separatorBuilder: (context, index) => const Divider(color: Colors.black12),
+        itemBuilder: (context, index) {
+          return _buildFavoriteItem(
+            title: ["Feeling Better Today", "A Day Full of Gratitude", "Overcame My Fear", "Good Things Take Time"][index],
+            date: ["July 10, 2026", "July 5, 2026", "June 28, 2026", "June 20, 2026"][index],
+            mood: ["Happy", "Grateful", "Proud", "Hopeful"][index],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFavoriteItem(JournalModel journal) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+  Widget _buildFavoriteItem({required String title, required String date, required String mood}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                DateFormat('dd').format(journal.createdAt),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E2E2E),
-                ),
-              ),
-              Text(
-                DateFormat('MMM').format(journal.createdAt),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 4),
+              Text("$date • $mood", style: const TextStyle(color: Colors.grey, fontSize: 13)),
             ],
           ),
-          const SizedBox(width: 16),
-          Text(journal.emoji, style: const TextStyle(fontSize: 22)),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  journal.title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E2E2E),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${DateFormat('hh:mm a').format(journal.createdAt)} • Mood: ${journal.mood}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.star,
-              color: primaryPink,
-              size: 24,
-            ),
-            onPressed: () {
-              Provider.of<JournalViewModel>(context, listen: false)
-                  .updateJournal(journal.copyWith(isFavorite: false));
-            },
-          ),
+          const Icon(Icons.star, color: Color(0xFFFF6B81)),
         ],
       ),
     );

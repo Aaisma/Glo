@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
-
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/write_journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
-import '../../model/journal_model.dart';
 
 class WriteJournalScreen extends StatefulWidget {
   const WriteJournalScreen({Key? key}) : super(key: key);
@@ -17,16 +14,6 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
   final TextEditingController _textController = TextEditingController();
   final Color primaryPink = const Color(0xFFFF2D65);
   final Color backgroundSoftPink = const Color(0xFFFFF5F6);
-  String selectedMood = 'Happy';
-  String selectedEmoji = '😀';
-
-  final Map<String, String> moodToEmoji = {
-    'Amazing': '🤩',
-    'Happy': '😀',
-    'Calm': '😐',
-    'Sad': '😢',
-    'Angry': '😡',
-  };
 
   @override
   void dispose() {
@@ -34,44 +21,37 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
     super.dispose();
   }
 
-  Future<void> _saveJournal() async {
+  Future<void> _handleSave() async {
+    final writeVM = context.read<WriteJournalViewModel>();
+    final userVM = context.read<UserViewModel>();
+
     if (_textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write something first!')),
+        const SnackBar(content: Text('Please write something before saving!')),
       );
       return;
     }
 
-    final viewModel = Provider.of<JournalViewModel>(context, listen: false);
-    final userViewModel = Provider.of<UserViewModel>(context, listen: false);
-    
-    final id = const Uuid().v4();
-    
-    // Get current user info
-    final userId = userViewModel.user?.id ?? 'unknown';
-    final userName = userViewModel.user?.name ?? 'Anonymous User';
-    
-    // Use first line or first 20 chars as title
-    String content = _textController.text.trim();
-    String title = content.split('\n').first;
-    if (title.length > 30) {
-      title = '${title.substring(0, 27)}...';
+    if (userVM.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not found. Please log in again.')),
+      );
+      return;
     }
 
-    final journal = JournalModel(
-      id: id,
-      userId: userId,
-      userName: userName,
-      title: title,
-      content: content,
-      mood: selectedMood,
-      emoji: selectedEmoji,
-      createdAt: DateTime.now(),
-      category: 'regular',
-    );
-
     try {
-      await viewModel.addJournal(journal);
+      // Use the first line as the title, or a default one
+      String content = _textController.text.trim();
+      String title = content.split('\n').first;
+      if (title.length > 30) title = title.substring(0, 27) + '...';
+
+      await writeVM.saveEntry(
+        userId: userVM.user!.id,
+        userName: userVM.user!.name,
+        title: title,
+        content: content,
+      );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Journal Saved Successfully! 🌸')),
@@ -81,7 +61,7 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save journal: $e')),
+          SnackBar(content: Text('Error saving journal: $e')),
         );
       }
     }
@@ -89,6 +69,8 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final writeVM = context.watch<WriteJournalViewModel>();
+
     return Scaffold(
       backgroundColor: backgroundSoftPink,
       appBar: AppBar(
@@ -109,7 +91,7 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: _saveJournal,
+            onPressed: _handleSave,
             child: Text(
               'Save',
               style: TextStyle(
@@ -196,7 +178,13 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: moodToEmoji.entries.map((entry) => _buildMoodItem(entry.value, entry.key)).toList(),
+                children: [
+                  _buildMoodItem(writeVM, '🤩', 'Amazing'),
+                  _buildMoodItem(writeVM, '😀', 'Happy'),
+                  _buildMoodItem(writeVM, '😐', 'Calm'),
+                  _buildMoodItem(writeVM, '😢', 'Sad'),
+                  _buildMoodItem(writeVM, '😡', 'Angry'),
+                ],
               ),
               const SizedBox(height: 20),
               Row(
@@ -210,7 +198,7 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _saveJournal,
+                onPressed: _handleSave,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryPink,
                   minimumSize: const Size(double.infinity, 50),
@@ -230,14 +218,11 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
     );
   }
 
-  Widget _buildMoodItem(String emoji, String label) {
-    bool isSelected = selectedMood == label;
+  Widget _buildMoodItem(WriteJournalViewModel viewModel, String emoji, String label) {
+    bool isSelected = viewModel.selectedMood == label;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedMood = label;
-          selectedEmoji = emoji;
-        });
+        viewModel.updateMood(label, emoji);
       },
       child: Column(
         children: [
