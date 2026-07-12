@@ -34,12 +34,13 @@ class AydColors {
   // Insight/Community Colour
   static const Color insightButton = Color(0xFFFF6F9E); // pink button
   static const Color communityButton = Color(0xFF2D5E78); // teal-blue button
-  static const Color communityCard = Color(0xFFF0FFFF);
+  static const Color communityCard = Color(0xFFEAF6F6);
 
   //Admin Colour
   static const Color admin = Color(0xFFF9F7F0);
-  static const Color adminBackground = Color(0xFFF0FFFF);
+  static const Color adminBackground = Color(0xFFEAF6F6);
   static const Color adminInsightButton = Color(0xFFFF6F9E);
   static const Color adminCommunityButton = Color(0xFF2D5E78);
+  static const Color communityCardBackground = Color(0xFFEAF6F6);
 
 }

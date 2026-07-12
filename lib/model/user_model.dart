@@ -1,6 +1,7 @@
 class UserModel {
   final String id;
   final String name;
+  final String username;
   final String? contact;
   final String? email;
   final String? phone;
@@ -27,6 +28,7 @@ class UserModel {
   const UserModel({
     required this.id,
     required this.name,
+    this.username = '',
     this.contact,
     this.email,
     this.phone,
@@ -53,6 +55,7 @@ class UserModel {
     return {
       'id': id,
       'name': name,
+      'username': username,
       'contact': contact,
       'email': email,
       'phone': phone,
@@ -80,6 +83,7 @@ class UserModel {
     return UserModel(
       id: documentId,
       name: map['name'] ?? '',
+      username: map['username'] ?? '',
       contact: map['contact'],
       email: map['email'],
       phone: map['phone'],
@@ -114,6 +118,7 @@ class UserModel {
   UserModel copyWith({
     String? id,
     String? name,
+    String? username,
     String? contact,
     String? email,
     String? phone,
@@ -138,6 +143,7 @@ class UserModel {
     return UserModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      username: username ?? this.username,
       contact: contact ?? this.contact,
       email: email ?? this.email,
       phone: phone ?? this.phone,

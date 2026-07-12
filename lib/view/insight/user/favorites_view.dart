@@ -342,52 +342,153 @@ class _FavoritesViewState extends State<FavoritesView> {
   }
 
   Widget _buildPollCard(BuildContext context, CommunityPoll item, FavoritesViewModel vm) {
+    final total = item.totalVotes;
+    final hasVoted = item.userVotedOption != null;
+    final fillBg = AydColors.communityButton;
+    final borderHighlight = AydColors.communityButton;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.01),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE3F2FD),
-            borderRadius: BorderRadius.circular(10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PollDetailView(pollId: item.id)),
+            ).then((_) => context.read<FavoritesViewModel>().loadFavorites());
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE3F2FD),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "POLL",
+                        style: TextStyle(color: AydColors.communityButton, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      "${item.totalVotes} votes",
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.favorite, color: Color(0xFFFF3E63), size: 20),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => vm.removeFavorite(item.id, ContentType.poll),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  item.question,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF332B2C),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Show top 2 options inline
+                ...item.options.keys.take(2).map((opt) {
+                  final votes = item.options[opt] ?? 0;
+                  final double percent = total > 0 ? (votes / total) : 0;
+                  final votedThis = item.userVotedOption == opt;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: votedThis ? borderHighlight : Colors.grey.shade100,
+                        width: votedThis ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        if (hasVoted)
+                          FractionallySizedBox(
+                            widthFactor: percent,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: votedThis
+                                    ? fillBg.withValues(alpha: 0.2)
+                                    : fillBg.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  opt,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: votedThis ? FontWeight.bold : FontWeight.w500,
+                                    color: const Color(0xFF332B2C),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (hasVoted)
+                                Text(
+                                  "${(percent * 100).toStringAsFixed(0)}%",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: votedThis ? borderHighlight : Colors.black54,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+
+                if (item.options.length > 2)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      "+ ${item.options.length - 2} more options",
+                      style: TextStyle(color: borderHighlight, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          child: const Icon(Icons.poll_outlined, color: Colors.blue, size: 24),
         ),
-        title: Text(
-          item.question,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C)),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6.0),
-          child: Text(
-            "Poll • ${item.totalVotes} votes",
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.favorite, color: Color(0xFFFF3E63)),
-          onPressed: () => vm.removeFavorite(item.id, ContentType.poll),
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => PollDetailView(pollId: item.id)),
-          );
-        },
       ),
     );
   }

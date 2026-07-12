@@ -5,16 +5,24 @@ abstract class CommunityRepo {
   Future<List<CommunityCategory>> getCategories();
   Future<CommunityCategory?> getCategoryById(String id);
   
-  Future<List<Discussion>> getDiscussions({required int page, required int limit, String? query, String? filter});
+  Future<List<Discussion>> getDiscussions({required int page, required int limit, String? query, String? filter, String? userId});
   Future<Discussion?> getDiscussionById(String id);
   Future<void> addDiscussion(Discussion discussion);
+  Future<void> updateDiscussion(Discussion discussion);
   Future<void> likeDiscussion(String id);
   Future<void> addReply(String discussionId, DiscussionReply reply);
   Future<void> likeReply(String discussionId, String replyId);
   
-  Future<List<CommunityPoll>> getPolls({required int page, required int limit});
+  Future<List<CommunityPoll>> getPolls({
+    required int page,
+    required int limit,
+    String? userId,
+    String? filter,
+  });
   Future<CommunityPoll?> getPollById(String id);
+  Stream<CommunityPoll?> getPollStream(String id);
   Future<void> addPoll(CommunityPoll poll);
+  Future<void> updatePoll(CommunityPoll poll);
   Future<void> votePoll(String pollId, String option);
   Future<void> sharePoll(String pollId);
 
@@ -22,7 +30,7 @@ abstract class CommunityRepo {
   Future<DraftItem?> getDraft(String id);
   Future<void> discardDraft(String id);
 
-  Future<List<dynamic>> getCommunityFeed({required int page, required int limit, String? query, String? filter});
+  Future<List<dynamic>> getCommunityFeed({required int page, required int limit, String? query, String? filter, String? userId});
   Future<List<Discussion>> getAllAdminDiscussions();
   Future<List<CommunityPoll>> getAllAdminPolls();
   Future<void> softDeleteDiscussion(String id);

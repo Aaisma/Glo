@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import '../../../constants/ayd_colour.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../model/community_models.dart';
-import '../../../repo/community_repo.dart';
-import '../../../constants/ayd_colour.dart';
-import '../../insight/user/poll_detail_view.dart';
+import '../../../viewmodel/user_viewmodel.dart';
 import 'discussion_detail_view.dart';
+import 'poll_detail_view.dart';
 import 'create_discussion_view.dart';
 import 'create_poll_view.dart';
 
@@ -26,7 +25,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true);
+      context.read<CommunityFeedViewModel>().loadFeed();
     });
   }
 
@@ -38,17 +37,99 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
   }
 
   void _onScroll() {
-    final viewModel = context.read<CommunityFeedViewModel>();
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      viewModel.loadMore();
+      context.read<CommunityFeedViewModel>().loadMore();
     }
+  }
+
+  void _showCreateOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "What would you like to share?",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCreateOption(
+                    context,
+                    "Discussion",
+                    "Start a conversation",
+                    Icons.chat_bubble_outline,
+                    const Color(0xFFE3F2FD),
+                    AydColors.communityButton,
+                    () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CreateDiscussionView())),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildCreateOption(
+                    context,
+                    "Poll",
+                    "Ask the community",
+                    Icons.poll_outlined,
+                    const Color(0xFFF3E5F5),
+                    Colors.purple,
+                    () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CreatePollView())),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreateOption(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    Color bgColor,
+    Color iconColor,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: iconColor.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: iconColor, size: 32),
+            const SizedBox(height: 12),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: iconColor)),
+            const SizedBox(height: 4),
+            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: iconColor.withValues(alpha: 0.7))),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CommunityFeedViewModel>();
-    const pinkTheme = Color(0xFFFD8CA1);
-    const accentColor = Color(0xFFFF3E63);
+    final primaryBlue = AydColors.communityButton;
 
     return Container(
       decoration: const BoxDecoration(
@@ -60,169 +141,110 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          "⟡˙Community Discussions˙⟡",
-          style: TextStyle(
-            fontSize: 22,
-            color: AydColors.communityButton,
-            fontWeight: FontWeight.bold,
+          title: const Text("Community Feed", style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AydColors.communityButton),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
+        body: Column(
           children: [
-            // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.01),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => viewModel.setSearchQuery(val),
-                  decoration: const InputDecoration(
-                    hintText: "Search conversations, topics...",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
+              child: _buildSearchBar(viewModel),
             ),
-            // Filter Tabs
             _buildFilterTabs(viewModel),
-            const SizedBox(height: 8),
-            // Feed List
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => viewModel.loadFeed(isRefresh: true),
-                color: pinkTheme,
-                child: viewModel.isLoading && viewModel.feedItems.isEmpty
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1)))
-                    : viewModel.error != null
-                        ? Center(child: Text("Error: ${viewModel.error}"))
-                        : ListView.builder(
-                            controller: _scrollController,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-                            itemCount: viewModel.feedItems.length + (viewModel.isLoadingMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == viewModel.feedItems.length) {
+              child: viewModel.isLoading && viewModel.feed.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: AydColors.communityButton))
+                  : RefreshIndicator(
+                      onRefresh: () => viewModel.loadFeed(isRefresh: true),
+                      color: AydColors.communityButton,
+                      child: viewModel.feed.isEmpty
+                          ? ListView(
+                              children: const [
+                                SizedBox(height: 100),
+                                Center(child: Text("No posts found. Start a discussion! 💙", style: TextStyle(color: Colors.grey))),
+                              ],
+                            )
+                          : ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(20),
+                              itemCount: viewModel.feed.length + (viewModel.hasMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == viewModel.feed.length) {
                                   return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(
-                                      child: CircularProgressIndicator(color: Color(0xFFFD8CA1)),
-                                    ),
+                                    padding: EdgeInsets.symmetric(vertical: 20),
+                                    child: Center(child: CircularProgressIndicator(color: AydColors.communityButton, strokeWidth: 2)),
                                   );
                                 }
 
-                                final item = viewModel.feedItems[index];
+                                final item = viewModel.feed[index];
                                 if (item is Discussion) {
-                                  return _buildDiscussionCard(context, item, accentColor);
+                                  return _buildDiscussionCard(context, item);
                                 } else if (item is CommunityPoll) {
-                                  return _buildPollCard(context, item, pinkTheme, accentColor);
+                                  return _buildPollCard(context, item, primaryBlue, primaryBlue);
                                 }
                                 return const SizedBox.shrink();
-                            },
-                          ),
-              ),
+                              },
+                            ),
+                    ),
             ),
           ],
         ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showCreateOptions(context),
+          backgroundColor: AydColors.communityButton,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: const Text("Create", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AydColors.communityButton,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-          _showCreateSelectorDialog(context);
-        },
-      ),
-    ));
-  }
-
-  void _showCreateSelectorDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      backgroundColor: AydColors.admin,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Create Community Post",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: const Color(0xFFF0E6FF), borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.chat_bubble_outline, color: Colors.deepPurple),
-                ),
-                title: const Text("Start a Discussion", style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text("Ask questions, share advice, or tell a story"),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => CreateDiscussionView()),
-                  ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.poll_outlined, color: Colors.blue),
-                ),
-                title: const Text("Create a Poll", style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text("Gather opinions and see results instantly"),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => CreatePollView()),
-                  ).then((_) => context.read<CommunityFeedViewModel>().loadFeed(isRefresh: true));
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
-  Widget _buildDiscussionCard(BuildContext context, Discussion item, Color favoriteColor) {
-    final formattedDate = DateFormat('MMM dd').format(item.createdAt);
+  Widget _buildSearchBar(CommunityFeedViewModel viewModel) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (val) => viewModel.setSearchQuery(val),
+        decoration: InputDecoration(
+          hintText: "Search discussions or polls...",
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18),
+                  onPressed: () {
+                    _searchController.clear();
+                    viewModel.setSearchQuery("");
+                  },
+                )
+              : null,
+        ),
+      ),
+    );
+  }
 
+  Widget _buildDiscussionCard(BuildContext context, Discussion item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AydColors.admin,
+        color: AydColors.communityCardBackground,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -248,78 +270,62 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor: const Color(0xFFFFE5EC),
-                          child: Icon(
-                            item.isAnonymous ? Icons.security : Icons.person,
-                            size: 14,
-                            color: const Color(0xFFFF3E63),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          item.isAnonymous ? "Anonymous" : "@${item.username}",
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF332B2C)),
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "DISCUSSION",
+                        style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
+                    const Spacer(),
+                    const Icon(Icons.remove_red_eye_outlined, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text("${item.views}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   item.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF332B2C),
-                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   item.content,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    height: 1.4,
-                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700, height: 1.4),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text("${item.likes}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: AydColors.communityButton.withValues(alpha: 0.1),
+                      backgroundImage: item.profileImageUrl != null && item.profileImageUrl!.isNotEmpty
+                          ? NetworkImage(item.profileImageUrl!)
+                          : null,
+                      child: item.profileImageUrl == null || item.profileImageUrl!.isEmpty
+                          ? const Icon(Icons.person, size: 12, color: AydColors.communityButton)
+                          : null,
                     ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "@${item.username}",
+                      style: const TextStyle(fontSize: 11, color: Colors.grey, fontStyle: FontStyle.italic),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.favorite_border, size: 16, color: AydColors.communityButton),
+                    const SizedBox(width: 4),
+                    Text("${item.likes}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.mode_comment_outlined, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text("${item.repliesCount}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    ),
-                    const SizedBox(width: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.remove_red_eye_outlined, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text("${item.views}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    ),
+                    const Icon(Icons.mode_comment_outlined, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text("${item.repliesCount}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ],
@@ -337,7 +343,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AydColors.admin,
+        color: AydColors.communityCardBackground,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -372,13 +378,29 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                       ),
                       child: const Text(
                         "POLL",
-                        style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AydColors.communityButton, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                     const Spacer(),
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: AydColors.communityButton.withValues(alpha: 0.1),
+                      backgroundImage: item.profileImageUrl != null && item.profileImageUrl!.isNotEmpty
+                          ? NetworkImage(item.profileImageUrl!)
+                          : null,
+                      child: item.profileImageUrl == null || item.profileImageUrl!.isEmpty
+                          ? const Icon(Icons.person, size: 12, color: AydColors.communityButton)
+                          : null,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "@${item.username}",
+                      style: const TextStyle(color: Colors.grey, fontSize: 11, fontStyle: FontStyle.italic),
+                    ),
+                    const SizedBox(width: 12),
                     Text(
                       "${item.totalVotes} votes",
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
                     ),
                   ],
                 ),
@@ -411,6 +433,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                       ),
                     ),
                     child: Stack(
+                      alignment: Alignment.centerLeft,
                       children: [
                         if (hasVoted)
                           FractionallySizedBox(
@@ -419,7 +442,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                               decoration: BoxDecoration(
                                 color: votedThis
                                     ? fillBg.withValues(alpha: 0.2)
-                                    : Colors.pink.shade50.withValues(alpha: 0.3),
+                                    : fillBg.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
@@ -429,18 +452,25 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                opt,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: votedThis ? FontWeight.bold : FontWeight.w500,
-                                  color: const Color(0xFF332B2C),
+                              Expanded(
+                                child: Text(
+                                  opt,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: votedThis ? FontWeight.bold : FontWeight.w500,
+                                    color: const Color(0xFF332B2C),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (hasVoted)
                                 Text(
                                   "${(percent * 100).toStringAsFixed(0)}%",
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: votedThis ? borderHighlight : Colors.black54,
+                                  ),
                                 ),
                             ],
                           ),
@@ -467,38 +497,42 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
   }
 
   Widget _buildFilterTabs(CommunityFeedViewModel viewModel) {
-    final filters = ['Trending', 'Recent', 'Unanswered'];
-    return SizedBox(
+    final filters = ["All", "Trending", "Following", "Unanswered"];
+
+    return Container(
       height: 40,
+      margin: const EdgeInsets.symmetric(vertical: 12),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: filters.length,
         itemBuilder: (context, index) {
           final filter = filters[index];
-          final isSelected = viewModel.selectedFilter == filter;
+          final isSelected = viewModel.currentFilter == filter;
+
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
               label: Text(
                 filter,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF332B2C),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  color: isSelected ? Colors.white : Colors.grey.shade700,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
               selected: isSelected,
-              onSelected: (val) => viewModel.setFilter(filter),
+              onSelected: (selected) {
+                if (selected) viewModel.setFilter(filter);
+              },
               selectedColor: AydColors.communityButton,
               backgroundColor: Colors.white,
-              elevation: isSelected ? 2 : 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? AydColors.communityButton : Colors.grey.shade200,
-                ),
+                side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey.shade200),
               ),
+              showCheckmark: false,
+              elevation: isSelected ? 2 : 0,
             ),
           );
         },
@@ -506,4 +540,3 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
     );
   }
 }
-

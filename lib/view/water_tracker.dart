@@ -487,11 +487,18 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
       ),
       body: vm.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          : Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/feed/community_backgroung.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
             // 💧 Central Hydration Wave Card
             Card(
               elevation: 0,
@@ -851,7 +858,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildQuickAddCup({

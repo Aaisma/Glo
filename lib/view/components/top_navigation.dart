@@ -16,34 +16,30 @@ class TopNavigation extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Spacer to help center the text if there are icons on the right
-          if (isLoggedIn) const SizedBox(width: 48), 
           Expanded(
             child: Text(
               isLoggedIn ? "Good Morning ${userName ?? 'User'} ❤︎"
                   : "⟡˙⋆Welcome to Glo⋆˙⟡",
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFFF3E63),
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications, color: Color(0xFF332B2C)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const NotificationScreen()),
-                  );
-                },
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Color(0xFF332B2C), size: 28),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationScreen()),
+              );
+            },
           ),
         ],
       ),

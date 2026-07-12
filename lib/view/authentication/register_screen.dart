@@ -72,7 +72,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // UserViewModel.finalizeOnboarding() once the skin survey is complete.
     context.read<UserViewModel>().setSignupCredentials(name, email, password);
 
-    widget.onRegisterSuccess?.call();
+    if (widget.onRegisterSuccess != null) {
+      widget.onRegisterSuccess!.call();
+    } else {
+      Navigator.of(context).pushReplacementNamed('/survey');
+    }
   }
 
   @override

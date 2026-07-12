@@ -18,6 +18,7 @@ import 'personal_info_page.dart';
 import 'manage_password_page.dart';
 import 'package:glo/view/authentication/login_screen.dart';
 import 'package:glo/view/glo_profile/glo_feedback/feedback_welcome_screen.dart';
+import 'package:glo/viewmodel/period_view_model.dart';
 
 class GloProfileScreen extends StatefulWidget {
   const GloProfileScreen({super.key});
@@ -30,6 +31,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   bool _profileLoaded = false;
 
   static const pink = Color(0xFFE85D8A);
+  static const accentPink = Color(0xFFF86A90);
   static const softPink = Color(0xFFFFF7FA);
   static const iconBg = Color(0xFFFFEAF1);
   static const borderPink = Color(0xFFFFD6E2);
@@ -155,139 +157,30 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     }
   }
 
+  String _resolvedUsername(ProfileViewModel vm) {
+    final username = vm.username.trim();
+    if (username.isNotEmpty && username != "glo_user") {
+      return username;
+    }
+    return _usernameFromEmail(_authEmail);
+  }
+
   void _editProfile() {
     final vm = context.read<ProfileViewModel>();
 
-    final nameController = TextEditingController(
-      text: _resolvedName(vm),
-    );
-
-    final bioController = TextEditingController(
-      text: _resolvedBio(vm).replaceAll("\n", " "),
-    );
-
-    bool isSaving = false;
-
     showDialog(
       context: context,
+      barrierDismissible: !vm.isSaving,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            return AlertDialog(
-              backgroundColor: softPink,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
-              ),
-              title: const _DialogTitle("Edit Profile"),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: isSaving
-                          ? null
-                          : () {
-                        Navigator.pop(dialogContext);
-                        _pickProfileImage();
-                      },
-                      icon: const Icon(Icons.photo_library_outlined),
-                      label: const Text("Change Profile Picture"),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: pink,
-                        side: const BorderSide(color: borderPink),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: "Name"),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: bioController,
-                      maxLines: 2,
-                      decoration: const InputDecoration(labelText: "Bio"),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSaving ? null : () => Navigator.pop(dialogContext),
-                  child: const Text("Cancel", style: TextStyle(color: pink)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: pink),
-                  onPressed: isSaving
-                      ? null
-                      : () async {
-                    final navigator = Navigator.of(dialogContext);
-                    final messenger = ScaffoldMessenger.of(context);
-
-                    final name = nameController.text.trim();
-                    final bio = bioController.text.trim();
-
-                    if (name.isEmpty) {
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text("Please enter your name"),
-                        ),
-                      );
-                      return;
-                    }
-
-                    setDialogState(() => isSaving = true);
-
-                    final success = await vm.saveProfile(
-                      name: name,
-                      bio: bio.isEmpty ? defaultBio : bio,
-                    );
-
-                    if (!mounted || !dialogContext.mounted) return;
-
-                    setDialogState(() => isSaving = false);
-
-                    if (success) {
-                      navigator.pop();
-
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text("Profile updated"),
-                        ),
-                      );
-                    } else {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            vm.errorMessage ?? "Profile update failed",
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  child: isSaving
-                      ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                      : const Text(
-                    "Save",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
+        return _EditProfileDialog(
+          vm: vm,
+          initialName: _resolvedName(vm),
+          initialUsername: _resolvedUsername(vm),
+          initialBio: _resolvedBio(vm).replaceAll("\n", " "),
+          onPickImage: _pickProfileImage,
         );
       },
-    ).whenComplete(() {
-      nameController.dispose();
-      bioController.dispose();
-    });
+    );
   }
 
 
@@ -400,12 +293,17 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileViewModel>();
     final userVM = context.watch<UserViewModel>();
+    final periodVM = context.watch<PeriodViewModel>();
 
     final fullName = _resolvedName(vm);
     final email = _authEmail;
-    final username = _usernameFromEmail(email);
+    final username = _resolvedUsername(vm);
     final bio = _resolvedBio(vm);
     final imagePath = _resolvedImagePath(vm);
+
+    final cycleDay = periodVM.cycleDay?.toString() ?? "--";
+    final avgCycleLength = periodVM.analyticsResult?.averageCycleLength ?? 28;
+    final cycleLengthText = "$avgCycleLength Days";
 
     // AuthWrapper routes brand-new users here until profileCompleted is
     // true. Existing users (profileCompleted already true) just see the
@@ -413,58 +311,46 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     final needsSetup = userVM.user != null && !userVM.user!.profileCompleted;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/background.png"),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          color: Colors.white.withValues(alpha: 0.58),
-          child: SafeArea(
-            child: vm.isLoading
-                ? const Center(
-              child: CircularProgressIndicator(color: pink),
-            )
-                : Padding(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
-              child: Column(
-                children: [
-                  TopNavigation(isLoggedIn: true, userName: fullName),
-                  const SizedBox(height: 8),
-                  if (needsSetup) ...[
-                    _FinishSetupBanner(
-                      isLoading: _finishingSetup,
-                      onTap: _finishingSetup ? null : _finishSetup,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  SizedBox(
-                    height: 188,
-                    child: _ProfileCard(
-                      fullName: fullName,
-                      username: username,
-                      email: email,
-                      bio: bio,
-                      imagePath: imagePath,
-                      onImageTap: _pickProfileImage,
-                      onEditTap: _editProfile,
-                    ),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: vm.isLoading
+            ? const Center(
+          child: CircularProgressIndicator(color: pink),
+        )
+            : SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
+            child: Column(
+              children: [
+                TopNavigation(isLoggedIn: true, userName: fullName),
+                const SizedBox(height: 8),
+                if (needsSetup) ...[
+                  _FinishSetupBanner(
+                    isLoading: _finishingSetup,
+                    onTap: _finishingSetup ? null : _finishSetup,
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 104,
-                    child: _GoalCard(
-                      onTap: () => _onMenuTap("My Goal"),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(child: _MenuCard(onTap: _onMenuTap)),
-                  const SizedBox(height: 10),
-                  _LogoutButton(onTap: _logout),
                 ],
-              ),
+                _ProfileCard(
+                  fullName: fullName,
+                  username: username,
+                  email: email,
+                  bio: bio,
+                  imagePath: imagePath,
+                  onImageTap: _pickProfileImage,
+                  onEditTap: _editProfile,
+                  cycleDay: cycleDay,
+                  cycleLength: cycleLengthText,
+                ),
+                const SizedBox(height: 10),
+                _GoalCard(
+                  onTap: () => _onMenuTap("My Goal"),
+                ),
+                const SizedBox(height: 10),
+                _MenuCard(onTap: _onMenuTap),
+                const SizedBox(height: 10),
+                _LogoutButton(onTap: _logout),
+              ],
             ),
           ),
         ),
@@ -482,6 +368,8 @@ class _ProfileCard extends StatelessWidget {
   final String? imagePath;
   final VoidCallback onImageTap;
   final VoidCallback onEditTap;
+  final String cycleDay;
+  final String cycleLength;
 
   const _ProfileCard({
     required this.fullName,
@@ -491,6 +379,8 @@ class _ProfileCard extends StatelessWidget {
     required this.imagePath,
     required this.onImageTap,
     required this.onEditTap,
+    required this.cycleDay,
+    required this.cycleLength,
   });
 
   ImageProvider _profileImage() {
@@ -517,133 +407,132 @@ class _ProfileCard extends StatelessWidget {
     return _SoftCard(
       padding: const EdgeInsets.all(14),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            flex: 5,
-            child: Row(
-              children: [
-                Stack(
+          Stack(
+            children: [
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Image.asset(
+                  "assets/images/flower.png",
+                  height: 60,
+                  width: 60,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: onImageTap,
-                      child: CircleAvatar(
-                        radius: 36,
-                        backgroundColor: Colors.white,
-                        child: CircleAvatar(
-                          radius: 32,
-                          backgroundImage: _profileImage(),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 1,
-                      child: GestureDetector(
-                        onTap: onImageTap,
-                        child: const CircleAvatar(
-                          radius: 14,
-                          backgroundColor: _GloProfileScreenState.pink,
-                          child: Icon(
-                            Icons.photo_library_outlined,
-                            color: Colors.white,
-                            size: 14,
+                    Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: onImageTap,
+                          child: CircleAvatar(
+                            radius: 36,
+                            backgroundColor: Colors.white,
+                            child: CircleAvatar(
+                              radius: 32,
+                              backgroundImage: _profileImage(),
+                            ),
                           ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 1,
+                          child: GestureDetector(
+                            onTap: onImageTap,
+                            child: const CircleAvatar(
+                              radius: 14,
+                              backgroundColor: _GloProfileScreenState.pink,
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: InkWell(
+                        onTap: onEditTap,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                fullName,
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontFamily: "Georgia",
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: _GloProfileScreenState.dark,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              "@$username",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: _GloProfileScreenState.dark,
+                              ),
+                            ),
+                            if (cleanEmail.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                cleanEmail,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: _GloProfileScreenState.dark,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: InkWell(
-                    onTap: onEditTap,
-                    borderRadius: BorderRadius.circular(14),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Hello, $fullName",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: "Georgia",
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: _GloProfileScreenState.dark,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          "@$username",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _GloProfileScreenState.dark,
-                          ),
-                        ),
-                        if (cleanEmail.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            cleanEmail,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: _GloProfileScreenState.dark,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 2),
-                        Text(
-                          bio,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            height: 1.18,
-                            color: _GloProfileScreenState.dark,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: onEditTap,
-                  icon: const Icon(
-                    Icons.edit_note_rounded,
-                    color: _GloProfileScreenState.pink,
-                    size: 28,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const Divider(height: 1, color: _GloProfileScreenState.borderPink),
-          Expanded(
-            flex: 4,
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: _StatItem(
-                    icon: Icons.water_drop_outlined,
+                    icon: Icons.opacity,
                     title: "Current Cycle Day",
-                    value: "23",
+                    value: cycleDay,
                   ),
                 ),
                 Container(
                   width: 1,
-                  height: 62,
-                  color: _GloProfileScreenState.borderPink,
+                  height: 40,
+                  color: _GloProfileScreenState.borderPink.withOpacity(0.3),
                 ),
-                const Expanded(
+                Expanded(
                   child: _StatItem(
                     icon: Icons.refresh_rounded,
                     title: "Cycle Length",
-                    value: "28 Days",
+                    value: cycleLength,
                   ),
                 ),
               ],
@@ -668,32 +557,29 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: _GloProfileScreenState.pink, size: 30),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: _GloProfileScreenState.dark,
-            ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: _GloProfileScreenState.accentPink, size: 28),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 11,
+            color: Colors.grey,
           ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              color: _GloProfileScreenState.dark,
-            ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: _GloProfileScreenState.accentPink,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -708,17 +594,49 @@ class _GoalCard extends StatelessWidget {
     return _SoftCard(
       onTap: onTap,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: const Row(
+      child: Row(
         children: [
-          _RoundIcon(icon: Icons.track_changes_rounded, iconSize: 30),
-          SizedBox(width: 16),
-          Expanded(
-            child: _CardText(
-              title: "My Goal",
-              subtitle: "Stay consistent, feel my best & embrace every step.",
-              titleSize: 24,
-              subtitleSize: 13,
+          Container(
+            height: 52,
+            width: 52,
+            decoration: BoxDecoration(
+              color: _GloProfileScreenState.iconBg,
+              borderRadius: BorderRadius.circular(15),
             ),
+            child: const Icon(
+              Icons.track_changes_rounded,
+              color: _GloProfileScreenState.pink,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "My Goal",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _GloProfileScreenState.dark,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Stay consistent, feel my best & embrace every step.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: _GloProfileScreenState.pink,
           ),
         ],
       ),
@@ -772,15 +690,14 @@ class _MenuCard extends StatelessWidget {
     return _SoftCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: List.generate(items.length, (index) {
           final item = items[index];
 
-          return Expanded(
-            child: _MenuTile(
-              data: item,
-              showDivider: index != items.length - 1,
-              onTap: () => onTap(item.title),
-            ),
+          return _MenuTile(
+            data: item,
+            showDivider: index != items.length - 1,
+            onTap: () => onTap(item.title),
           );
         }),
       ),
@@ -802,29 +719,56 @@ class _MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
+        InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               children: [
-                _RoundIcon(icon: data.icon, iconSize: 29),
-                const SizedBox(width: 14),
+                Icon(data.icon, color: _GloProfileScreenState.pink, size: 24),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: _CardText(
-                    title: data.title,
-                    subtitle: data.subtitle,
-                    titleSize: 20,
-                    subtitleSize: 11,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        data.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: _GloProfileScreenState.dark,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        data.subtitle,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: _GloProfileScreenState.pink,
+                  size: 20,
                 ),
               ],
             ),
           ),
         ),
         if (showDivider)
-          const Divider(height: 1, color: _GloProfileScreenState.borderPink),
+          Divider(
+            height: 1,
+            color: _GloProfileScreenState.borderPink.withOpacity(0.3),
+            indent: 40,
+          ),
       ],
     );
   }
@@ -1039,7 +983,6 @@ class _SoftCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final card = Container(
       width: double.infinity,
-      height: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
         color: _GloProfileScreenState.softPink.withValues(alpha: 0.88),
@@ -1057,6 +1000,174 @@ class _SoftCard extends StatelessWidget {
     );
 
     return onTap == null ? card : GestureDetector(onTap: onTap, child: card);
+  }
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  final ProfileViewModel vm;
+  final String initialName;
+  final String initialUsername;
+  final String initialBio;
+  final VoidCallback onPickImage;
+
+  const _EditProfileDialog({
+    required this.vm,
+    required this.initialName,
+    required this.initialUsername,
+    required this.initialBio,
+    required this.onPickImage,
+  });
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late TextEditingController nameController;
+  late TextEditingController usernameController;
+  late TextEditingController bioController;
+  bool isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.initialName);
+    usernameController = TextEditingController(text: widget.initialUsername);
+    bioController = TextEditingController(text: widget.initialBio);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    usernameController.dispose();
+    bioController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: _GloProfileScreenState.softPink,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+      title: const _DialogTitle("Edit Profile"),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OutlinedButton.icon(
+              onPressed: isSaving
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      widget.onPickImage();
+                    },
+              icon: const Icon(Icons.photo_library_outlined),
+              label: const Text("Change Profile Picture"),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _GloProfileScreenState.pink,
+                side: const BorderSide(color: _GloProfileScreenState.borderPink),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Name",
+                hintText: "Enter your full name",
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(
+                labelText: "Username",
+                prefixText: "@",
+                hintText: "Unique handle",
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: bioController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: "Bio",
+                hintText: "Tell us a bit about yourself",
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: isSaving ? null : () => Navigator.pop(context),
+          child: const Text("Cancel", style: TextStyle(color: _GloProfileScreenState.pink)),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: _GloProfileScreenState.pink),
+          onPressed: isSaving
+              ? null
+              : () async {
+                  final name = nameController.text.trim();
+                  final username = usernameController.text.trim().replaceAll("@", "");
+                  final bio = bioController.text.trim();
+
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please enter your name")),
+                    );
+                    return;
+                  }
+
+                  if (username.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please enter a username")),
+                    );
+                    return;
+                  }
+
+                  setState(() => isSaving = true);
+
+                  final success = await widget.vm.saveProfile(
+                    name: name,
+                    username: username,
+                    bio: bio.isEmpty ? ProfileViewModel.defaultBio : bio,
+                  );
+
+                  if (!mounted) return;
+
+                  setState(() => isSaving = false);
+
+                  if (success) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Profile updated")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(widget.vm.errorMessage ?? "Profile update failed"),
+                      ),
+                    );
+                  }
+                },
+          child: isSaving
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text(
+                  "Save",
+                  style: TextStyle(color: Colors.white),
+                ),
+        ),
+      ],
+    );
   }
 }
 

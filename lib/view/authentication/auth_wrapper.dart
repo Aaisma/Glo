@@ -68,7 +68,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
             }
             
             if (!userModel.profileCompleted) {
-              return const GloProfileScreen();
+              return const DashboardScreen(initialIndex: 4);
             }
 
             // User is fully onboarded

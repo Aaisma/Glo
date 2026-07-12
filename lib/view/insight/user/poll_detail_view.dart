@@ -68,7 +68,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                       contentId: _poll!.id,
                       contentType: ContentType.poll,
                       title: _poll!.question,
-                      authorName: _poll!.createdBy,
+                      authorName: _poll!.username,
                       contentSnippet: _poll!.question,
                       reason: reason,
                     );

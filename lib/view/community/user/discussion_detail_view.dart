@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../constants/ayd_colour.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../model/community_models.dart';
+import '../../../viewmodel/user_viewmodel.dart';
+import 'edit_discussion_view.dart';
 
 class DiscussionDetailView extends StatefulWidget {
   final String discussionId;
@@ -17,6 +20,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
 
   @override
   void initState() {
+    super.initState();
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DiscussionDetailViewModel>().loadDiscussion(widget.discussionId);
@@ -34,8 +38,9 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
+          backgroundColor: AydColors.communityCardBackground,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text("Report Discussion", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text("Report Discussion", style: TextStyle(fontWeight: FontWeight.bold, color: AydColors.communityButton)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: ModerationReason.values.map((reason) {
@@ -52,7 +57,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                   await viewModel.report(reason);
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Thank you for your report. The content has been sent for moderation. 🌸")),
+                    const SnackBar(content: Text("Thank you for your report. The content has been sent for moderation. 💙")),
                   );
                 },
               );
@@ -72,13 +77,11 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DiscussionDetailViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
 
     if (viewModel.isLoading || viewModel.discussion == null) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFFF6F8),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFFD8CA1))),
+        backgroundColor: AydColors.communityCardBackground,
+        body: Center(child: CircularProgressIndicator(color: AydColors.communityButton)),
       );
     }
 
@@ -87,7 +90,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
 
     if (discussion.isDeleted) {
       return Scaffold(
-        backgroundColor: const Color(0xFFFFF6F8),
+        backgroundColor: AydColors.communityCardBackground,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -130,40 +133,82 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
           ),
           actions: [
             PopupMenuButton<String>(
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == 'hide') {
-                  viewModel.hide(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Discussion hidden. 🌸")),
-                  );
+                  await viewModel.hide(context);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Discussion hidden. 🌸")),
+                    );
+                  }
+                } else if (value == 'edit') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => EditDiscussionView(discussionId: discussion.id)),
+                  ).then((_) => viewModel.loadDiscussion(discussion.id));
+                } else if (value == 'delete') {
+                  final userVM = context.read<UserViewModel>();
+                  if (userVM.user != null) {
+                    await context.read<MyPostsViewModel>().deleteDiscussion(discussion.id, userVM.user!.id);
+                    if (context.mounted) Navigator.of(context).pop();
+                  }
                 } else if (value == 'report') {
                   _showReportDialog(context, viewModel);
                 }
               },
               icon: const Icon(Icons.more_vert, color: Color(0xFF332B2C)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'hide',
-                  child: Row(
-                    children: [
-                      Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
-                      SizedBox(width: 8),
-                      Text("Hide Post"),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'report',
-                  child: Row(
-                    children: [
-                      Icon(Icons.report_outlined, color: Colors.redAccent, size: 20),
-                      SizedBox(width: 8),
-                      Text("Report Post", style: TextStyle(color: Colors.redAccent)),
-                    ],
-                  ),
-                ),
-              ],
+              itemBuilder: (context) {
+                final userVM = context.read<UserViewModel>();
+                final isOwner = userVM.user != null && discussion.userId == userVM.user!.id;
+                
+                return [
+                  if (isOwner)
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, color: AydColors.communityButton, size: 20),
+                          SizedBox(width: 8),
+                          Text("Edit Discussion", style: TextStyle(color: AydColors.communityButton)),
+                        ],
+                      ),
+                    ),
+                  if (isOwner)
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                          SizedBox(width: 8),
+                          Text("Delete Discussion", style: TextStyle(color: Colors.redAccent)),
+                        ],
+                      ),
+                    ),
+                  if (!isOwner)
+                    const PopupMenuItem(
+                      value: 'hide',
+                      child: Row(
+                        children: [
+                          Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
+                          SizedBox(width: 8),
+                          Text("Hide Post"),
+                        ],
+                      ),
+                    ),
+                  if (!isOwner)
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.report_outlined, color: Colors.redAccent, size: 20),
+                          SizedBox(width: 8),
+                          Text("Report Post", style: TextStyle(color: Colors.redAccent)),
+                        ],
+                      ),
+                    ),
+                ];
+              },
             ),
           ],
         ),
@@ -197,11 +242,11 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                             children: [
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: const Color(0xFFFFE5EC),
+                                backgroundColor: const Color(0xFFE3F2FD),
                                 child: Icon(
                                   discussion.isAnonymous ? Icons.security : Icons.person,
                                   size: 18,
-                                  color: accentColor,
+                                  color: AydColors.communityButton,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -252,7 +297,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                                   children: [
                                     Icon(
                                       viewModel.isLiked ? Icons.favorite : Icons.favorite_border,
-                                      color: viewModel.isLiked ? accentColor : Colors.grey,
+                                      color: viewModel.isLiked ? AydColors.communityButton : Colors.grey,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 6),
@@ -319,7 +364,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                         padding: EdgeInsets.symmetric(vertical: 30.0),
                         child: Center(
                           child: Text(
-                            "No replies yet. Be the first to reply! 🌸",
+                            "No replies yet. Be the first to reply! 💙",
                             style: TextStyle(color: Colors.grey, fontSize: 13),
                           ),
                         ),
@@ -332,7 +377,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                         itemBuilder: (context, index) {
                           final reply = discussion.replies[index];
                           if (reply.isDeleted) return const SizedBox.shrink();
-                          return _buildReplyCard(context, reply, viewModel, accentColor);
+                          return _buildReplyCard(context, reply, viewModel, AydColors.communityButton);
                         },
                       ),
                   ],
@@ -358,7 +403,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF6F8),
+                        color: AydColors.communityCardBackground,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -374,17 +419,20 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.send, color: accentColor),
+                    icon: const Icon(Icons.send, color: AydColors.communityButton),
                     onPressed: () async {
                       final text = _commentController.text.trim();
                       if (text.isNotEmpty) {
-                        await viewModel.addComment(text);
-                        _commentController.clear();
-                        if (mounted) {
-                          FocusScope.of(context).unfocus();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Reply posted! 🌸")),
-                          );
+                        final userVM = context.read<UserViewModel>();
+                        if (userVM.user != null) {
+                          await viewModel.addComment(text, userVM.user!);
+                          _commentController.clear();
+                          if (mounted) {
+                            FocusScope.of(context).unfocus();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Reply posted! 💙")),
+                            );
+                          }
                         }
                       }
                     },
@@ -427,7 +475,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailView> {
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: const Color(0xFFFFD6E6),
+            backgroundColor: const Color(0xFFE3F2FD),
             child: Icon(Icons.person, size: 14, color: favColor),
           ),
           const SizedBox(width: 10),

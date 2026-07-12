@@ -6,6 +6,7 @@ import 'package:glo/constants/ayd_colour.dart';
 import 'login_component.dart';
 import 'register_screen.dart';
 import 'package:glo/viewmodel/auth_viewmodel.dart';
+import 'package:glo/viewmodel/user_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
   /// Called once email/password (or Google/Facebook, via
@@ -50,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await authViewModel.login(context, email, password);
       if (mounted && authViewModel.user != null) {
-        widget.onAuthenticated?.call();
+        await _completeLogin();
       }
     } catch (e) {
       if (mounted) {
@@ -119,6 +120,34 @@ class _LoginScreenState extends State<LoginScreen> {
       return e.message ?? 'Login failed. Please try again.';
     }
     return 'Login failed. Please try again.';
+  }
+
+  Future<void> _completeLogin() async {
+    if (!mounted) return;
+    final authViewModel = context.read<AuthViewModel>();
+    final userViewModel = context.read<UserViewModel>();
+
+    if (authViewModel.user != null) {
+      // Set the user ID and fetch the latest profile data to check the role
+      userViewModel.setUserId(authViewModel.user!.uid);
+      await userViewModel.fetchCurrentUser();
+
+      if (mounted) {
+        if (widget.onAuthenticated != null) {
+          widget.onAuthenticated!();
+        } else {
+          final userModel = userViewModel.user;
+          // Check role and navigate accordingly
+          // AuthWrapper handles the actual widget switching based on role and onboarding status
+          if (userModel?.role == 'admin') {
+            Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false);
+          } else {
+            // Role 'user' or default
+            Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false);
+          }
+        }
+      }
+    }
   }
 
   @override
@@ -289,9 +318,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: h * 0.03),
                 LoginOptionsSection(
-                  onAuthenticated: () {
-                    widget.onAuthenticated?.call();
-                  },
+                  onAuthenticated: _completeLogin,
                 ),
                 SizedBox(height: h * 0.015),
               ],

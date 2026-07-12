@@ -47,10 +47,24 @@ class _SurveyPageState extends State<SurveyPage> {
       }
     });
 
+    _ageController.addListener(() => setState(() {}));
+    _waterGoalController.addListener(() => setState(() {}));
     _weightController.addListener(_updateBmi);
     _heightController.addListener(_updateBmi);
     _feetController.addListener(_updateBmi);
     _inchesController.addListener(_updateBmi);
+  }
+
+  @override
+  void dispose() {
+    _ageController.dispose();
+    _weightController.dispose();
+    _heightController.dispose();
+    _feetController.dispose();
+    _inchesController.dispose();
+    _waterGoalController.dispose();
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _syncDataToControllers(OnboardingSurveyData data) {

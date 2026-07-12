@@ -2,42 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../constants/ayd_colour.dart';
-import 'discussion_preview_view.dart';
 
-class CreateDiscussionView extends StatefulWidget {
-  const CreateDiscussionView({super.key});
+class EditDiscussionView extends StatefulWidget {
+  final String discussionId;
+  const EditDiscussionView({super.key, required this.discussionId});
 
   @override
-  State<CreateDiscussionView> createState() => _CreateDiscussionViewState();
+  State<EditDiscussionView> createState() => _EditDiscussionViewState();
 }
 
-class _CreateDiscussionViewState extends State<CreateDiscussionView> {
+class _EditDiscussionViewState extends State<EditDiscussionView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CreateDiscussionViewModel>().loadCategories();
+      context.read<EditDiscussionViewModel>().loadDiscussion(widget.discussionId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<CreateDiscussionViewModel>();
+    final viewModel = context.watch<EditDiscussionViewModel>();
+
+    if (viewModel.isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: AydColors.communityButton)),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Start a Discussion",
+          "Edit Discussion",
           style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () {
-            viewModel.clearForm();
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
@@ -173,7 +178,7 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
 
               const SizedBox(height: 40),
 
-              // Preview/Publish Button
+              // Update Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -182,7 +187,7 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
                     backgroundColor: AydColors.communityButton,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (viewModel.titleController.text.trim().isEmpty ||
                         viewModel.contentController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -198,14 +203,16 @@ class _CreateDiscussionViewState extends State<CreateDiscussionView> {
                       return;
                     }
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DiscussionPreviewView(),
-                      ),
-                    );
+                    await viewModel.updateDiscussion();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Discussion updated! 💙")),
+                      );
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: const Text(
-                    "Preview Post",
+                    "Update Post",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),

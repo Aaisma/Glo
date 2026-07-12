@@ -144,16 +144,22 @@ class ProfileViewModel extends ChangeNotifier {
   Future<bool> saveProfile({
     required String name,
     required String bio,
+    String? username,
   }) async {
     final cleanName = name.trim();
     final cleanBio = bio.trim().isEmpty ? defaultBio : bio.trim();
+    final cleanUsername = username?.trim() ?? _username;
 
     if (cleanName.isEmpty) {
       return _fail('Name cannot be empty');
     }
 
+    if (cleanUsername.isEmpty) {
+      return _fail('Username cannot be empty');
+    }
+
     return _run(
-          () async {
+      () async {
         final user = currentUser;
         final docRef = _userDoc;
 
@@ -162,7 +168,6 @@ class ProfileViewModel extends ChangeNotifier {
         }
 
         final authEmail = user.email?.trim() ?? '';
-        final cleanUsername = _usernameFromEmail(authEmail);
 
         await docRef.set(
           {

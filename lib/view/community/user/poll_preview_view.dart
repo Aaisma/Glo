@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../model/community_models.dart';
 import '../../../viewmodel/community_view_model.dart';
+import '../../../viewmodel/user_viewmodel.dart';
+import '../../../constants/ayd_colour.dart';
 
 class PollPreviewView extends StatelessWidget {
   const PollPreviewView({super.key});
@@ -15,15 +17,13 @@ class PollPreviewView extends StatelessWidget {
       buffer.write(hexString.replaceFirst('#', ''));
       return Color(int.parse(buffer.toString(), radix: 16));
     } catch (e) {
-      return const Color(0xFFFD8CA1);
+      return AydColors.communityButton;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreatePollViewModel>();
-    final accentColor = const Color(0xFFFF3E63);
-    final pinkTheme = const Color(0xFFFD8CA1);
 
     final selectedCategory = viewModel.categories.firstWhere(
       (c) => c.id == viewModel.categoryId,
@@ -38,8 +38,11 @@ class PollPreviewView extends StatelessWidget {
         .where((t) => t.isNotEmpty)
         .toList();
 
+    final userVM = context.watch<UserViewModel>();
+    final displayName = viewModel.isAnonymous ? "Anonymous User" : "@${userVM.user?.username ?? 'User'}";
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Preview Poll",
@@ -63,17 +66,17 @@ class PollPreviewView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.08),
+                  color: AydColors.communityButton.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+                  border: Border.all(color: AydColors.communityButton.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.remove_red_eye_outlined, color: accentColor),
+                    const Icon(Icons.remove_red_eye_outlined, color: AydColors.communityButton),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        "This is a preview of your poll. Check all options before publishing! 🌸",
+                        "This is a preview of your poll. Check all options before publishing! 💙",
                         style: TextStyle(
                           fontSize: 13,
                           color: Color(0xFF332B2C),
@@ -91,7 +94,7 @@ class PollPreviewView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AydColors.communityCardBackground,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -111,17 +114,17 @@ class PollPreviewView extends StatelessWidget {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: accentColor.withValues(alpha: 0.1),
+                              backgroundColor: AydColors.communityButton.withValues(alpha: 0.1),
                               radius: 16,
                               child: Icon(
                                 viewModel.isAnonymous ? Icons.face : Icons.person,
                                 size: 18,
-                                color: accentColor,
+                                color: AydColors.communityButton,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              viewModel.isAnonymous ? "Anonymous User" : "Anu",
+                              displayName,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF554B4C),
@@ -174,9 +177,9 @@ class PollPreviewView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 12),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            border: Border.all(color: pinkTheme.withValues(alpha: 0.3)),
+                            border: Border.all(color: AydColors.communityButton.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(12),
-                            color: const Color(0xFFFFFDFE),
+                            color: Colors.white,
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           child: Row(
@@ -186,7 +189,7 @@ class PollPreviewView extends StatelessWidget {
                                 height: 20,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: pinkTheme, width: 2),
+                                  border: Border.all(color: AydColors.communityButton, width: 2),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -241,18 +244,18 @@ class PollPreviewView extends StatelessWidget {
                       height: 52,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: accentColor),
+                          side: const BorderSide(color: AydColors.communityButton),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
+                        child: const Text(
                           "Edit Poll",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: accentColor,
+                            color: AydColors.communityButton,
                           ),
                         ),
                       ),
@@ -265,21 +268,24 @@ class PollPreviewView extends StatelessWidget {
                       height: 52,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accentColor,
+                          backgroundColor: AydColors.communityButton,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         onPressed: () async {
-                          await viewModel.publish();
+                          final userViewModel = context.read<UserViewModel>();
+                          if (userViewModel.user == null) return;
+
+                          await viewModel.publish(userViewModel.user!);
                           if (context.mounted) {
                             // Pop twice to return to feed
                             Navigator.of(context).pop(); // pop preview
                             Navigator.of(context).pop(); // pop create poll form
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Poll created successfully! 🌸"),
-                                backgroundColor: Color(0xFFFF3E63),
+                                content: Text("Poll created successfully! 💙"),
+                                backgroundColor: AydColors.communityButton,
                               ),
                             );
                           }

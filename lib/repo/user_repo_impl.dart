@@ -38,11 +38,32 @@ class UserRepoImpl implements UserRepo {
   }
 
   @override
-  Future<void> editProfile(UserModel userModel) {
-    return firestore
-        .collection("users")
-        .doc(userModel.id)
-        .update(userModel.toMap());
+  Future<void> editProfile(UserModel userModel) async {
+    final batch = firestore.batch();
+    final userRef = firestore.collection("users").doc(userModel.id);
+    batch.update(userRef, userModel.toMap());
+
+    try {
+      final discQuery = await firestore.collection('discussions').where('userId', isEqualTo: userModel.id).get();
+      for (var doc in discQuery.docs) {
+        batch.update(doc.reference, {
+          'username': userModel.name,
+          'profileImageUrl': userModel.imageUrl,
+        });
+      }
+
+      final pollQuery = await firestore.collection('community_polls').where('userId', isEqualTo: userModel.id).get();
+      for (var doc in pollQuery.docs) {
+        batch.update(doc.reference, {
+          'username': userModel.name,
+          'profileImageUrl': userModel.imageUrl,
+        });
+      }
+    } catch (e) {
+      // Ignore index errors if they occur during profile update before indexes are ready
+    }
+
+    await batch.commit();
   }
 
   @override

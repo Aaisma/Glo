@@ -2,84 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../viewmodel/community_view_model.dart';
 import '../../../constants/ayd_colour.dart';
-import 'poll_preview_view.dart';
 
-class CreatePollView extends StatefulWidget {
-  const CreatePollView({super.key});
+class EditPollView extends StatefulWidget {
+  final String pollId;
+  const EditPollView({super.key, required this.pollId});
 
   @override
-  State<CreatePollView> createState() => _CreatePollViewState();
+  State<EditPollView> createState() => _EditPollViewState();
 }
 
-class _CreatePollViewState extends State<CreatePollView> {
+class _EditPollViewState extends State<EditPollView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = context.read<CreatePollViewModel>();
-      viewModel.loadCategories();
-      viewModel.checkForUnfinishedDraft();
+      context.read<EditPollViewModel>().loadPoll(widget.pollId);
     });
-  }
-
-  void _showDraftRecoveryDialog(CreatePollViewModel viewModel) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Recover Draft?", style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text("You have an unsaved poll draft. Would you like to restore it?"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              viewModel.discardDraft();
-              Navigator.of(ctx).pop();
-            },
-            child: const Text("Discard", style: TextStyle(color: Colors.redAccent)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AydColors.communityButton,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              viewModel.restoreDraft();
-              Navigator.of(ctx).pop();
-            },
-            child: const Text("Restore", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<CreatePollViewModel>();
+    final viewModel = context.watch<EditPollViewModel>();
 
-    // Show draft recovery dialog if needed
-    if (viewModel.showDraftRecovery) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showDraftRecoveryDialog(viewModel);
-      });
+    if (viewModel.isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: AydColors.communityButton)),
+      );
     }
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Create a Poll",
+          "Edit Poll",
           style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () {
-            viewModel.clearForm();
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
@@ -228,33 +191,9 @@ class _CreatePollViewState extends State<CreatePollView> {
                   label: const Text("Add Option", style: TextStyle(color: AydColors.communityButton)),
                 ),
 
-              const SizedBox(height: 24),
-
-              // Post Anonymously Toggle
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AydColors.communityCardBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AydColors.communityButton.withValues(alpha: 0.1)),
-                ),
-                child: SwitchListTile(
-                  title: const Text(
-                    "Post Anonymously",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C)),
-                  ),
-                  subtitle: const Text("Your username won't be shown publicly"),
-                  value: viewModel.isAnonymous,
-                  activeThumbColor: AydColors.communityButton,
-                  activeTrackColor: AydColors.communityButton.withValues(alpha: 0.3),
-                  onChanged: viewModel.toggleAnonymous,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-
               const SizedBox(height: 40),
 
-              // Preview/Publish Button
+              // Update Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -263,7 +202,7 @@ class _CreatePollViewState extends State<CreatePollView> {
                     backgroundColor: AydColors.communityButton,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (viewModel.questionController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Please enter a question! 💙")),
@@ -286,14 +225,16 @@ class _CreatePollViewState extends State<CreatePollView> {
                       return;
                     }
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PollPreviewView(),
-                      ),
-                    );
+                    await viewModel.updatePoll();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Poll updated! 💙")),
+                      );
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: const Text(
-                    "Preview Poll",
+                    "Update Poll",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),

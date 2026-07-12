@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nepali_utils/nepali_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/cupertino.dart';
 import '../viewmodel/user_viewmodel.dart';
+import '../viewmodel/routine_viewmodel.dart';
+import '../model/calendar_models.dart';
 
 /// Color palette
 const _bgColor = Color(0xFFF8C8DC);
@@ -41,17 +44,6 @@ class _CalEvent {
   });
 }
 
-class _TodoItem {
-  String text;
-  bool done;
-  _TodoItem(this.text, [this.done = false]);
-}
-
-class _RoutineItem {
-  String title, startTime, endTime, emoji;
-  _RoutineItem(this.title, this.startTime, this.endTime, this.emoji);
-}
-
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
   @override
@@ -74,18 +66,6 @@ class _CalendarScreenState extends State<CalendarScreen>
 
   final TextEditingController _noteCtrl = TextEditingController();
   final TextEditingController _todoAddCtrl = TextEditingController();
-  final Map<String, String> _savedNotes = {};
-  final Map<String, List<_TodoItem>> _todos = {};
-
-  // Routine is now dynamic: user can add/edit/delete items
-  final List<_RoutineItem> _routine = [
-    _RoutineItem('Yoga 🧘', '7:00 AM', '8:00 AM', '🧘'),
-    _RoutineItem('Morning skincare', '8:00 AM', '8:30 AM', '✨'),
-    _RoutineItem('Water intake check', '9:00 AM', '9:10 AM', '💧'),
-    _RoutineItem('Medication', '9:30 AM', '9:35 AM', '💊'),
-    _RoutineItem('Evening walk', '6:00 PM', '6:45 PM', '🚶'),
-    _RoutineItem('Night skincare', '9:00 PM', '9:20 PM', '🌙'),
-  ];
 
   final Map<String, List<_CalEvent>> _events = {};
 
@@ -112,6 +92,7 @@ class _CalendarScreenState extends State<CalendarScreen>
       try {
         final userVM = context.read<UserViewModel>();
         if (userVM.userId != null) {
+          context.read<RoutineViewModel>().listenToData(userVM.userId!);
           _loadAll(userVM.userId!);
         } else {
           setState(() => _isLoading = false);
@@ -308,7 +289,9 @@ class _CalendarScreenState extends State<CalendarScreen>
   void _selectDay(DateTime d) {
     setState(() {
       _selectedDay = d;
-      _noteCtrl.text = _savedNotes[_key(d)] ?? '';
+      final selKey = _key(d);
+      final routineVM = context.read<RoutineViewModel>();
+      _noteCtrl.text = routineVM.getNoteForDate(selKey)?.note ?? '';
       if (d.month != _focusedMonth.month || d.year != _focusedMonth.year) {
         _focusedMonth = DateTime(d.year, d.month);
       }
@@ -323,72 +306,216 @@ class _CalendarScreenState extends State<CalendarScreen>
   // -------------------------
   // Routine editing helpers
   // -------------------------
-  Future<void> _showEditRoutineDialog({int? index}) async {
-    final isNew = index == null;
-    final titleCtrl = TextEditingController(text: isNew ? '' : _routine[index!].title);
-    final startCtrl = TextEditingController(text: isNew ? '' : _routine[index!].startTime);
-    final endCtrl = TextEditingController(text: isNew ? '' : _routine[index!].endTime);
-    final emojiCtrl = TextEditingController(text: isNew ? '' : _routine[index!].emoji);
-
-    final result = await showDialog<bool>(
+  void _showRoutineHistory() {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isNew ? 'Add Routine' : 'Edit Routine'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title')),
-              TextField(controller: startCtrl, decoration: const InputDecoration(labelText: 'Start Time')),
-              TextField(controller: endCtrl, decoration: const InputDecoration(labelText: 'End Time')),
-              TextField(controller: emojiCtrl, decoration: const InputDecoration(labelText: 'Emoji')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              final t = titleCtrl.text.trim();
-              if (t.isEmpty) return;
-              if (isNew) {
-                setState(() {
-                  _routine.add(_RoutineItem(t, startCtrl.text.trim(), endCtrl.text.trim(), emojiCtrl.text.trim()));
-                });
-              } else {
-                setState(() {
-                  _routine[index!] = _RoutineItem(t, startCtrl.text.trim(), endCtrl.text.trim(), emojiCtrl.text.trim());
-                });
-              }
-              Navigator.pop(ctx, true);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: _bgColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return Consumer<RoutineViewModel>(
+          builder: (context, routineVM, child) {
+            final routines = routineVM.routines;
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      child: const Text('Routine History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textDark)),
+                    ),
+                    if (routines.isEmpty)
+                      const Expanded(child: Center(child: Text('No routines found', style: TextStyle(color: _textMid))))
+                    else
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: routines.length,
+                          itemBuilder: (context, index) {
+                            final r = routines[index];
+                            final startStr = "${r.startTime.hour.toString().padLeft(2, '0')}:${r.startTime.minute.toString().padLeft(2, '0')}";
+                            final endStr = "${r.endTime.hour.toString().padLeft(2, '0')}:${r.endTime.minute.toString().padLeft(2, '0')}";
+                            final dateStr = "${r.createdAt.year}-${r.createdAt.month.toString().padLeft(2, '0')}-${r.createdAt.day.toString().padLeft(2, '0')}";
+                            return ListTile(
+                              leading: Text(r.emoji, style: const TextStyle(fontSize: 24)),
+                              title: Text(r.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: Text('$startStr - $endStr\nCreated: $dateStr'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.black54),
+                                    onPressed: () {
+                                      Navigator.of(ctx).pop();
+                                      _showRoutineForm(routine: r);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    onPressed: () {
+                                      final userVM = context.read<UserViewModel>();
+                                      routineVM.deleteRoutine(r.id, userVM.userId!);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
-
-    if (result == true) {
-      // optionally persist to Firestore or local storage here
-    }
   }
 
-  Future<void> _confirmDeleteRoutine(int index) async {
-    final ok = await showDialog<bool>(
+  Future<void> _showRoutineForm({RoutineModel? routine}) async {
+    final isNew = routine == null;
+    final titleCtrl = TextEditingController(text: isNew ? '' : routine.title);
+    final emojiCtrl = TextEditingController(text: isNew ? '✨' : routine.emoji);
+    DateTime startTime = isNew ? DateTime.now() : routine.startTime;
+    DateTime endTime = isNew ? DateTime.now().add(const Duration(hours: 1)) : routine.endTime;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _bgColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            void _pickTime(bool isStart) {
+              showCupertinoModalPopup(
+                context: context,
+                builder: (_) => Container(
+                  height: 250,
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 190,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.dateAndTime,
+                          initialDateTime: isStart ? startTime : endTime,
+                          onDateTimeChanged: (val) {
+                            setModalState(() {
+                              if (isStart) startTime = val;
+                              else endTime = val;
+                            });
+                          },
+                        ),
+                      ),
+                      CupertinoButton(
+                        child: const Text('Done'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final startStr = "${startTime.year}-${startTime.month.toString().padLeft(2, '0')}-${startTime.day.toString().padLeft(2, '0')} ${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}";
+            final endStr = "${endTime.year}-${endTime.month.toString().padLeft(2, '0')}-${endTime.day.toString().padLeft(2, '0')} ${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}";
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 16, right: 16, top: 20),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(isNew ? 'Add Routine' : 'Edit Routine', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textDark)),
+                    const SizedBox(height: 16),
+                    TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title', filled: true, fillColor: Colors.white)),
+                    const SizedBox(height: 10),
+                    TextField(controller: emojiCtrl, decoration: const InputDecoration(labelText: 'Emoji (e.g. 🧘)', filled: true, fillColor: Colors.white), maxLength: 2),
+                    const SizedBox(height: 10),
+                    ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      tileColor: Colors.white,
+                      title: const Text('Start Date & Time'),
+                      subtitle: Text(startStr),
+                      trailing: const Icon(Icons.access_time),
+                      onTap: () => _pickTime(true),
+                    ),
+                    const SizedBox(height: 10),
+                    ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      tileColor: Colors.white,
+                      title: const Text('End Date & Time'),
+                      subtitle: Text(endStr),
+                      trailing: const Icon(Icons.access_time),
+                      onTap: () => _pickTime(false),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (endTime.isBefore(startTime)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('End time cannot be before Start time')));
+                              return;
+                            }
+                            final t = titleCtrl.text.trim();
+                            if (t.isEmpty) return;
+                            final userVM = context.read<UserViewModel>();
+                            final routineVM = context.read<RoutineViewModel>();
+                            await routineVM.saveRoutine(
+                              userVM.userId!,
+                              t,
+                              startTime,
+                              endTime,
+                              emojiCtrl.text.trim(),
+                              existingId: routine?.id,
+                              existingCreatedAt: routine?.createdAt,
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Routine saved successfully!')));
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text('Save'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteRoutine(RoutineModel routine) {
+    showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Routine'),
-        content: Text('Delete "${_routine[index].title}"?'),
+        content: Text('Delete "${routine.title}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final userVM = context.read<UserViewModel>();
+              context.read<RoutineViewModel>().deleteRoutine(routine.id, userVM.userId!);
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
-    if (ok == true) {
-      setState(() => _routine.removeAt(index));
-      // optionally remove from Firestore/local storage here
-    }
   }
+
 
   // -------------------------
   // Build UI
@@ -419,7 +546,7 @@ class _CalendarScreenState extends State<CalendarScreen>
       floatingActionButton: FloatingActionButton(
         backgroundColor: _accent,
         child: const Icon(Icons.add),
-        onPressed: () => _showEditRoutineDialog(), // quick add routine
+        onPressed: () => _showRoutineForm(), // quick add routine
         tooltip: 'Add routine',
       ),
     );
@@ -454,10 +581,17 @@ class _CalendarScreenState extends State<CalendarScreen>
                       color: _showNepali ? Colors.white : _accent)),
             ),
           ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.history, color: _textMid),
+            tooltip: 'Routine History',
+            onPressed: _showRoutineHistory,
+          ),
         ],
       ),
     );
   }
+
 
   Widget _buildViewToggle() {
     return Padding(
@@ -512,7 +646,8 @@ class _CalendarScreenState extends State<CalendarScreen>
     final selKey = _key(_selectedDay);
     final events = _events[selKey] ?? [];
     final np = _np(_selectedDay);
-    final todos = _todos.putIfAbsent(selKey, () => []);
+    final routineVM = context.watch<RoutineViewModel>();
+    final todos = routineVM.getTodosForDate(selKey);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -552,9 +687,9 @@ class _CalendarScreenState extends State<CalendarScreen>
         else
           ...events.map((e) => _eventTile(e)),
         const SizedBox(height: 16),
-        _todoCard(selKey, todos),
+        _todoCard(selKey, todos, routineVM),
         const SizedBox(height: 16),
-        _notesCard(selKey),
+        _notesCard(selKey, routineVM),
         const SizedBox(height: 20),
       ],
     );
@@ -615,9 +750,9 @@ class _CalendarScreenState extends State<CalendarScreen>
   }
 
   Widget _buildMonthlyView() {
+    final routineVM = context.watch<RoutineViewModel>();
     final grid = _monthGrid();
     final selKey = _key(_selectedDay);
-    final selEvents = _events[selKey] ?? [];
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -652,7 +787,12 @@ class _CalendarScreenState extends State<CalendarScreen>
                   final k = _key(day);
                   final isSel = k == selKey;
                   final isT = k == _key(DateTime.now());
-                  final evs = _events[k] ?? [];
+                  final evs = List<_CalEvent>.from(_events[k] ?? []);
+                  if (routineVM.getNoteForDate(k) != null && routineVM.getNoteForDate(k)!.note.isNotEmpty) {
+                    if (!evs.any((e) => e.type == 'notes')) {
+                      evs.add(const _CalEvent(type: 'notes', label: 'Notes 📝', icon: '📝', color: _cJournal));
+                    }
+                  }
                   final nd = _np(day);
                   return Expanded(
                     child: GestureDetector(
@@ -682,7 +822,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                                 bottom: 3,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: evs.take(3).map((e) {
+                                  children: evs.map((e) {
                                     return Container(
                                       width: 4,
                                       height: 4,
@@ -701,24 +841,14 @@ class _CalendarScreenState extends State<CalendarScreen>
           ),
         ),
         const SizedBox(height: 14),
-        if (selEvents.isNotEmpty) ...[
-          Text('${_selectedDay.day} ${_eMonth(_selectedDay.month)}',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _textDark)),
-          const SizedBox(height: 8),
-          ...selEvents.map((e) => _eventTile(e)),
-          const SizedBox(height: 14),
-        ],
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(children: [
-            _legendDot(_cPeriod, '🩸 Period'),
-            _legendDot(_cOvulation, '🥚 Ovulation'),
-            _legendDot(_cDerma, '🏥 Derma'),
             _legendDot(_cMed, '💊 Meds'),
             _legendDot(_cAcne, '✨ Skin'),
             _legendDot(_cWater, '💧 Water'),
             _legendDot(_cMeal, '🍽️ Meal'),
-            _legendDot(_cJournal, '📝 Journal'),
+            _legendDot(_cJournal, '📝 Notes'),
           ]),
         ),
         const SizedBox(height: 16),
@@ -839,7 +969,7 @@ class _CalendarScreenState extends State<CalendarScreen>
     );
   }
 
-  Widget _todoCard(String selKey, List<_TodoItem> todos) {
+  Widget _todoCard(String selKey, List<CalendarTodoModel> todos, RoutineViewModel routineVM) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: _cardColor, borderRadius: BorderRadius.circular(12)),
@@ -851,11 +981,23 @@ class _CalendarScreenState extends State<CalendarScreen>
               icon: Icon(_showTodos ? Icons.expand_less : Icons.expand_more))
         ]),
         if (_showTodos) ...[
+          if (todos.isEmpty)
+            const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No to-dos for today', style: TextStyle(color: _textMid))),
           for (int i = 0; i < todos.length; i++)
-            CheckboxListTile(
-              value: todos[i].done,
-              onChanged: (v) => setState(() => todos[i].done = v ?? false),
-              title: Text(todos[i].text),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Checkbox(
+                value: todos[i].isDone,
+                onChanged: (v) => routineVM.toggleTodo(todos[i]),
+              ),
+              title: Text(todos[i].text, style: TextStyle(decoration: todos[i].isDone ? TextDecoration.lineThrough : null)),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () {
+                  final userVM = context.read<UserViewModel>();
+                  routineVM.deleteTodo(todos[i].id, userVM.userId!);
+                },
+              ),
             ),
           Row(children: [
             Expanded(
@@ -868,10 +1010,9 @@ class _CalendarScreenState extends State<CalendarScreen>
                 onPressed: () {
                   final t = _todoAddCtrl.text.trim();
                   if (t.isEmpty) return;
-                  setState(() {
-                    todos.add(_TodoItem(t));
-                    _todoAddCtrl.clear();
-                  });
+                  final userVM = context.read<UserViewModel>();
+                  routineVM.saveTodo(userVM.userId!, selKey, t);
+                  _todoAddCtrl.clear();
                 },
                 icon: const Icon(Icons.add))
           ])
@@ -881,24 +1022,45 @@ class _CalendarScreenState extends State<CalendarScreen>
     );
   }
 
-  Widget _notesCard(String selKey) {
+  Widget _notesCard(String selKey, RoutineViewModel routineVM) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: _cardColor, borderRadius: BorderRadius.circular(12)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text("Today's Notes", style: TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Today's Notes", style: TextStyle(fontWeight: FontWeight.bold)),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(80, 30),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+              onPressed: () {
+                final userVM = context.read<UserViewModel>();
+                routineVM.saveNote(userVM.userId!, selKey, _noteCtrl.text);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Note saved!')));
+              },
+              child: const Text('Save Note'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: _noteCtrl,
           maxLines: 3,
           decoration: const InputDecoration(border: InputBorder.none, hintText: 'Write your notes here...'),
-          onChanged: (v) => _savedNotes[selKey] = v,
         ),
       ]),
     );
   }
 
   Widget _routineCard() {
+    final routineVM = context.watch<RoutineViewModel>();
+    final _routine = routineVM.routines;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: _cardColor, borderRadius: BorderRadius.circular(12)),
@@ -908,32 +1070,45 @@ class _CalendarScreenState extends State<CalendarScreen>
           Row(children: [
             IconButton(
               tooltip: 'Add routine',
-              onPressed: () => _showEditRoutineDialog(),
+              onPressed: () => _showRoutineForm(),
               icon: const Icon(Icons.add, color: _accent),
             ),
           ]),
         ]),
         const SizedBox(height: 8),
         if (_routine.isEmpty)
-          const Text('No routines yet', style: TextStyle(color: _textMid))
+          Center(
+            child: Column(
+              children: [
+                const Text('No routines yet', style: TextStyle(color: _textMid)),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () => _showRoutineForm(),
+                  child: const Text('Add Routine'),
+                ),
+              ],
+            ),
+          )
         else
           Column(
             children: List.generate(_routine.length, (i) {
               final r = _routine[i];
+              final startStr = "${r.startTime.hour.toString().padLeft(2, '0')}:${r.startTime.minute.toString().padLeft(2, '0')}";
+              final endStr = "${r.endTime.hour.toString().padLeft(2, '0')}:${r.endTime.minute.toString().padLeft(2, '0')}";
               return ListTile(
                 dense: true,
-                leading: Text(r.emoji),
+                leading: Text(r.emoji, style: const TextStyle(fontSize: 20)),
                 title: Text(r.title),
-                subtitle: Text('${r.startTime} - ${r.endTime}'),
+                subtitle: Text('$startStr - $endStr'),
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.black54),
-                    onPressed: () => _showEditRoutineDialog(index: i),
+                    onPressed: () => _showRoutineForm(routine: r),
                     tooltip: 'Edit',
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.redAccent),
-                    onPressed: () => _confirmDeleteRoutine(i),
+                    onPressed: () => _confirmDeleteRoutine(r),
                     tooltip: 'Delete',
                   ),
                 ]),
@@ -943,6 +1118,7 @@ class _CalendarScreenState extends State<CalendarScreen>
       ]),
     );
   }
+
 
   Widget _legendDot(Color c, String label) {
     return Padding(

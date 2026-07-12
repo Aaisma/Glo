@@ -360,7 +360,7 @@ class _CommunityPostsLibraryViewState extends State<CommunityPostsLibraryView> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  "@${item.createdBy}",
+                  "@${item.username}",
                   style: const TextStyle(fontSize: 10, color: Colors.grey),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

@@ -35,8 +35,12 @@ class CommunityRepoImpl implements CommunityRepo {
     required int limit,
     String? query,
     String? filter,
+    String? userId,
   }) async {
     Query q = _firestore.collection('discussions').where('isDeleted', isEqualTo: false);
+    if (userId != null) {
+      q = q.where('userId', isEqualTo: userId);
+    }
 
     final snapshot = await q.get();
     var allItems = snapshot.docs.map((d) {
@@ -83,6 +87,11 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> addDiscussion(Discussion discussion) async {
     await _firestore.collection('discussions').doc(discussion.id).set(discussion.toMap());
+  }
+
+  @override
+  Future<void> updateDiscussion(Discussion discussion) async {
+    await _firestore.collection('discussions').doc(discussion.id).update(discussion.toMap());
   }
 
   @override
@@ -167,22 +176,37 @@ class CommunityRepoImpl implements CommunityRepo {
   }
 
   @override
-  Future<List<CommunityPoll>> getPolls({required int page, required int limit}) async {
-    final snapshot = await _firestore.collection('community_polls').where('isDeleted', isEqualTo: false).get();
-    
+  Future<List<CommunityPoll>> getPolls({
+    required int page,
+    required int limit,
+    String? userId,
+    String? filter,
+  }) async {
+    Query q = _firestore.collection('community_polls').where('isDeleted', isEqualTo: false);
+    if (userId != null) {
+      q = q.where('userId', isEqualTo: userId);
+    }
+    final snapshot = await q.get();
+
     final allItems = snapshot.docs.map((d) {
-      final map = d.data();
+      final map = d.data() as Map<String, dynamic>;
       map['id'] = d.id;
       return CommunityPoll.fromMap(map);
     }).toList();
-    
+
+    var filtered = allItems;
+
+    if (filter == 'Unanswered') {
+      filtered = filtered.where((item) => item.totalVotes == 0).toList();
+    }
+
     // Sort locally to avoid Firestore composite index requirement
-    allItems.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final startIndex = (page - 1) * limit;
-    if (startIndex >= allItems.length) return [];
-    final endIndex = (startIndex + limit) > allItems.length ? allItems.length : (startIndex + limit);
-    return allItems.sublist(startIndex, endIndex);
+    if (startIndex >= filtered.length) return [];
+    final endIndex = (startIndex + limit) > filtered.length ? filtered.length : (startIndex + limit);
+    return filtered.sublist(startIndex, endIndex);
   }
 
   @override
@@ -196,8 +220,24 @@ class CommunityRepoImpl implements CommunityRepo {
   }
 
   @override
+  Stream<CommunityPoll?> getPollStream(String id) {
+    return _firestore.collection('community_polls').doc(id).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      final map = doc.data()!;
+      map['id'] = doc.id;
+      final poll = CommunityPoll.fromMap(map);
+      return poll.isDeleted ? null : poll;
+    });
+  }
+
+  @override
   Future<void> addPoll(CommunityPoll poll) async {
     await _firestore.collection('community_polls').doc(poll.id).set(poll.toMap());
+  }
+
+  @override
+  Future<void> updatePoll(CommunityPoll poll) async {
+    await _firestore.collection('community_polls').doc(poll.id).update(poll.toMap());
   }
 
   @override
@@ -265,11 +305,12 @@ class CommunityRepoImpl implements CommunityRepo {
     required int limit,
     String? query,
     String? filter,
+    String? userId,
   }) async {
     if (filter == 'Following') return []; 
 
-    final discussions = await getDiscussions(page: 1, limit: 100, query: query, filter: filter);
-    final polls = await getPolls(page: 1, limit: 100);
+    final discussions = await getDiscussions(page: 1, limit: 100, query: query, filter: filter, userId: userId);
+    final polls = await getPolls(page: 1, limit: 100, userId: userId, filter: filter);
 
     final List<dynamic> feed = [];
     feed.addAll(discussions);

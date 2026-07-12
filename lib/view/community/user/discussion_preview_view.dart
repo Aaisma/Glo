@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../model/community_models.dart';
 import '../../../viewmodel/community_view_model.dart';
+import '../../../viewmodel/user_viewmodel.dart';
+import '../../../constants/ayd_colour.dart';
 
 class DiscussionPreviewView extends StatelessWidget {
   const DiscussionPreviewView({super.key});
@@ -15,14 +17,13 @@ class DiscussionPreviewView extends StatelessWidget {
       buffer.write(hexString.replaceFirst('#', ''));
       return Color(int.parse(buffer.toString(), radix: 16));
     } catch (e) {
-      return const Color(0xFFFD8CA1);
+      return AydColors.communityButton;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CreateDiscussionViewModel>();
-    final accentColor = const Color(0xFFFF3E63);
 
     final selectedCategory = viewModel.categories.firstWhere(
       (c) => c.id == viewModel.categoryId,
@@ -31,8 +32,11 @@ class DiscussionPreviewView extends StatelessWidget {
 
     final categoryColor = _hexToColor(selectedCategory.color);
 
+    final userVM = context.watch<UserViewModel>();
+    final displayName = viewModel.isAnonymous ? "Anonymous User" : "@${userVM.user?.username ?? 'User'}";
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6F8),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Preview Post",
@@ -56,17 +60,17 @@ class DiscussionPreviewView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.08),
+                  color: AydColors.communityButton.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+                  border: Border.all(color: AydColors.communityButton.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.remove_red_eye_outlined, color: accentColor),
+                    const Icon(Icons.remove_red_eye_outlined, color: AydColors.communityButton),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        "This is a preview of your post. Check all details before publishing! 🌸",
+                        "This is a preview of your post. Check all details before publishing! 💙",
                         style: TextStyle(
                           fontSize: 13,
                           color: Color(0xFF332B2C),
@@ -84,7 +88,7 @@ class DiscussionPreviewView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AydColors.communityCardBackground,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -104,17 +108,17 @@ class DiscussionPreviewView extends StatelessWidget {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: accentColor.withValues(alpha: 0.1),
+                              backgroundColor: AydColors.communityButton.withValues(alpha: 0.1),
                               radius: 16,
                               child: Icon(
                                 viewModel.isAnonymous ? Icons.face : Icons.person,
                                 size: 18,
-                                color: accentColor,
+                                color: AydColors.communityButton,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              viewModel.isAnonymous ? "Anonymous User" : "Priya",
+                              displayName,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF554B4C),
@@ -202,18 +206,18 @@ class DiscussionPreviewView extends StatelessWidget {
                       height: 52,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: accentColor),
+                          side: const BorderSide(color: AydColors.communityButton),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
+                        child: const Text(
                           "Edit Post",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: accentColor,
+                            color: AydColors.communityButton,
                           ),
                         ),
                       ),
@@ -226,21 +230,24 @@ class DiscussionPreviewView extends StatelessWidget {
                       height: 52,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accentColor,
+                          backgroundColor: AydColors.communityButton,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         onPressed: () async {
-                          await viewModel.publish();
+                          final userViewModel = context.read<UserViewModel>();
+                          if (userViewModel.user == null) return;
+                          
+                          await viewModel.publish(userViewModel.user!);
                           if (context.mounted) {
                             // Pop twice to return to community feed
                             Navigator.of(context).pop(); // pop preview
                             Navigator.of(context).pop(); // pop create discussion form
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Discussion posted successfully! 🌸"),
-                                backgroundColor: Color(0xFFFF3E63),
+                                content: Text("Discussion posted successfully! 💙"),
+                                backgroundColor: AydColors.communityButton,
                               ),
                             );
                           }

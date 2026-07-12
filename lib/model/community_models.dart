@@ -40,7 +40,9 @@ class Discussion {
   final String id;
   final String title;
   final String content;
+  final String userId;
   final String username;
+  final String? profileImageUrl;
   final bool isAnonymous;
   final String categoryId;
   final int views;
@@ -57,7 +59,9 @@ class Discussion {
     required this.id,
     required this.title,
     required this.content,
+    required this.userId,
     required this.username,
+    this.profileImageUrl,
     required this.isAnonymous,
     required this.categoryId,
     this.views = 0,
@@ -75,7 +79,9 @@ class Discussion {
     String? id,
     String? title,
     String? content,
+    String? userId,
     String? username,
+    String? profileImageUrl,
     bool? isAnonymous,
     String? categoryId,
     int? views,
@@ -92,7 +98,9 @@ class Discussion {
       id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
+      userId: userId ?? this.userId,
       username: username ?? this.username,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       categoryId: categoryId ?? this.categoryId,
       views: views ?? this.views,
@@ -112,7 +120,9 @@ class Discussion {
       'id': id,
       'title': title,
       'content': content,
+      'userId': userId,
       'username': username,
+      'profileImageUrl': profileImageUrl,
       'isAnonymous': isAnonymous,
       'categoryId': categoryId,
       'views': views,
@@ -132,7 +142,9 @@ class Discussion {
       id: map['id'] ?? '',
       title: map['title'] ?? '',
       content: map['content'] ?? '',
+      userId: map['userId'] ?? '',
       username: map['username'] ?? '',
+      profileImageUrl: map['profileImageUrl'],
       isAnonymous: map['isAnonymous'] ?? false,
       categoryId: map['categoryId'] ?? '',
       views: map['views'] ?? 0,
@@ -157,7 +169,9 @@ class Discussion {
 class DiscussionReply {
   final String id;
   final String discussionId;
+  final String userId;
   final String username;
+  final String? profileImageUrl;
   final String content;
   final int likes;
   final DateTime createdAt;
@@ -167,7 +181,9 @@ class DiscussionReply {
   DiscussionReply({
     required this.id,
     required this.discussionId,
+    required this.userId,
     required this.username,
+    this.profileImageUrl,
     required this.content,
     this.likes = 0,
     required this.createdAt,
@@ -178,7 +194,9 @@ class DiscussionReply {
   DiscussionReply copyWith({
     String? id,
     String? discussionId,
+    String? userId,
     String? username,
+    String? profileImageUrl,
     String? content,
     int? likes,
     DateTime? createdAt,
@@ -188,7 +206,9 @@ class DiscussionReply {
     return DiscussionReply(
       id: id ?? this.id,
       discussionId: discussionId ?? this.discussionId,
+      userId: userId ?? this.userId,
       username: username ?? this.username,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       content: content ?? this.content,
       likes: likes ?? this.likes,
       createdAt: createdAt ?? this.createdAt,
@@ -201,7 +221,9 @@ class DiscussionReply {
     return {
       'id': id,
       'discussionId': discussionId,
+      'userId': userId,
       'username': username,
+      'profileImageUrl': profileImageUrl,
       'content': content,
       'likes': likes,
       'createdAt': createdAt,
@@ -214,7 +236,9 @@ class DiscussionReply {
     return DiscussionReply(
       id: map['id'] ?? '',
       discussionId: map['discussionId'] ?? '',
+      userId: map['userId'] ?? '',
       username: map['username'] ?? '',
+      profileImageUrl: map['profileImageUrl'],
       content: map['content'] ?? '',
       likes: map['likes'] ?? 0,
       createdAt: map['createdAt'] is Timestamp 
@@ -239,7 +263,10 @@ class CommunityPoll {
   final int reportsCount;
   final int hiddenCount;
   final DateTime createdAt;
-  final String createdBy;
+  final String userId;
+  final String username;
+  final String? profileImageUrl;
+  final bool isAnonymous;
   final String? userVotedOption;
   final bool isDeleted;
   final DateTime? deletedAt;
@@ -255,7 +282,10 @@ class CommunityPoll {
     this.reportsCount = 0,
     this.hiddenCount = 0,
     required this.createdAt,
-    required this.createdBy,
+    required this.userId,
+    required this.username,
+    this.profileImageUrl,
+    this.isAnonymous = false,
     this.userVotedOption,
     this.isDeleted = false,
     this.deletedAt,
@@ -272,7 +302,10 @@ class CommunityPoll {
     int? reportsCount,
     int? hiddenCount,
     DateTime? createdAt,
-    String? createdBy,
+    String? userId,
+    String? username,
+    String? profileImageUrl,
+    bool? isAnonymous,
     String? userVotedOption,
     bool? isDeleted,
     DateTime? deletedAt,
@@ -288,7 +321,10 @@ class CommunityPoll {
       reportsCount: reportsCount ?? this.reportsCount,
       hiddenCount: hiddenCount ?? this.hiddenCount,
       createdAt: createdAt ?? this.createdAt,
-      createdBy: createdBy ?? this.createdBy,
+      userId: userId ?? this.userId,
+      username: username ?? this.username,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
       userVotedOption: userVotedOption ?? this.userVotedOption,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -307,7 +343,10 @@ class CommunityPoll {
       'reportsCount': reportsCount,
       'hiddenCount': hiddenCount,
       'createdAt': createdAt,
-      'createdBy': createdBy,
+      'userId': userId,
+      'username': username,
+      'profileImageUrl': profileImageUrl,
+      'isAnonymous': isAnonymous,
       'userVotedOption': userVotedOption,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
@@ -328,7 +367,10 @@ class CommunityPoll {
       createdAt: map['createdAt'] is Timestamp 
           ? (map['createdAt'] as Timestamp).toDate() 
           : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
-      createdBy: map['createdBy'] ?? '',
+      userId: map['userId'] ?? map['createdBy'] ?? '', // Fallback for old data
+      username: map['username'] ?? map['createdBy'] ?? '',
+      profileImageUrl: map['profileImageUrl'],
+      isAnonymous: map['isAnonymous'] ?? false,
       userVotedOption: map['userVotedOption'],
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'] != null 
