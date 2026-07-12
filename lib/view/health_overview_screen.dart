@@ -6,6 +6,21 @@ import '../viewmodel/admin_health_overview_viewmodel.dart';
 class HealthOverviewScreen extends StatelessWidget {
   const HealthOverviewScreen({super.key});
 
+  /// Opens Health Overview from the admin dashboard while keeping the
+  /// existing AdminHealthOverviewViewModel available on the new route.
+  static Future<void> open(BuildContext context) {
+    final viewModel = context.read<AdminHealthOverviewViewModel>();
+
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: viewModel,
+          child: const HealthOverviewScreen(),
+        ),
+      ),
+    );
+  }
+
   static const Color primaryBlue = Color(0xFF9BD8FA);
   static const Color deepBlue = Color(0xFF21475E);
   static const Color softBlue = Color(0xFFEFF9FF);

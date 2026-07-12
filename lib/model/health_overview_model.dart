@@ -1,4 +1,3 @@
-// lib/model/admin_health_overview_model.dart
 import 'package:flutter/material.dart';
 
 class HealthOverviewData {
@@ -39,19 +38,19 @@ class HealthOverviewData {
 
   factory HealthOverviewData.empty() {
     return const HealthOverviewData(
-      dateRange: "No data available yet",
+      dateRange: 'No data available yet',
       activeUsers: 0,
       totalVisits: 0,
       totalTreatments: 0,
       totalReminders: 0,
-      activeUsersChange: "0%",
-      visitsChange: "0%",
-      treatmentsChange: "0%",
-      remindersChange: "0%",
-      activeUsersDetails: "No user data has been added yet.",
-      visitsDetails: "No visit data has been added yet.",
-      treatmentsDetails: "No treatment data has been added yet.",
-      remindersDetails: "No reminder data has been added yet.",
+      activeUsersChange: '0%',
+      visitsChange: '0%',
+      treatmentsChange: '0%',
+      remindersChange: '0%',
+      activeUsersDetails: 'No user data has been added yet.',
+      visitsDetails: 'No visit data has been added yet.',
+      treatmentsDetails: 'No treatment data has been added yet.',
+      remindersDetails: 'No reminder data has been added yet.',
       topTreatments: [],
     );
   }
@@ -61,7 +60,10 @@ class TreatmentStat {
   final String name;
   final int count;
 
-  const TreatmentStat({required this.name, required this.count});
+  const TreatmentStat({
+    required this.name,
+    required this.count,
+  });
 }
 
 class StatCardData {
