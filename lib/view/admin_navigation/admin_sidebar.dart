@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import '../glo_admin/admin_dashboard_screen.dart';
 import '../glo_admin/admin_skin_journal_screen.dart';
 import '../glo_admin/admin_hydration_hub_screen.dart';
 import '../glo_admin/admin_meal_tracker_screen.dart';
+=======
+import '../admin_dashboard_screen.dart';
+import '../admin_skin_journal_screen.dart';
+import '../admin_hydration_hub_screen.dart';
+import '../nutrition_dashboard.dart';
+import '../admin_users_page.dart';
+>>>>>>> a023b9a (Finish remaining updates)
 import '../dashboard_card/admin/admin_monthly_tracking_screen.dart';
 import '../community/admin/community_posts_library_view.dart';
 import '../community/admin/community_moderation_queue_view.dart';
@@ -31,7 +39,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
       {"icon": Icons.calendar_month, "label": "Monthly Tracking"},
       {"icon": Icons.book, "label": "Skin Journal"},
       {"icon": Icons.water_drop, "label": "Hydration Hub"},
-      {"icon": Icons.restaurant_menu, "label": "Nutrition Tracker"},
+      {"icon": Icons.restaurant_menu, "label": "Nutrition Analytics"},
       {"icon": Icons.feedback, "label": "Feedback"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
@@ -131,9 +139,13 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   }
 
                   return Container(
+<<<<<<< HEAD
                     color: isActive
                         ? const Color(0xFF4F8FE0).withOpacity(0.15)
                         : Colors.transparent,
+=======
+                    color: isActive ? const Color(0xFF4F8FE0).withValues(alpha: 0.15) : Colors.transparent,
+>>>>>>> a023b9a (Finish remaining updates)
                     child: ListTile(
                       leading: Icon(item["icon"] as IconData,
                           color: const Color(0xFF4F8FE0)),
@@ -142,6 +154,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                       onTap: () {
                         Navigator.pop(context);
                         if (item["label"] == "Dashboard") {
+<<<<<<< HEAD
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -155,6 +168,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
                               builder: (_) => const AdminUsersPage(),
                             ),
                           );
+=======
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminDashboardScreen()));
+                        } else if (item["label"] == "Users") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminUsersPage()));
+>>>>>>> a023b9a (Finish remaining updates)
                         } else if (item["label"] == "Skin Journal") {
                           Navigator.push(
                             context,
@@ -163,6 +181,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                             ),
                           );
                         } else if (item["label"] == "Hydration Hub") {
+<<<<<<< HEAD
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -176,6 +195,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
                               builder: (_) => const AdminMealTrackerScreen(),
                             ),
                           );
+=======
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminHydrationHubScreen()));
+                        } else if (item["label"] == "Nutrition Analytics") {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const NutritionDashboard()));
+>>>>>>> a023b9a (Finish remaining updates)
                         } else if (item["label"] == "Monthly Tracking") {
                           Navigator.push(
                             context,

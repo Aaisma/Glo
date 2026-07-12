@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../viewmodel/user_viewmodel.dart';
-import '../../model/user_model.dart';
-import '../admin_navigation/admin_top_panel.dart';
-import '../admin_navigation/admin_sidebar.dart';
-import '../../app_colors.dart';
+import '../viewmodel/user_viewmodel.dart';
+import '../model/user_model.dart';
+import 'admin_navigation/admin_top_panel.dart';
+import 'admin_navigation/admin_sidebar.dart';
+import '../app_colors.dart';
 
 class AdminUsersPage extends StatefulWidget {
   const AdminUsersPage({super.key});
@@ -278,14 +278,14 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, color: Color(0xFF94A3B8)),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = "";
-                                });
-                              },
-                            )
+                        icon: const Icon(Icons.clear_rounded, color: Color(0xFF94A3B8)),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = "";
+                          });
+                        },
+                      )
                           : null,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -299,230 +299,230 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 child: userVM.loading
                     ? const Center(child: CircularProgressIndicator(color: AppColors.pink))
                     : filteredUsers.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.supervised_user_circle_outlined, size: 70, color: const Color(0xFF94A3B8).withOpacity(0.5)),
-                                const SizedBox(height: 12),
-                                Text(
-                                  "No matching members found",
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 16,
-                                    color: const Color(0xFF94A3B8),
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                    ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.supervised_user_circle_outlined, size: 70, color: const Color(0xFF94A3B8).withOpacity(0.5)),
+                      const SizedBox(height: 12),
+                      Text(
+                        "No matching members found",
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          color: const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: filteredUsers.length,
+                  padding: const EdgeInsets.only(bottom: 24),
+                  itemBuilder: (ctx, index) {
+                    final user = filteredUsers[index];
+                    final initials = _getInitials(user.name);
+                    final gradientColors = _getInitialGradients(user.name);
+                    final isAdmin = user.role == 'admin';
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isAdmin
+                              ? const Color(0xFFE0E7FF)
+                              : const Color(0xFFF1F5F9),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0F172A).withOpacity(0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Custom Initials Gradient Avatar
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: gradientColors,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: gradientColors[0].withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                          )
-                        : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: filteredUsers.length,
-                            padding: const EdgeInsets.only(bottom: 24),
-                            itemBuilder: (ctx, index) {
-                              final user = filteredUsers[index];
-                              final initials = _getInitials(user.name);
-                              final gradientColors = _getInitialGradients(user.name);
-                              final isAdmin = user.role == 'admin';
-
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
+                            child: Center(
+                              child: Text(
+                                initials,
+                                style: GoogleFonts.outfit(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: isAdmin
-                                        ? const Color(0xFFE0E7FF)
-                                        : const Color(0xFFF1F5F9),
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF0F172A).withOpacity(0.02),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  letterSpacing: 0.5,
                                 ),
-                                child: Row(
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+
+                          // Details & Buttons
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    // Custom Initials Gradient Avatar
-                                    Container(
-                                      width: 56,
-                                      height: 56,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          colors: gradientColors,
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
+                                    Expanded(
+                                      child: Text(
+                                        user.name.isNotEmpty ? user.name : 'No Name Set',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF1E293B),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 17,
                                         ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: gradientColors[0].withOpacity(0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          initials,
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 16),
-                                    
-                                    // Details & Buttons
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                    const SizedBox(width: 8),
+
+                                    // Premium Pill Badges
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: isAdmin ? const Color(0xFFEEF2FF) : const Color(0xFFECFDF5),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  user.name.isNotEmpty ? user.name : 'No Name Set',
-                                                  style: GoogleFonts.outfit(
-                                                    color: const Color(0xFF1E293B),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 17,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              
-                                              // Premium Pill Badges
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: isAdmin ? const Color(0xFFEEF2FF) : const Color(0xFFECFDF5),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      isAdmin ? Icons.shield : Icons.person_rounded,
-                                                      size: 11,
-                                                      color: isAdmin ? const Color(0xFF4F46E5) : const Color(0xFF059669),
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      isAdmin ? "Admin" : "User",
-                                                      style: GoogleFonts.outfit(
-                                                        color: isAdmin ? const Color(0xFF4F46E5) : const Color(0xFF059669),
-                                                        fontSize: 11,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                          Icon(
+                                            isAdmin ? Icons.shield : Icons.person_rounded,
+                                            size: 11,
+                                            color: isAdmin ? const Color(0xFF4F46E5) : const Color(0xFF059669),
                                           ),
-                                          const SizedBox(height: 3),
+                                          const SizedBox(width: 4),
                                           Text(
-                                            user.email ?? "no email registered",
+                                            isAdmin ? "Admin" : "User",
                                             style: GoogleFonts.outfit(
-                                              color: const Color(0xFF64748B),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w400,
+                                              color: isAdmin ? const Color(0xFF4F46E5) : const Color(0xFF059669),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 14),
-                                          
-                                          // Action Buttons
-                                          Row(
-                                            children: [
-                                              // Remove User Button
-                                              InkWell(
-                                                onTap: () => _confirmRemoveUser(context, userVM, user),
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFFFEF2F2),
-                                                    border: Border.all(color: const Color(0xFFFEE2E2)),
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 15),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        "Remove",
-                                                        style: GoogleFonts.outfit(
-                                                          color: const Color(0xFFEF4444),
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              
-                                              // Convert Button (Admin <-> User)
-                                              InkWell(
-                                                onTap: () => _toggleUserRole(context, userVM, user),
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                                  decoration: BoxDecoration(
-                                                    color: isAdmin ? const Color(0xFFFFF3CD) : const Color(0xFFE0F2FE),
-                                                    border: Border.all(
-                                                      color: isAdmin ? const Color(0xFFFFE0B2) : const Color(0xFFBAE6FD),
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        isAdmin ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-                                                        color: isAdmin ? Colors.orange[800] : const Color(0xFF0369A1),
-                                                        size: 15,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        isAdmin ? "Convert to user" : "Convert to admin",
-                                                        style: GoogleFonts.outfit(
-                                                          color: isAdmin ? Colors.orange[800] : const Color(0xFF0369A1),
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
                                           ),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              );
-                            },
+                                const SizedBox(height: 3),
+                                Text(
+                                  user.email ?? "no email registered",
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF64748B),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 14),
+
+                                // Action Buttons
+                                Row(
+                                  children: [
+                                    // Remove User Button
+                                    InkWell(
+                                      onTap: () => _confirmRemoveUser(context, userVM, user),
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFEF2F2),
+                                          border: Border.all(color: const Color(0xFFFEE2E2)),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 15),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "Remove",
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFEF4444),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+
+                                    // Convert Button (Admin <-> User)
+                                    InkWell(
+                                      onTap: () => _toggleUserRole(context, userVM, user),
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isAdmin ? const Color(0xFFFFF3CD) : const Color(0xFFE0F2FE),
+                                          border: Border.all(
+                                            color: isAdmin ? const Color(0xFFFFE0B2) : const Color(0xFFBAE6FD),
+                                          ),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isAdmin ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                                              color: isAdmin ? Colors.orange[800] : const Color(0xFF0369A1),
+                                              size: 15,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              isAdmin ? "Convert to user" : "Convert to admin",
+                                              style: GoogleFonts.outfit(
+                                                color: isAdmin ? Colors.orange[800] : const Color(0xFF0369A1),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

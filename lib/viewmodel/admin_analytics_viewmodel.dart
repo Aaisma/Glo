@@ -20,6 +20,7 @@ class AdminAnalyticsViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> topProducts = [];
   List<Map<String, dynamic>> recentAcneEntries = [];
   List<Map<String, dynamic>> lowestIntakeUsers = [];
+  List<Map<String, dynamic>> highestIntakeUsers = [];
   List<Map<String, dynamic>> recentWaterEntries = [];
 
   int distinctAcneUsers = 0;
@@ -62,6 +63,7 @@ class AdminAnalyticsViewModel extends ChangeNotifier {
       topProducts = await _repo.getTopProducts();
       recentAcneEntries = await _repo.getRecentAcneEntries();
       lowestIntakeUsers = await _repo.getLowestIntakeUsers();
+      highestIntakeUsers = await _repo.getHighestIntakeUsers();
       recentWaterEntries = await _repo.getRecentWaterEntries();
       distinctAcneUsers = await _repo.getDistinctAcneUsers();
       distinctWaterUsers = await _repo.getDistinctWaterUsers();

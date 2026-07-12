@@ -78,6 +78,13 @@ class UserRepoImpl implements UserRepo {
   }
 
   @override
+  Future<void> markProfileCompleted(String id) {
+    return firestore.collection("users").doc(id).update({
+      'profileCompleted': true,
+    });
+  }
+
+  @override
   Future<List<UserModel>> getAllUser() async {
     final users = await firestore.collection("users").get();
     return users.docs.map((doc) => UserModel.fromMap(doc.data(), doc.id)).toList();
