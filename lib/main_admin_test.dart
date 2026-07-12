@@ -5,6 +5,9 @@ import 'firebase_options.dart';
 import 'repo/admin_analytics_repo_impl.dart';
 import 'viewmodel/admin_analytics_viewmodel.dart';
 import 'view/glo_admin/admin_dashboard_screen.dart';
+import 'repo/user_repo.dart';
+import 'repo/user_repo_impl.dart';
+import 'viewmodel/user_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +22,8 @@ class AdminTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<UserRepo>(create: (_) => UserRepoImpl()),
+        ChangeNotifierProvider(create: (ctx) => UserViewModel(userRepo: ctx.read<UserRepo>())),
         ChangeNotifierProvider(create: (_) => AdminAnalyticsViewModel(AdminAnalyticsRepoImpl())),
       ],
       child: const MaterialApp(

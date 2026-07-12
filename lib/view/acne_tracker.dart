@@ -212,7 +212,9 @@ class _AcneTrackerPageState extends State<AcneTrackerPage>
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: vm.imagePath.isNotEmpty
-                            ? Image.network(vm.imagePath, fit: BoxFit.cover)
+                            ? (vm.imagePath.startsWith('http')
+                                ? Image.network(vm.imagePath, fit: BoxFit.cover)
+                                : Image.file(File(vm.imagePath), fit: BoxFit.cover))
                             : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                                 Container(
                                   width: 90, height: 90,
