@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../model/user_model_mood.dart';
-import '../repo/mood_repository.dart';
-import '../repo/mood_repository_impl.dart';
+import '../repo/mood_repo.dart';
 
 class WellnessViewModel extends ChangeNotifier {
-  final MoodRepository _repository = MoodRepositoryImpl();
+  final MoodRepo _repository;
   StreamSubscription? _moodSubscription;
+
+  WellnessViewModel({required MoodRepo moodRepo}) : _repository = moodRepo;
 
   List<UserModelMood> _moodHistory = [];
   final String _userName = "Shiny";
