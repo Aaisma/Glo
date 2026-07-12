@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-import 'package:flutter/material.dart';
-
-class AdminUsersPage extends StatelessWidget {
-  const AdminUsersPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text("Daily Journal Page")),
-    );
-  }
-}
-
-=======
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -601,4 +586,3 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
   }
 }
->>>>>>> origin/development_branch

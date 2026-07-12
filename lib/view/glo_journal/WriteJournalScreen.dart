@@ -44,13 +44,13 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
 
     final viewModel = Provider.of<JournalViewModel>(context, listen: false);
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
-    
+
     final id = const Uuid().v4();
-    
+
     // Get current user info
     final userId = userViewModel.user?.id ?? 'unknown';
     final userName = userViewModel.user?.name ?? 'Anonymous User';
-    
+
     // Use first line or first 20 chars as title
     String content = _textController.text.trim();
     String title = content.split('\n').first;

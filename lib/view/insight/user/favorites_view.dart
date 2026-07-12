@@ -374,6 +374,7 @@ class _FavoritesViewState extends State<FavoritesView> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   children: [
@@ -435,10 +436,11 @@ class _FavoritesViewState extends State<FavoritesView> {
                         if (hasVoted)
                           FractionallySizedBox(
                             widthFactor: percent,
+                            heightFactor: 1.0,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: votedThis
-                                    ? fillBg.withValues(alpha: 0.2)
+                                    ? fillBg.withValues(alpha: 0.4)
                                     : fillBg.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),

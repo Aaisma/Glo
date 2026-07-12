@@ -41,12 +41,16 @@ class InsightsFeedViewModel extends ChangeNotifier {
   Future<void> setCategory(String category) async {
     if (_selectedCategory == category) return;
     _selectedCategory = category;
+    _latestInsights.clear();
+    _featuredInsight = null;
     notifyListeners();
     await loadFeed(isRefresh: true);
   }
 
   Future<void> setSearchQuery(String query) async {
     _searchQuery = query;
+    _latestInsights.clear();
+    _featuredInsight = null;
     notifyListeners();
     await loadFeed(isRefresh: true);
   }

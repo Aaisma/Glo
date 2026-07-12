@@ -37,13 +37,13 @@ class _SurveyPageState extends State<SurveyPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userVM = Provider.of<UserViewModel>(context, listen: false);
-      final restoredStep = await userVM.restoreOnboardingProgress();
+      await userVM.restoreOnboardingProgress();
       setState(() {
-        _currentStep = restoredStep;
+        _currentStep = 0;
         _syncDataToControllers(userVM.surveyData);
       });
       if (_pageController.hasClients) {
-        _pageController.jumpToPage(restoredStep);
+        _pageController.jumpToPage(0);
       }
     });
 

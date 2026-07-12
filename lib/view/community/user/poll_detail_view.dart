@@ -121,8 +121,19 @@ class _PollDetailViewState extends State<PollDetailView> {
   Future<void> _handleVote(String option) async {
     if (_poll == null || _poll!.userVotedOption != null) return;
     final repo = context.read<CommunityRepo>();
+    
+    setState(() {
+      _poll = _poll!.copyWith(
+        userVotedOption: option,
+        totalVotes: _poll!.totalVotes + 1,
+        options: {
+          ..._poll!.options,
+          option: (_poll!.options[option] ?? 0) + 1,
+        },
+      );
+    });
+
     await repo.votePoll(_poll!.id, option);
-    // Removed _loadPollData() as StreamSubscription handles updates
   }
 
   @override
@@ -369,7 +380,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? AydColors.communityButton.withValues(alpha: 0.2)
+                                            ? AydColors.communityButton.withValues(alpha: 0.4)
                                             : AydColors.communityButton.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),

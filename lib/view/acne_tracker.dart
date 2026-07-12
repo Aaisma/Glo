@@ -213,19 +213,19 @@ class _AcneTrackerPageState extends State<AcneTrackerPage>
                         clipBehavior: Clip.antiAlias,
                         child: vm.imagePath.isNotEmpty
                             ? (vm.imagePath.startsWith('http')
-                                ? Image.network(vm.imagePath, fit: BoxFit.cover)
-                                : Image.file(File(vm.imagePath), fit: BoxFit.cover))
+                            ? Image.network(vm.imagePath, fit: BoxFit.cover)
+                            : Image.file(File(vm.imagePath), fit: BoxFit.cover))
                             : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                Container(
-                                  width: 90, height: 90,
-                                  decoration: const BoxDecoration(color: AppColors.lightPink, shape: BoxShape.circle),
-                                  child: const Icon(Icons.camera_alt_rounded, size: 45, color: AppColors.pink),
-                                ),
-                                const SizedBox(height: 20),
-                                const Text("Tap to Scan Skin", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.text)),
-                                const SizedBox(height: 5),
-                                Text("AI-powered acne detection", style: TextStyle(color: AppColors.grey.withOpacity(0.7), fontSize: 13)),
-                              ]),
+                          Container(
+                            width: 90, height: 90,
+                            decoration: const BoxDecoration(color: AppColors.lightPink, shape: BoxShape.circle),
+                            child: const Icon(Icons.camera_alt_rounded, size: 45, color: AppColors.pink),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text("Tap to Scan Skin", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.text)),
+                          const SizedBox(height: 5),
+                          Text("AI-powered acne detection", style: TextStyle(color: AppColors.grey.withOpacity(0.7), fontSize: 13)),
+                        ]),
                       ),
                     ),
                   ),

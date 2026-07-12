@@ -116,11 +116,16 @@ class PollPreviewView extends StatelessWidget {
                             CircleAvatar(
                               backgroundColor: AydColors.communityButton.withValues(alpha: 0.1),
                               radius: 16,
-                              child: Icon(
-                                viewModel.isAnonymous ? Icons.face : Icons.person,
-                                size: 18,
-                                color: AydColors.communityButton,
-                              ),
+                              backgroundImage: !viewModel.isAnonymous && userVM.user?.imageUrl != null && userVM.user!.imageUrl!.isNotEmpty
+                                  ? NetworkImage(userVM.user!.imageUrl!)
+                                  : null,
+                              child: viewModel.isAnonymous || userVM.user?.imageUrl == null || userVM.user!.imageUrl!.isEmpty
+                                  ? Icon(
+                                      viewModel.isAnonymous ? Icons.face : Icons.person,
+                                      size: 18,
+                                      color: AydColors.communityButton,
+                                    )
+                                  : null,
                             ),
                             const SizedBox(width: 8),
                             Text(

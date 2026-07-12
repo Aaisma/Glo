@@ -8,6 +8,7 @@ import 'discussion_detail_view.dart';
 import 'poll_detail_view.dart';
 import 'create_discussion_view.dart';
 import 'create_poll_view.dart';
+import 'my_posts_view.dart';
 
 class CommunityDiscussionsView extends StatefulWidget {
   const CommunityDiscussionsView({super.key});
@@ -148,6 +149,17 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
             onPressed: () => Navigator.pop(context),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.person_outline, color: Color(0xFF332B2C)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyPostsView()),
+                );
+              },
+            ),
+          ],
         ),
         body: Column(
           children: [
@@ -367,6 +379,7 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   children: [
@@ -438,10 +451,11 @@ class _CommunityDiscussionsViewState extends State<CommunityDiscussionsView> {
                         if (hasVoted)
                           FractionallySizedBox(
                             widthFactor: percent,
+                            heightFactor: 1.0,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: votedThis
-                                    ? fillBg.withValues(alpha: 0.2)
+                                    ? fillBg.withValues(alpha: 0.4)
                                     : fillBg.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),

@@ -266,16 +266,18 @@ class _PollDetailViewState extends State<PollDetailView> {
                       ),
                     ),
                     child: Stack(
+                      alignment: Alignment.centerLeft,
                       children: [
                         // Animated progress fill
                         if (hasVoted)
                           FractionallySizedBox(
                             widthFactor: percent,
+                            heightFactor: 1.0,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? pinkTheme.withValues(alpha: 0.3)
-                                    : Colors.pink.shade50.withValues(alpha: 0.5),
+                                    ? pinkTheme.withValues(alpha: 0.5)
+                                    : Colors.pink.shade50.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),

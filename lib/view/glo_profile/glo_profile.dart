@@ -30,7 +30,7 @@ class GloProfileScreen extends StatefulWidget {
 class _GloProfileScreenState extends State<GloProfileScreen> {
   bool _profileLoaded = false;
 
-  static const pink = Color(0xFFE85D8A);
+  static const pink = Color(0xFFF86A90);
   static const accentPink = Color(0xFFF86A90);
   static const softPink = Color(0xFFFFF7FA);
   static const iconBg = Color(0xFFFFEAF1);
@@ -1127,6 +1127,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                     return;
                   }
 
+                  final messenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+
                   setState(() => isSaving = true);
 
                   final success = await widget.vm.saveProfile(
@@ -1140,12 +1143,12 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   setState(() => isSaving = false);
 
                   if (success) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    navigator.pop();
+                    messenger.showSnackBar(
                       const SnackBar(content: Text("Profile updated")),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text(widget.vm.errorMessage ?? "Profile update failed"),
                       ),

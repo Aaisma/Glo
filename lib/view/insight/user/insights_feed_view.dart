@@ -330,6 +330,15 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
     );
   }
 
+  Widget _buildPlaceholderImage(double height, double width) {
+    return Container(
+      height: height,
+      width: width,
+      color: const Color(0xFFFFE5EC),
+      child: const Icon(Icons.image, size: 30, color: Colors.pink),
+    );
+  }
+
   Widget _buildFeaturedCard(BuildContext context, Insight insight) {
     return Container(
       decoration: BoxDecoration(
@@ -362,18 +371,21 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      insight.coverImage,
-                      height: 120,
-                      width: 110,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        height: 120,
-                        width: 110,
-                        color: const Color(0xFFFFE5EC),
-                        child: const Icon(Icons.image, size: 40, color: Colors.pink),
-                      ),
-                    ),
+                    child: insight.coverImage.startsWith('http')
+                        ? Image.network(
+                            insight.coverImage,
+                            height: 120,
+                            width: 110,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderImage(120, 110),
+                          )
+                        : Image.asset(
+                            insight.coverImage,
+                            height: 120,
+                            width: 110,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderImage(120, 110),
+                          ),
                   ),
                   Positioned(
                     top: 8,
@@ -488,18 +500,21 @@ class _InsightsFeedViewState extends State<InsightsFeedView> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      insight.coverImage,
-                      height: 100,
-                      width: 90,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        height: 100,
-                        width: 90,
-                        color: const Color(0xFFFFE5EC),
-                        child: const Icon(Icons.image, size: 30, color: Colors.pink),
-                      ),
-                    ),
+                    child: insight.coverImage.startsWith('http')
+                        ? Image.network(
+                            insight.coverImage,
+                            height: 100,
+                            width: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderImage(100, 90),
+                          )
+                        : Image.asset(
+                            insight.coverImage,
+                            height: 100,
+                            width: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderImage(100, 90),
+                          ),
                   ),
                   Positioned(
                     top: 6,
