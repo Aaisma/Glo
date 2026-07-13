@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/wellness_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
@@ -18,22 +18,22 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
 
   final List<Map<String, String>> _moods = [
     {'id': 'Amazing', 'emoji': '😍', 'label': 'Amazing'},
-    {'id': 'Happy', 'emoji': '😁', 'label': 'Happy'},
+    {'id': 'Happy', 'emoji': '😀', 'label': 'Happy'},
     {'id': 'Calm', 'emoji': '😌', 'label': 'Calm'},
     {'id': 'Neutral', 'emoji': '😐', 'label': 'Neutral'},
-    {'id': 'Sad', 'emoji': '🥺', 'label': 'Sad'},
+    {'id': 'Sad', 'emoji': '😢', 'label': 'Sad'},
     {'id': 'Angry', 'emoji': '😡', 'label': 'Angry'},
   ];
 
   final List<Map<String, dynamic>> _factors = [
     {'id': 'Sleep', 'label': 'Sleep', 'icon': LucideIcons.moon, 'color': Colors.blue},
     {'id': 'Food', 'label': 'Food', 'icon': LucideIcons.utensils, 'color': Colors.green},
-    {'id': 'Work', 'label': 'Work', 'icon': LucideIcons.briefcase, 'color': Colors.amber},
-    {'id': 'Study', 'label': 'Study', 'icon': LucideIcons.bookOpen, 'color': Colors.cyan},
+    {'id': 'Work', 'label': 'Work', 'icon': LucideIcons.briefcase_business, 'color': Colors.amber},
+    {'id': 'Study', 'label': 'Study', 'icon': LucideIcons.book_open, 'color': Colors.cyan},
     {'id': 'Stress', 'label': 'Stress', 'icon': LucideIcons.flame, 'color': Colors.orange},
     {'id': 'Hormones', 'label': 'Hormones', 'icon': LucideIcons.activity, 'color': Colors.purple},
     {'id': 'Thoughts', 'label': 'Thoughts', 'icon': LucideIcons.brain, 'color': Colors.indigo},
-    {'id': 'SelfTalk', 'label': 'Self Talk', 'icon': LucideIcons.messageSquare, 'color': Colors.teal},
+    {'id': 'SelfTalk', 'label': 'Self Talk', 'icon': LucideIcons.message_square, 'color': Colors.teal},
   ];
 
   void _saveMood() async {

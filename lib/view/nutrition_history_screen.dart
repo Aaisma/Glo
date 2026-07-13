@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/nutrition_tracker_viewmodel.dart';
+import '../viewmodel/meal_tracker_viewmodel.dart';
 import '../app_colors.dart';
 
 class NutritionHistoryScreen extends StatelessWidget {

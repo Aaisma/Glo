@@ -31,7 +31,9 @@ class AdminFeedbackRepoImpl implements AdminFeedbackRepo {
 
   @override
   Future<void> updateFeedback(AdminFeedbackModel feedback) async {
-    await _firestore.collection(_collection).doc(feedback.id).update(feedback.toMap());
+    if (feedback.id != null) {
+      await _firestore.collection(_collection).doc(feedback.id!).update(feedback.toMap());
+    }
   }
 
   @override

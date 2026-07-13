@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:glo/model/feedback_model.dart';
-import 'package:glo/repo/feedback_repo.dart';
-import 'package:glo/repo/feedback_repo_impl.dart';
+import '../model/admin_feedback_model.dart';
+import '../repo/admin_feedback-repo.dart';
 
 class AdminFeedbackViewModel extends ChangeNotifier {
-  final FeedbackRepo _repository = FeedbackRepoImpl();
+  final AdminFeedbackRepo _repository;
+
+  AdminFeedbackViewModel({required AdminFeedbackRepo repository}) : _repository = repository;
 
   List<AdminFeedbackModel> _items = [];
   bool _isLoading = false;
   AdminFeedbackModel? selectedItem;
 
+  List<AdminFeedbackModel> get feedbacks => _items;
   List<AdminFeedbackModel> get items => _items;
   bool get isLoading => _isLoading;
 
@@ -24,7 +26,7 @@ class AdminFeedbackViewModel extends ChangeNotifier {
   Future<void> loadAllFeedback() async {
     _isLoading = true;
     notifyListeners();
-    _items = await _repository.getFeedback();
+    _items = await _repository.getAllFeedback();
     _isLoading = false;
     notifyListeners();
   }
@@ -36,53 +38,44 @@ class AdminFeedbackViewModel extends ChangeNotifier {
 
   Future<void> createNewFeedback(AdminFeedbackModel feedback) async {
     final entryWithId = AdminFeedbackModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: feedback.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: feedback.userId,
       userName: feedback.userName,
       userEmail: feedback.userEmail,
       category: feedback.category,
       type: feedback.type,
-      date: feedback.date,
-      time: feedback.time,
       message: feedback.message,
+      ratingIndex: feedback.ratingIndex,
+      timestamp: feedback.timestamp,
+      status: feedback.status,
       device: feedback.device,
       appVersion: feedback.appVersion,
-      usability: feedback.usability,
-      features: feedback.features,
-      design: feedback.design,
-      performance: feedback.performance,
-      status: feedback.status,
     );
     await _repository.addFeedback(entryWithId);
     await loadAllFeedback();
   }
 
-  Future<void> updateFeedbackStatus(String id, String status) async {
-    await _repository.updateStatus(id, status);
-    if (selectedItem?.id == id) selectedItem!.status = status;
-    await loadAllFeedback();
+  Future<void> updateFeedbackStatus(String? id, String status) async {
+    if (id == null) return;
+    final index = _items.indexWhere((e) => e.id == id);
+    if (index != -1) {
+      final updatedItem = _items[index].copyWith(status: status);
+      await _repository.updateFeedback(updatedItem);
+      if (selectedItem?.id == id) {
+        selectedItem = updatedItem;
+      }
+      await loadAllFeedback();
+    }
   }
 
   Future<void> updateItemScores(String id, double u, double f, double d, double p) async {
-    await _repository.updateScores(id, u, f, d, p);
-    if (selectedItem?.id == id) {
-      selectedItem = AdminFeedbackModel(
-        id: selectedItem!.id,
-        userName: selectedItem!.userName,
-        userEmail: selectedItem!.userEmail,
-        category: selectedItem!.category,
-        type: selectedItem!.type,
-        date: selectedItem!.date,
-        time: selectedItem!.time,
-        message: selectedItem!.message,
-        device: selectedItem!.device,
-        appVersion: selectedItem!.appVersion,
-        usability: u,
-        features: f,
-        design: d,
-        performance: p,
-        status: selectedItem!.status,
-      );
-    }
+    await _repository.addScore(id, {
+      "usability": u,
+      "features": f,
+      "design": d,
+      "performance": p,
+      "timestamp": DateTime.now().toIso8601String(),
+    });
     await loadAllFeedback();
   }
 }

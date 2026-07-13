@@ -2,49 +2,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModelMood {
   final String id;
-  final String userId;
   final String moodType;
   final String note;
   final List<String> factors;
-  final DateTime date;
+  final DateTime timestamp;
 
   UserModelMood({
     required this.id,
-    required this.userId,
     required this.moodType,
     required this.note,
     required this.factors,
-    required this.date,
+    required this.timestamp,
   });
 
   factory UserModelMood.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
-    DateTime parsedDate = DateTime.now();
-    if (data['date'] is Timestamp) {
-      parsedDate = (data['date'] as Timestamp).toDate();
-    } else if (data['timestamp'] is Timestamp) {
-      // Handling both naming conventions if they exist
-      parsedDate = (data['timestamp'] as Timestamp).toDate();
+    DateTime parsedTime = DateTime.now();
+    final rawTimestamp = data['timestamp'] ?? data['date'];
+    if (rawTimestamp is Timestamp) {
+      parsedTime = rawTimestamp.toDate();
     }
 
     return UserModelMood(
       id: doc.id,
-      userId: data['userId'] ?? '',
       moodType: data['moodType'] ?? 'Calm',
       note: data['note'] ?? '',
       factors: List<String>.from(data['factors'] ?? []),
-      date: parsedDate,
+      timestamp: parsedTime,
     );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'userId': userId,
-      'moodType': moodType,
-      'note': note,
-      'factors': factors,
-      'date': Timestamp.fromDate(date),
-    };
   }
 }

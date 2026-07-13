@@ -1,31 +1,49 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../model/user_model_mood.dart';
 import '../repo/mood_repo.dart';
+import '../repo/mood_repo_impl.dart';
 
 class WellnessViewModel extends ChangeNotifier {
-  final MoodRepo _repository;
-  StreamSubscription? _moodSubscription;
+  final MoodRepo _repo;
 
-  WellnessViewModel({required MoodRepo moodRepo}) : _repository = moodRepo;
+  WellnessViewModel({MoodRepo? repo}) : _repo = repo ?? MoodRepoImpl();
 
-  List<UserModelMood> _moodHistory = [];
-  final String _userName = "Shiny";
-  int _currentStreak = 0;
-  int _longestStreak = 0;
+  StreamSubscription<List<UserModelMood>>? _subscription;
 
-  List<UserModelMood> get moodHistory => _moodHistory;
-  String get userName => _userName;
-  int get currentStreak => _currentStreak;
-  int get longestStreak => _longestStreak;
+  List<UserModelMood> moodHistory = [];
+
+  int currentStreak = 0;
+  int longestStreak = 0;
+
+  bool isLoading = false;
+
+  String? _currentUserId;
 
   void initUserSync(String userId) {
-    _moodSubscription?.cancel();
-    _moodSubscription = _repository.streamUserMoodLogs(userId).listen((logs) {
-      _moodHistory = logs;
-      _calculateStreaks();
-      notifyListeners();
-    });
+    if (_currentUserId == userId) return;
+
+    _currentUserId = userId;
+    isLoading = true;
+    notifyListeners();
+
+    _subscription?.cancel();
+
+    _subscription = _repo.streamUserMoodLogs(userId).listen(
+          (logs) {
+        moodHistory = logs;
+        _calculateStreaks();
+
+        isLoading = false;
+        notifyListeners();
+      },
+      onError: (error) {
+        debugPrint("Mood Stream Error: $error");
+        isLoading = false;
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> logMood({
@@ -35,68 +53,75 @@ class WellnessViewModel extends ChangeNotifier {
     required List<String> factors,
   }) async {
     try {
-      await _repository.addMoodLog(
+      await _repo.addMoodLog(
         userId: userId,
         moodType: mood,
         note: note,
         factors: factors,
       );
     } catch (e) {
-      debugPrint("Firebase Write Failure: $e");
+      debugPrint("Error logging mood: $e");
       rethrow;
     }
   }
 
   void _calculateStreaks() {
-    if (_moodHistory.isEmpty) {
-      _currentStreak = 0;
-      _longestStreak = 0;
+    if (moodHistory.isEmpty) {
+      currentStreak = 0;
+      longestStreak = 0;
       return;
     }
 
-    final distinctDays = _moodHistory
-        .map((log) => DateTime(log.date.year, log.date.month, log.date.day))
+    final uniqueDays = moodHistory
+        .map(
+          (m) => DateTime(
+        m.timestamp.year,
+        m.timestamp.month,
+        m.timestamp.day,
+      ),
+    )
         .toSet()
         .toList()
-      ..sort((a, b) => b.compareTo(a));
+      ..sort();
 
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    final yesterday = today.subtract(const Duration(days: 1));
+    // ---------- Longest Streak ----------
+    longestStreak = 1;
 
-    if (distinctDays.first.isBefore(yesterday)) {
-      _currentStreak = 0;
-    } else {
-      int streakCount = 1;
-      for (int i = 0; i < distinctDays.length - 1; i++) {
-        if (distinctDays[i].difference(distinctDays[i + 1]).inDays == 1) {
-          streakCount++;
-        } else if (distinctDays[i].difference(distinctDays[i + 1]).inDays > 1) {
-          break;
-        }
+    int tempLongest = 1;
+
+    for (int i = 1; i < uniqueDays.length; i++) {
+      if (uniqueDays[i].difference(uniqueDays[i - 1]).inDays == 1) {
+        tempLongest++;
+      } else {
+        tempLongest = 1;
       }
-      _currentStreak = streakCount;
-    }
 
-    int maxStreak = 0;
-    int currentRun = 1;
-
-    if (distinctDays.length == 1) maxStreak = 1;
-
-    for (int i = 0; i < distinctDays.length - 1; i++) {
-      if (distinctDays[i].difference(distinctDays[i + 1]).inDays == 1) {
-        currentRun++;
-      } else if (distinctDays[i].difference(distinctDays[i + 1]).inDays > 1) {
-        if (currentRun > maxStreak) maxStreak = currentRun;
-        currentRun = 1;
+      if (tempLongest > longestStreak) {
+        longestStreak = tempLongest;
       }
     }
-    if (currentRun > maxStreak) maxStreak = currentRun;
-    _longestStreak = maxStreak;
+
+    // ---------- Current Streak ----------
+    final today = DateTime.now();
+    DateTime expectedDay = DateTime(today.year, today.month, today.day);
+
+    currentStreak = 0;
+
+    final descendingDays = uniqueDays.reversed.toList();
+
+    for (final day in descendingDays) {
+      if (day == expectedDay) {
+        currentStreak++;
+        expectedDay = expectedDay.subtract(const Duration(days: 1));
+      } else if (day.isBefore(expectedDay)) {
+        break;
+      }
+    }
   }
 
   @override
   void dispose() {
-    _moodSubscription?.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 }

@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:glo/model/user_model_mood.dart';
+import '../model/user_model_mood.dart';
 import 'mood_repo.dart';
 
 class MoodRepoImpl implements MoodRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  MoodRepoImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<List<UserModelMood>> streamUserMoodLogs(String userId) {
@@ -11,13 +14,10 @@ class MoodRepoImpl implements MoodRepo {
         .collection('users')
         .doc(userId)
         .collection('mood_logs')
-        .orderBy('date', descending: true)
+        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => UserModelMood.fromFirestore(doc))
-          .toList();
-    });
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => UserModelMood.fromFirestore(doc)).toList());
   }
 
   @override
@@ -36,7 +36,12 @@ class MoodRepoImpl implements MoodRepo {
       'moodType': moodType,
       'note': note,
       'factors': factors,
-      'date': FieldValue.serverTimestamp(),
+      'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  Future<void> updateUserField(String userId, Map<String, dynamic> dataToUpdate) async {
+    await _firestore.collection('users').doc(userId).update(dataToUpdate);
   }
 }

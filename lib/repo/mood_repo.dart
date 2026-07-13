@@ -1,4 +1,4 @@
-import 'package:glo/model/user_model_mood.dart';
+import '../model/user_model_mood.dart';
 
 abstract class MoodRepo {
   Stream<List<UserModelMood>> streamUserMoodLogs(String userId);
@@ -9,4 +9,6 @@ abstract class MoodRepo {
     required String note,
     required List<String> factors,
   });
+
+  Future<void> updateUserField(String userId, Map<String, dynamic> dataToUpdate);
 }

@@ -1,55 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:glo/view/glo_mood/wellness_dashboard_screen.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-// Repos
-import 'package:glo/repo/user_repo.dart';
-import 'package:glo/repo/user_repo_impl.dart';
-import 'package:glo/repo/mood_repo.dart';
-import 'package:glo/repo/mood_repo_impl.dart';
+import 'viewmodel/user_viewmodel.dart';
+import 'viewmodel/wellness_viewmodel.dart';
 
-// ViewModels
-import 'package:glo/viewmodel/user_viewmodel.dart';
-import 'package:glo/viewmodel/mood_viewmodel.dart';
-
-// Views
-// Using a placeholder if WellnessDashboardScreen is blocked by gitignore
-import 'package:glo/view/glo_mood/wellness_dashboard_screen.dart';
+import 'view/glo_mood/wellness_dashboard_screen.dart';
+import 'view/glo_mood/mood_log_screen.dart';
+import 'view/glo_mood/mood_garden_screen.dart';
+import 'view/glo_mood/mood_calendar_screen.dart';
+import 'view/glo_mood/mood_summary_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MoodApp());
+  await Firebase.initializeApp();
+  runApp(const MyApp());
 }
 
-class MoodApp extends StatelessWidget {
-  const MoodApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<UserRepo>(create: (_) => UserRepoImpl()),
-        Provider<MoodRepo>(create: (_) => MoodRepoImpl()),
-        ChangeNotifierProvider(
-          create: (context) => UserViewModel(userRepo: context.read<UserRepo>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => MoodViewModel(moodRepo: context.read<MoodRepo>()),
-        ),
+        ChangeNotifierProvider(create: (_) => UserViewModel()),
+        ChangeNotifierProvider(create: (_) => WellnessViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Glo Mood',
-        theme: ThemeData(
-          primarySwatch: Colors.pink,
-          useMaterial3: true,
-        ),
-        home: const WellnessDashboardScreen(),
+        title: 'Glo',
+        theme: ThemeData(useMaterial3: true),
+        initialRoute: '/dashboard',
+        routes: {
+          '/dashboard': (context) => const WellnessDashboardScreen(),
+          '/mood_log': (context) => const MoodLogScreen(),
+          '/mood_garden': (context) => const MoodGardenScreen(),
+          '/mood_calendar': (context) => const MoodCalendarScreen(),
+          '/mood_summary': (context) => const MoodSummaryScreen(),
+        },
       ),
     );
   }
