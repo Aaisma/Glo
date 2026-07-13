@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/nutrition_tracker_viewmodel.dart';
-import '../app_colors.dart';
-import 'nutrition_history_screen.dart';
+import '../../viewmodel/nutrition_tracker_viewmodel.dart';
+import '../../constants/app_colors.dart';
+import 'package:glo/view/nutrition/nutrition_history_screen.dart';
 
 class NutritionTrackerScreen extends StatefulWidget {
   const NutritionTrackerScreen({super.key});

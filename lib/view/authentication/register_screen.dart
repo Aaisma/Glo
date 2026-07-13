@@ -38,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isRegistering = false;
 
   @override
   void dispose() {
@@ -47,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     final name = _fullNameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -67,21 +68,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Manual registration doesn't create the Firebase account yet — it's
-    // cached here and only created later in
-    // UserViewModel.finalizeOnboarding() once the skin survey is complete.
-    context.read<UserViewModel>().setSignupCredentials(name, email, password);
+    if (_isRegistering) return; // guard against double-tap firing this twice concurrently
 
-    if (widget.onRegisterSuccess != null) {
-      widget.onRegisterSuccess!.call();
-    } else {
-      Navigator.of(context).pushReplacementNamed('/survey');
+    final userVM = context.read<UserViewModel>();
+
+    setState(() => _isRegistering = true);
+    try {
+      // Every NEW registration starts blank. Without this, leftover survey
+      // answers from a previous abandoned attempt (persisted in Hive via
+      // saveOnboardingProgress) would silently resurface here, since
+      // SurveyPage.initState() always tries to restore whatever's saved.
+      await userVM.clearOnboardingProgress();
+
+      if (!mounted) return;
+
+      // Manual registration doesn't create the Firebase account yet — it's
+      // cached here and only created later in
+      // UserViewModel.finalizeOnboarding() once the skin survey is complete.
+      await userVM.setSignupCredentials(name, email, password);
+
+      if (!mounted) return;
+      widget.onRegisterSuccess?.call();
+    } catch (e, stackTrace) {
+      // TEMP DEBUG: prints real exception type + trace to console.
+      debugPrint('_handleRegister real error: ${e.runtimeType} - $e');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRegistering = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final h = MediaQuery.of(context).size.height;
+    final scale = (MediaQuery.of(context).size.height / 812).clamp(0.9, 1.35);
+    double gap(double base) => base * scale;
 
     return Scaffold(
       body: Container(
@@ -93,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: gap(12)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -105,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: Color(0xFF3A2A30)),
                   ),
                 ),
-                SizedBox(height: h * 0.01),
+                const SizedBox(height: 4),
                 const Text(
                   'Register',
                   textAlign: TextAlign.center,
@@ -115,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     color: AydColors.titlePink,
                   ),
                 ),
-                SizedBox(height: h * 0.02),
+                SizedBox(height: gap(16)),
                 const Text(
                   'Hey, Lovely!',
                   textAlign: TextAlign.center,
@@ -125,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     color: Color(0xFF3A2A30),
                   ),
                 ),
-                SizedBox(height: h * 0.005),
+                const SizedBox(height: 2),
                 Text(
                   '.✧♡✦ Your \'Glo\' Begins Here! ✦♡✧.',
                   textAlign: TextAlign.center,
@@ -136,20 +161,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     color: Colors.pink.shade300,
                   ),
                 ),
-                SizedBox(height: h * 0.04),
+                SizedBox(height: gap(28)),
                 RoundedTextField(
                   controller: _fullNameController,
                   hintText: 'Full Name',
                   icon: Icons.person_outline,
                 ),
-                SizedBox(height: h * 0.02),
+                SizedBox(height: gap(14)),
                 RoundedTextField(
                   controller: _emailController,
                   hintText: 'Email',
                   icon: Icons.mail_outline,
                   keyboardType: TextInputType.emailAddress,
                 ),
-                SizedBox(height: h * 0.02),
+                SizedBox(height: gap(14)),
                 RoundedTextField(
                   controller: _passwordController,
                   hintText: 'Password',
@@ -168,11 +193,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                 ),
-                SizedBox(height: h * 0.035),
+                SizedBox(height: gap(26)),
                 SizedBox(
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: _handleRegister,
+                    onPressed: _isRegistering ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AydColors.primaryPink,
                       foregroundColor: Colors.white,
@@ -182,7 +207,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
+                    child: _isRegistering
+                        ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                        : const Text(
                       'Register',
                       style: TextStyle(
                         fontSize: 16,
@@ -191,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: h * 0.02),
+                SizedBox(height: gap(16)),
                 Center(
                   child: RichText(
                     textAlign: TextAlign.center,
@@ -212,7 +246,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ..onTap = () {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
+                                  builder: (routeContext) => LoginScreen(
+                                    onAuthenticated: () {
+                                      Navigator.pushNamedAndRemoveUntil(routeContext, '/authWrapper', (route) => false);
+                                    },
+                                  ),
                                 ),
                               );
                             },
@@ -221,13 +259,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: h * 0.03),
+                SizedBox(height: gap(22)),
                 LoginOptionsSection(
                   onAuthenticated: () {
                     widget.onAuthenticated?.call();
                   },
                 ),
-                SizedBox(height: h * 0.015),
+                SizedBox(height: gap(12)),
               ],
             ),
           ),

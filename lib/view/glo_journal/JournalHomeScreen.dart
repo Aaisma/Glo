@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/journal_home_viewmodel.dart';
+import '../../viewmodel/profile_viewmodel.dart';
+import 'package:provider/provider.dart';
 import '../../repo/journal_repo.dart';
 import '../../model/journal_model.dart';
 
@@ -22,6 +25,9 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profileVM = context.watch<ProfileViewModel>();
+    final journalHomeVM = context.watch<JournalHomeViewModel>();
+
     return Scaffold(
       backgroundColor: backgroundLight,
       appBar: AppBar(
@@ -80,9 +86,9 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
                 children: [
                   Icon(Icons.favorite_border, color: primaryPink),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Good Morning, Samjhana 🌸',
-                    style: TextStyle(
+                  Text(
+                    'Good Morning, ${profileVM.username} 🌸',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -99,11 +105,11 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildMoodItem('🤩', 'Amazing'),
-                  _buildMoodItem('😀', 'Happy'),
-                  _buildMoodItem('😐', 'Calm'),
-                  _buildMoodItem('😢', 'Sad'),
-                  _buildMoodItem('😡', 'Angry'),
+                  _buildMoodItem('🤩', 'Amazing', journalHomeVM),
+                  _buildMoodItem('😀', 'Happy', journalHomeVM),
+                  _buildMoodItem('😐', 'Calm', journalHomeVM),
+                  _buildMoodItem('😢', 'Sad', journalHomeVM),
+                  _buildMoodItem('😡', 'Angry', journalHomeVM),
                 ],
               ),
               const Spacer(),
@@ -205,13 +211,11 @@ class _JournalHomeScreenState extends State<JournalHomeScreen> {
     );
   }
 
-  Widget _buildMoodItem(String emoji, String label) {
-    bool isSelected = selectedMood == label;
+  Widget _buildMoodItem(String emoji, String label, JournalHomeViewModel vm) {
+    bool isSelected = vm.selectedMood == label;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedMood = label;
-        });
+        vm.updateMood(label);
       },
       child: Column(
         children: [

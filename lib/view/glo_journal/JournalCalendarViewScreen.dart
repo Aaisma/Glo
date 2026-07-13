@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
 import 'WriteJournalScreen.dart';
 
@@ -42,6 +43,8 @@ class _JournalCalendarViewScreenState extends State<JournalCalendarViewScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<JournalViewModel>(context);
+    final userViewModel = Provider.of<UserViewModel>(context);
+    final userId = userViewModel.user?.id ?? '';
     final calendarDays = _getDaysInMonth(_focusedDate);
 
     return Scaffold(
@@ -81,7 +84,7 @@ class _JournalCalendarViewScreenState extends State<JournalCalendarViewScreen> {
       ),
       body: SafeArea(
         child: StreamBuilder<List<JournalModel>>(
-          stream: viewModel.getJournals(),
+          stream: userId.isEmpty ? Stream.value([]) : viewModel.getJournals(userId),
           builder: (context, snapshot) {
             final journals = snapshot.data ?? [];
             

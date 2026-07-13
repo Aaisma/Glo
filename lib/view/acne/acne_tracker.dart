@@ -4,11 +4,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import '../viewmodel/user_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 
 
-import '../viewmodel/acne_tracker_viewmodel.dart';
-import '../app_colors.dart';
+import '../../viewmodel/acne_tracker_viewmodel.dart';
+import '../../constants/app_colors.dart';
 import 'acne_details_page.dart';
 import 'acne_history_screen.dart';
 

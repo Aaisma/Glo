@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../model/journal_entry_model.dart';
+import '../model/journal_model.dart';
 import '../repo/journal_repo.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,7 +25,7 @@ class WriteJournalViewModel extends ChangeNotifier {
     required String title,
     required String content,
   }) async {
-    final entry = JournalEntryModel(
+    final entry = JournalModel(
       id: const Uuid().v4(),
       userId: userId,
       userName: userName,

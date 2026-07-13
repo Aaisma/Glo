@@ -18,10 +18,10 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
 
   final List<Map<String, String>> _moods = [
     {'id': 'Amazing', 'emoji': '😍', 'label': 'Amazing'},
-    {'id': 'Happy', 'emoji': '😁', 'label': 'Happy'},
+    {'id': 'Happy', 'emoji': '😀', 'label': 'Happy'},
     {'id': 'Calm', 'emoji': '😌', 'label': 'Calm'},
     {'id': 'Neutral', 'emoji': '😐', 'label': 'Neutral'},
-    {'id': 'Sad', 'emoji': '🥺', 'label': 'Sad'},
+    {'id': 'Sad', 'emoji': '😢', 'label': 'Sad'},
     {'id': 'Angry', 'emoji': '😡', 'label': 'Angry'},
   ];
 

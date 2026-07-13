@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:glo/view/authentication/auth_wrapper.dart';
 import 'package:glo/view/dashboard_page.dart';
+import 'package:glo/view/glo_admin/Daily_Journal/AdminDashboard.dart';
+import 'package:glo/view/admin_dashboard_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -10,6 +12,7 @@ import 'firebase_options.dart';
 
 // Repos
 import 'repo/user_repo.dart';
+import 'repo/admin_monthly_tracking_repo.dart';
 import 'repo/user_repo_impl.dart';
 import 'repo/auth_repo.dart';
 import 'repo/auth_repo_impl.dart';
@@ -39,10 +42,13 @@ import 'repo/notification_repo.dart';
 import 'repo/Notification_repo_Impl.dart';
 import 'repo/routine_repo.dart';
 import 'repo/routine_repo_impl.dart';
+import 'repo/journal_repo.dart';
+import 'repo/journal_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_viewmodel.dart';
 import 'viewmodel/auth_viewmodel.dart';
+import 'viewmodel/session_provider.dart';
 import 'viewmodel/otp_viewmodel.dart';
 import 'viewmodel/period_view_model.dart';
 import 'viewmodel/ovulation_view_model.dart';
@@ -57,6 +63,20 @@ import 'viewmodel/acne_tracker_viewmodel.dart';
 import 'viewmodel/profile_viewmodel.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/routine_viewmodel.dart';
+import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
+import 'viewmodel/journal_viewmodel.dart';
+import 'viewmodel/journal_home_viewmodel.dart';
+import 'viewmodel/write_journal_viewmodel.dart';
+import 'viewmodel/search_journals_viewmodel.dart';
+import 'viewmodel/journal_history_viewmodel.dart';
+import 'viewmodel/favorites_viewmodel.dart';
+import 'viewmodel/future_letters_viewmodel.dart';
+import 'viewmodel/goal_reflection_viewmodel.dart';
+import 'viewmodel/gratitude_viewmodel.dart';
+import 'viewmodel/journal_calendar_viewmodel.dart';
+import 'viewmodel/journal_menu_viewmodel.dart';
+import 'viewmodel/physical_activity_viewmodel.dart';
+import 'viewmodel/self_care_viewmodel.dart';
 
 import 'package:glo/view/authentication/authentication_page.dart';
 import 'package:glo/view/authentication/login_screen.dart';
@@ -102,13 +122,22 @@ class MyApp extends StatelessWidget {
         Provider<MedicationRepo>(create: (_) => MedicationRepoImpl()),
         Provider<NotificationRepo>(create: (_) => NotificationRepoImpl()),
         Provider<RoutineRepo>(create: (_) => RoutineRepoImpl()),
+        Provider<AdminMonthlyTrackingRepo>(create: (_) => AdminMonthlyTrackingRepoImpl()),
+        Provider<JournalRepo>(create: (_) => JournalRepoImpl()),
 
         // ViewModels
+        ChangeNotifierProvider(create: (_) => SessionProvider()),
         ChangeNotifierProvider(create: (ctx) => UserViewModel(userRepo: ctx.read<UserRepo>())),
         ChangeNotifierProvider(create: (ctx) => AuthViewModel(authRepo: ctx.read<AuthRepo>(), userRepo: ctx.read<UserRepo>())),
         ChangeNotifierProvider(create: (_) => OtpViewModel()),
-        ChangeNotifierProvider(create: (ctx) => PeriodViewModel(periodRepo: ctx.read<PeriodRepo>(), ovulationRepo: ctx.read<OvulationRepo>())),
-        ChangeNotifierProvider(create: (ctx) => OvulationViewModel(ovulationRepo: ctx.read<OvulationRepo>(), periodRepo: ctx.read<PeriodRepo>())),
+        ChangeNotifierProxyProvider<SessionProvider, PeriodViewModel>(
+          create: (ctx) => PeriodViewModel(periodRepo: ctx.read<PeriodRepo>(), ovulationRepo: ctx.read<OvulationRepo>()),
+          update: (ctx, session, previous) => previous!..setUserId(session.userId ?? ""),
+        ),
+        ChangeNotifierProxyProvider<SessionProvider, OvulationViewModel>(
+          create: (ctx) => OvulationViewModel(ovulationRepo: ctx.read<OvulationRepo>(), periodRepo: ctx.read<PeriodRepo>()),
+          update: (ctx, session, previous) => previous!..setUserId(session.userId ?? ""),
+        ),
         ChangeNotifierProvider(create: (ctx) => InsightsFeedViewModel(ctx.read<InsightsRepo>())),
         ChangeNotifierProvider(create: (ctx) => FavoritesViewModel(ctx.read<InsightsRepo>(), ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => ArticleDetailViewModel(ctx.read<InsightsRepo>(), ctx.read<InsightsModerationRepo>())),
@@ -120,14 +149,37 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => EditPollViewModel(ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => DiscussionDetailViewModel(ctx.read<CommunityRepo>(), ctx.read<CommunityModerationRepo>())),
         ChangeNotifierProvider(create: (ctx) => WellnessViewModel(moodRepository: ctx.read<MoodRepository>())),
-        ChangeNotifierProvider(create: (ctx) => WaterTrackerViewModel(ctx.read<WaterTrackerRepo>())),
-        ChangeNotifierProvider(create: (ctx) => NutritionTrackerViewModel(ctx.read<NutritionRepo>())),
+        ChangeNotifierProxyProvider<SessionProvider, WaterTrackerViewModel>(
+          create: (ctx) => WaterTrackerViewModel(ctx.read<WaterTrackerRepo>()),
+          update: (ctx, session, previous) => previous!..updateUserId(session.userId),
+        ),
+        ChangeNotifierProxyProvider<SessionProvider, NutritionTrackerViewModel>(
+          create: (ctx) => NutritionTrackerViewModel(ctx.read<NutritionRepo>()),
+          update: (ctx, session, previous) => previous!..updateUserId(session.userId),
+        ),
         ChangeNotifierProvider(create: (ctx) => MedicationViewModel(repo: ctx.read<MedicationRepo>())),
         ChangeNotifierProvider(create: (ctx) => NotificationViewModel(notificationRepo: ctx.read<NotificationRepo>())),
-        ChangeNotifierProvider(create: (ctx) => AcneTrackerViewModel(ctx.read<AcneRepo>())),
+        ChangeNotifierProxyProvider<SessionProvider, AcneTrackerViewModel>(
+          create: (ctx) => AcneTrackerViewModel(ctx.read<AcneRepo>()),
+          update: (ctx, session, previous) => previous!..updateUserId(session.userId),
+        ),
         ChangeNotifierProvider(create: (ctx) => ProfileViewModel()),
         ChangeNotifierProvider(create: (ctx) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (ctx) => RoutineViewModel(routineRepo: ctx.read<RoutineRepo>())),
+        ChangeNotifierProvider(create: (ctx) => AdminMonthlyTrackingViewModel(ctx.read<AdminMonthlyTrackingRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalViewModel(repo: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalHomeViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => WriteJournalViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => SearchJournalsViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalHistoryViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalFavoritesViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => FutureLettersViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => GoalReflectionViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => GratitudeViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalCalendarViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => JournalMenuViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => PhysicalActivityViewModel(repository: ctx.read<JournalRepo>())),
+        ChangeNotifierProvider(create: (ctx) => SelfCareViewModel(repository: ctx.read<JournalRepo>())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -140,8 +192,19 @@ class MyApp extends StatelessWidget {
         routes: {
           '/authWrapper': (context) => const AuthWrapper(),
           '/home': (context) => const AuthWrapper(),
-          '/login': (context) => const LoginScreen(),
-          '/register': (context) => const RegisterScreen(),
+          '/login': (context) => LoginScreen(
+            onAuthenticated: () {
+              Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+            },
+          ),
+          '/register': (context) => RegisterScreen(
+            onRegisterSuccess: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SurveyPage()));
+            },
+            onAuthenticated: () {
+              Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+            },
+          ),
           '/survey': (context) => const SurveyPage(),
           '/auth': (context) => const AuthenticationPage(),
           '/forgotPasswordOTP': (context) => const GloOtpScreen(),

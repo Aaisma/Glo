@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/journal_entry_model.dart';
+import '../model/journal_model.dart';
 import 'journal_repo.dart';
 
 class JournalRepoImpl implements JournalRepo {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
-  Future<void> addJournal(JournalEntryModel journal) async {
+  Future<void> addJournal(JournalModel journal) async {
     try {
       await _firestore
           .collection('users')
@@ -20,7 +20,7 @@ class JournalRepoImpl implements JournalRepo {
   }
 
   @override
-  Stream<List<JournalEntryModel>> getJournals(String userId) {
+  Stream<List<JournalModel>> getJournals(String userId) {
     return _firestore
         .collection('users')
         .doc(userId)
@@ -35,14 +35,14 @@ class JournalRepoImpl implements JournalRepo {
                 if (data['id'] == null || data['id'] == '') {
                   data['id'] = doc.id;
                 }
-                return JournalEntryModel.fromMap(data);
+                return JournalModel.fromMap(data);
               })
               .toList(),
         );
   }
 
   @override
-  Future<void> updateJournal(JournalEntryModel journal) async {
+  Future<void> updateJournal(JournalModel journal) async {
     try {
       await _firestore
           .collection('users')

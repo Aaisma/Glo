@@ -72,18 +72,25 @@ class JournalModel {
   }
 
   factory JournalModel.fromMap(Map<String, dynamic> map) {
+    DateTime parseDate(dynamic dateData) {
+      if (dateData == null) return DateTime.now();
+      if (dateData is Timestamp) return dateData.toDate();
+      if (dateData is String) return DateTime.tryParse(dateData) ?? DateTime.now();
+      return DateTime.now();
+    }
+
     return JournalModel(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       userName: map['userName'] ?? '',
-      title: map['title'] ?? '',
-      content: map['content'] ?? '',
+      title: map['title'] ?? map['prompt'] ?? '',
+      content: map['content'] ?? map['text'] ?? '',
       mood: map['mood'] ?? '',
       emoji: map['emoji'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: parseDate(map['createdAt']),
       isFavorite: map['isFavorite'] ?? false,
       category: map['category'] ?? 'regular',
-      unlockDate: (map['unlockDate'] as Timestamp?)?.toDate(),
+      unlockDate: map['unlockDate'] != null ? parseDate(map['unlockDate']) : null,
     );
   }
 }

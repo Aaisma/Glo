@@ -36,14 +36,21 @@ class _SurveyPageState extends State<SurveyPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final userVM = Provider.of<UserViewModel>(context, listen: false);
-      await userVM.restoreOnboardingProgress();
-      setState(() {
-        _currentStep = 0;
-        _syncDataToControllers(userVM.surveyData);
-      });
-      if (_pageController.hasClients) {
-        _pageController.jumpToPage(0);
+      try {
+        final userVM = Provider.of<UserViewModel>(context, listen: false);
+        await userVM.restoreOnboardingProgress();
+        if (!mounted) return;
+        setState(() {
+          _currentStep = 0;
+          _syncDataToControllers(userVM.surveyData);
+        });
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(0);
+        }
+      } catch (e, stackTrace) {
+        // TEMP DEBUG: prints real exception type + trace to console.
+        debugPrint('SurveyPage.initState real error: ${e.runtimeType} - $e');
+        debugPrintStack(stackTrace: stackTrace);
       }
     });
 
@@ -182,7 +189,10 @@ class _SurveyPageState extends State<SurveyPage> {
         Navigator.pop(context); // Pop loading
         Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // TEMP DEBUG: prints real exception type + trace to console.
+      debugPrint('_finalizeRegistration real error: ${e.runtimeType} - $e');
+      debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         Navigator.pop(context); // Pop loading
         ScaffoldMessenger.of(context).showSnackBar(

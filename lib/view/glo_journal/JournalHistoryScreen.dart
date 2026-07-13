@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/journal_history_viewmodel.dart';
+import '../../viewmodel/session_provider.dart';
 import '../../model/journal_model.dart';
 import 'JournalCalendarViewScreen.dart';
 
@@ -21,7 +22,9 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
+    final viewModel = Provider.of<JournalHistoryViewModel>(context);
+    final sessionProvider = Provider.of<SessionProvider>(context);
+    final userId = sessionProvider.userId ?? '';
 
     return Scaffold(
       backgroundColor: backgroundSoftPink,
@@ -41,7 +44,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen> {
           const SizedBox(height: 20),
           Expanded(
             child: StreamBuilder<List<JournalModel>>(
-              stream: viewModel.getJournals(),
+              stream: userId.isEmpty ? Stream.value([]) : viewModel.getJournalStream(userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -98,7 +101,10 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen> {
           ),
           IconButton(
             icon: Icon(Icons.delete_outline, color: Colors.red.withOpacity(0.3), size: 20),
-            onPressed: () => Provider.of<JournalViewModel>(context, listen: false).deleteJournal(journal.id),
+            onPressed: () {
+              final userId = Provider.of<SessionProvider>(context, listen: false).userId ?? '';
+              Provider.of<JournalHistoryViewModel>(context, listen: false).deleteJournal(userId, journal.id);
+            },
           ),
         ],
       ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/favorites_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -17,7 +18,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
+    final viewModel = Provider.of<JournalFavoritesViewModel>(context);
+    final userViewModel = Provider.of<UserViewModel>(context);
+    final userId = userViewModel.user?.id ?? '';
 
     return Scaffold(
       backgroundColor: backgroundSoftPink,
@@ -40,7 +43,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       body: SafeArea(
         child: StreamBuilder<List<JournalModel>>(
-          stream: viewModel.getJournals(),
+          stream: userId.isEmpty ? Stream.value([]) : viewModel.getFavoritesStream(userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -50,7 +53,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               return const Center(child: Text("No journals found."));
             }
 
-            final favorites = snapshot.data!.where((j) => j.isFavorite).toList();
+            final favorites = snapshot.data!;
 
             if (favorites.isEmpty) {
               return const Center(
@@ -146,8 +149,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               size: 24,
             ),
             onPressed: () {
-              Provider.of<JournalViewModel>(context, listen: false)
-                  .updateJournal(journal.copyWith(isFavorite: false));
+              Provider.of<JournalFavoritesViewModel>(context, listen: false)
+                  .toggleFavorite(journal);
             },
           ),
         ],

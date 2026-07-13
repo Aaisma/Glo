@@ -23,11 +23,20 @@ class UserViewModel extends ChangeNotifier {
   String get signupEmail => _signupEmail;
   String get signupPassword => _signupPassword;
 
-  void setSignupCredentials(String name, String email, String password) {
+  Future<void> setSignupCredentials(String name, String email, String password) async {
     _signupName = name;
     _signupEmail = email;
     _signupPassword = password;
     notifyListeners();
+
+    // SurveyPage.initState() unconditionally calls restoreOnboardingProgress()
+    // on mount, which reads signup_name/signup_email straight back out of
+    // Hive. Without persisting them here, that restore call immediately
+    // overwrites what was just typed on the register screen with whatever
+    // (or nothing) is left over in Hive from a previous attempt.
+    final box = Hive.box('onboarding_box');
+    await box.put('signup_name', _signupName);
+    await box.put('signup_email', _signupEmail);
   }
 
   void updateSurveyData(OnboardingSurveyData data) {
@@ -60,6 +69,8 @@ class UserViewModel extends ChangeNotifier {
     final box = Hive.box('onboarding_box');
     await box.delete('current_step');
     await box.delete('survey_data');
+    await box.delete('signup_name');
+    await box.delete('signup_email');
     _surveyData = OnboardingSurveyData();
     _signupName = '';
     _signupEmail = '';
@@ -98,13 +109,12 @@ class UserViewModel extends ChangeNotifier {
       }
       setUserId(user.uid);
 
-      // 2. initializeTrackers()
-      await OnboardingTrackerInitializer.initializeAllTrackers(
-        userId: user.uid,
-        surveyData: _surveyData,
-      );
-
-      // 3. saveSurveyAnswers() & markOnboardingComplete()
+      // 2. saveSurveyAnswers() & markOnboardingComplete() — this MUST run
+      // before tracker initialization. If a tracker call fails and this ran
+      // second, an already-created account would end up with
+      // surveyCompleted still false, and AuthWrapper would loop the user
+      // straight back into SurveyPage every launch with no way out except
+      // re-running (and re-duplicating) tracker setup.
       await updateSurvey(
         userId: user.uid,
         email: user.email ?? '',
@@ -124,12 +134,33 @@ class UserViewModel extends ChangeNotifier {
         lastDermaVisit: _surveyData.lastDermaVisit,
       );
 
-      // 4. Fetch cycle tracker logs to sync period data
-      await periodVM.fetchLogs();
+      // 3. initializeTrackers() — best-effort. Survey is already marked
+      // complete above, so a failure here (isolated per-tracker inside
+      // OnboardingTrackerInitializer too) can never strand the user in
+      // SurveyPage or trigger a retry that duplicates entries.
+      try {
+        await OnboardingTrackerInitializer.initializeAllTrackers(
+          userId: user.uid,
+          surveyData: _surveyData,
+        );
+      } catch (e) {
+        debugPrint('finalizeOnboarding: tracker initialization failed (non-fatal): $e');
+      }
+
+      // 4. Fetch cycle tracker logs to sync period data — also best-effort,
+      // for the same reason.
+      try {
+        await periodVM.fetchLogs();
+      } catch (e) {
+        debugPrint('finalizeOnboarding: period log sync failed (non-fatal): $e');
+      }
 
       // 5. Clean up local onboarding progress
       await clearOnboardingProgress();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // TEMP DEBUG: prints real exception type + trace to console.
+      debugPrint('finalizeOnboarding real error: ${e.runtimeType} - $e');
+      debugPrintStack(stackTrace: stackTrace);
       setError(e.toString());
       rethrow;
     } finally {
@@ -199,6 +230,11 @@ class UserViewModel extends ChangeNotifier {
 
     setLoading(true);
     try {
+      // Brand-new account (this only runs when no Firestore doc exists yet,
+      // e.g. first Google/Facebook sign-in) — same reasoning as the manual
+      // register path: any leftover local survey progress belongs to some
+      // other, possibly abandoned attempt and must not resurface here.
+      await clearOnboardingProgress();
       await _userRepo.createDefaultProfile(user);
       await fetchCurrentUser();
     } catch (e) {
@@ -206,6 +242,17 @@ class UserViewModel extends ChangeNotifier {
     } finally {
       setLoading(false);
     }
+  }
+
+  /// Resets locally-cached user state. Call this on logout (alongside
+  /// FirebaseAuth.signOut()) so a different account signing in afterward
+  /// never briefly sees the previous user's cached data before
+  /// fetchCurrentUser() runs again.
+  void clearUser() {
+    _user = null;
+    _userId = null;
+    _error = null;
+    notifyListeners();
   }
 
   Future<void> deleteUser(String id) async {
@@ -254,6 +301,86 @@ class UserViewModel extends ChangeNotifier {
     try {
       final fetchedUser = await _userRepo.getUserByID(id);
       return fetchedUser;
+    } catch (e) {
+      setError(e.toString());
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /// Flips `profileCompleted` to true for the current user without touching
+  /// any other field, then refreshes `user` so AuthWrapper can route past
+  /// GloProfileScreen on its next rebuild.
+  Future<bool> completeProfile() async {
+    final id = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (id == null) {
+      setError('No logged-in user found');
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await _userRepo.markProfileCompleted(id);
+      await fetchCurrentUser();
+      return true;
+    } catch (e) {
+      setError(e.toString());
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /// Syncs profile-screen edits (name, username, photo) into the canonical
+  /// UserModel and, via UserRepo.editProfile, into any denormalized copies
+  /// of the name/photo (discussion posts, community poll entries).
+  ///
+  /// ProfileViewModel owns the actual editing UI and its own Firestore
+  /// write for its own fields (bio, Firebase Auth displayName, etc.) — this
+  /// is the second half of every edit, called alongside it, so the two
+  /// never drift apart. Only the fields passed in are changed; everything
+  /// else on the user (survey answers, role, completion flags) is carried
+  /// over from whatever is currently loaded so this can never clobber data
+  /// ProfileViewModel doesn't know about.
+  Future<UserModel?> updateProfileFields({
+    String? name,
+    String? username,
+    String? imageUrl,
+  }) async {
+    final currentId = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (currentId == null) {
+      setError('No logged-in user found');
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      // Don't trust a possibly-stale cached _user (e.g. belonging to a
+      // previous account, or never fetched this session) — refetch if it
+      // doesn't match, so editProfile()'s full-document update can't wipe
+      // fields this call isn't touching.
+      final base = (_user != null && _user!.id == currentId)
+          ? _user!
+          : await _userRepo.getUserByID(currentId);
+
+      if (base == null) {
+        setError('No profile found to update');
+        return null;
+      }
+
+      final updated = base.copyWith(
+        name: name,
+        username: username,
+        imageUrl: imageUrl,
+      );
+
+      await _userRepo.editProfile(updated);
+      _user = updated;
+      notifyListeners();
+      return updated;
     } catch (e) {
       setError(e.toString());
       return null;

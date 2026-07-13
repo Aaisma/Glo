@@ -15,18 +15,18 @@ import 'glo_journal/JournalHomeScreen.dart';
 import 'glo_profile/glo_profile.dart';
 import 'insight/user/insights_feed_view.dart';
 import 'glo_history/history_screen.dart';
-import 'calendar_screen.dart';
+import 'package:glo/view/calender/calendar_screen.dart';
 
 // Wellness pages
 import '../../view/dashboard_card/log_symptoms_page.dart';
 import 'dashboard_card/ovulation_period_page.dart';
 
 // Card pages
-import 'water_tracker.dart';
+import 'water/water_tracker.dart';
 import '../view/glo_medication/medication_screen.dart';
-import 'acne_tracker.dart';
+import 'acne/acne_tracker.dart';
 import '../view/glo_mood/wellness_dashboard_screen.dart';
-import 'package:glo/view/nutrition_tracker_screen.dart';
+import 'package:glo/view/nutrition/nutrition_tracker_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int initialIndex;

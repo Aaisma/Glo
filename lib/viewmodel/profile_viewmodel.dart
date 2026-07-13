@@ -143,11 +143,13 @@ class ProfileViewModel extends ChangeNotifier {
 
   Future<bool> saveProfile({
     required String name,
-    required String bio,
     String? username,
+    String? bio,
   }) async {
     final cleanName = name.trim();
-    final cleanBio = bio.trim().isEmpty ? defaultBio : bio.trim();
+    final cleanBio = bio == null
+        ? _bio
+        : (bio.trim().isEmpty ? defaultBio : bio.trim());
     final cleanUsername = username?.trim() ?? _username;
 
     if (cleanName.isEmpty) {
@@ -159,7 +161,7 @@ class ProfileViewModel extends ChangeNotifier {
     }
 
     return _run(
-      () async {
+          () async {
         final user = currentUser;
         final docRef = _userDoc;
 
@@ -198,10 +200,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<bool> updateProfileName(String name) async {
-    return saveProfile(
-      name: name,
-      bio: _bio,
-    );
+    return saveProfile(name: name);
   }
 
   Future<bool> updateProfileImage(String imagePath) async {

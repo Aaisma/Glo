@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../viewmodel/journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PhysicalActivityScreen extends StatefulWidget {
   const PhysicalActivityScreen({Key? key}) : super(key: key);
@@ -39,7 +40,7 @@ class _PhysicalActivityScreenState extends State<PhysicalActivityScreen> {
     
     final journal = JournalModel(
       id: const Uuid().v4(),
-      userId: userViewModel.user?.id ?? 'unknown',
+      userId: FirebaseAuth.instance.currentUser?.uid ?? userViewModel.user?.id ?? 'unknown',
       userName: userViewModel.user?.name ?? 'Anonymous',
       title: "Physical Activity: $selectedActivity",
       content: content,

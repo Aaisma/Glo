@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nepali_utils/nepali_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-import '../viewmodel/user_viewmodel.dart';
-import '../viewmodel/routine_viewmodel.dart';
-import '../model/calendar_models.dart';
+import 'package:glo/viewmodel/user_viewmodel.dart';
+import 'package:glo/viewmodel/routine_viewmodel.dart';
+import 'package:glo/model/calendar_models.dart';
 
 /// Color palette
 const _bgColor = Color(0xFFF8C8DC);

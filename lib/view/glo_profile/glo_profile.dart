@@ -37,8 +37,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
   static const borderPink = Color(0xFFFFD6E2);
   static const dark = Color(0xFF14181F);
 
-  static const defaultBio = "Taking care of myself,\none day at a time.";
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -80,16 +78,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     }
 
     return _authName;
-  }
-
-  String _resolvedBio(ProfileViewModel vm) {
-    final bio = vm.bio.trim();
-
-    if (bio.isNotEmpty) {
-      return bio;
-    }
-
-    return defaultBio;
   }
 
   String? _resolvedImagePath(ProfileViewModel vm) {
@@ -176,7 +164,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
           vm: vm,
           initialName: _resolvedName(vm),
           initialUsername: _resolvedUsername(vm),
-          initialBio: _resolvedBio(vm).replaceAll("\n", " "),
           onPickImage: _pickProfileImage,
         );
       },
@@ -267,15 +254,17 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                 final navigator = Navigator.of(context);
                 final dialogNavigator = Navigator.of(dialogContext);
                 final authVm = context.read<AuthViewModel>();
+                final userVM = context.read<UserViewModel>();
 
                 await authVm.signOut();
+                userVM.clearUser();
 
                 if (!mounted || !dialogContext.mounted) return;
 
                 dialogNavigator.pop();
                 navigator.pushNamedAndRemoveUntil(
                   '/authWrapper',
-                  (_) => false,
+                      (_) => false,
                 );
               },
               child: const Text(
@@ -298,7 +287,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
     final fullName = _resolvedName(vm);
     final email = _authEmail;
     final username = _resolvedUsername(vm);
-    final bio = _resolvedBio(vm);
     final imagePath = _resolvedImagePath(vm);
 
     final cycleDay = periodVM.cycleDay?.toString() ?? "--";
@@ -322,7 +310,7 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
             padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
             child: Column(
               children: [
-                TopNavigation(isLoggedIn: true, userName: fullName),
+                TopNavigation(isLoggedIn: true, userName: fullName, showGreeting: false),
                 const SizedBox(height: 8),
                 if (needsSetup) ...[
                   _FinishSetupBanner(
@@ -335,7 +323,6 @@ class _GloProfileScreenState extends State<GloProfileScreen> {
                   fullName: fullName,
                   username: username,
                   email: email,
-                  bio: bio,
                   imagePath: imagePath,
                   onImageTap: _pickProfileImage,
                   onEditTap: _editProfile,
@@ -364,7 +351,6 @@ class _ProfileCard extends StatelessWidget {
   final String fullName;
   final String username;
   final String email;
-  final String bio;
   final String? imagePath;
   final VoidCallback onImageTap;
   final VoidCallback onEditTap;
@@ -375,7 +361,6 @@ class _ProfileCard extends StatelessWidget {
     required this.fullName,
     required this.username,
     required this.email,
-    required this.bio,
     required this.imagePath,
     required this.onImageTap,
     required this.onEditTap,
@@ -1007,14 +992,12 @@ class _EditProfileDialog extends StatefulWidget {
   final ProfileViewModel vm;
   final String initialName;
   final String initialUsername;
-  final String initialBio;
   final VoidCallback onPickImage;
 
   const _EditProfileDialog({
     required this.vm,
     required this.initialName,
     required this.initialUsername,
-    required this.initialBio,
     required this.onPickImage,
   });
 
@@ -1025,7 +1008,6 @@ class _EditProfileDialog extends StatefulWidget {
 class _EditProfileDialogState extends State<_EditProfileDialog> {
   late TextEditingController nameController;
   late TextEditingController usernameController;
-  late TextEditingController bioController;
   bool isSaving = false;
 
   @override
@@ -1033,14 +1015,12 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     super.initState();
     nameController = TextEditingController(text: widget.initialName);
     usernameController = TextEditingController(text: widget.initialUsername);
-    bioController = TextEditingController(text: widget.initialBio);
   }
 
   @override
   void dispose() {
     nameController.dispose();
     usernameController.dispose();
-    bioController.dispose();
     super.dispose();
   }
 
@@ -1060,9 +1040,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               onPressed: isSaving
                   ? null
                   : () {
-                      Navigator.pop(context);
-                      widget.onPickImage();
-                    },
+                Navigator.pop(context);
+                widget.onPickImage();
+              },
               icon: const Icon(Icons.photo_library_outlined),
               label: const Text("Change Profile Picture"),
               style: OutlinedButton.styleFrom(
@@ -1087,15 +1067,6 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 hintText: "Unique handle",
               ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: bioController,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: "Bio",
-                hintText: "Tell us a bit about yourself",
-              ),
-            ),
           ],
         ),
       ),
@@ -1109,65 +1080,63 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           onPressed: isSaving
               ? null
               : () async {
-                  final name = nameController.text.trim();
-                  final username = usernameController.text.trim().replaceAll("@", "");
-                  final bio = bioController.text.trim();
+            final name = nameController.text.trim();
+            final username = usernameController.text.trim().replaceAll("@", "");
 
-                  if (name.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please enter your name")),
-                    );
-                    return;
-                  }
+            if (name.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Please enter your name")),
+              );
+              return;
+            }
 
-                  if (username.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please enter a username")),
-                    );
-                    return;
-                  }
+            if (username.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Please enter a username")),
+              );
+              return;
+            }
 
-                  final messenger = ScaffoldMessenger.of(context);
-                  final navigator = Navigator.of(context);
+            final messenger = ScaffoldMessenger.of(context);
+            final navigator = Navigator.of(context);
 
-                  setState(() => isSaving = true);
+            setState(() => isSaving = true);
 
-                  final success = await widget.vm.saveProfile(
-                    name: name,
-                    username: username,
-                    bio: bio.isEmpty ? ProfileViewModel.defaultBio : bio,
-                  );
+            final success = await widget.vm.saveProfile(
+              name: name,
+              username: username,
+            );
 
-                  if (!mounted) return;
+            if (!mounted) return;
 
-                  setState(() => isSaving = false);
+            setState(() => isSaving = false);
 
-                  if (success) {
-                    navigator.pop();
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text("Profile updated")),
-                    );
-                  } else {
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text(widget.vm.errorMessage ?? "Profile update failed"),
-                      ),
-                    );
-                  }
-                },
+            if (success) {
+              navigator.pop();
+              messenger.showSnackBar(
+                const SnackBar(content: Text("Profile updated")),
+              );
+            } else {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(widget.vm.errorMessage ?? "Profile update failed"),
+                ),
+              );
+            }
+          },
           child: isSaving
               ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+            height: 18,
+            width: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
               : const Text(
-                  "Save",
-                  style: TextStyle(color: Colors.white),
-                ),
+            "Save",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );

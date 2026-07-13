@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/period_log_model.dart';
 import '../model/ovulation_log_model.dart';
+import '../model/cycle_analytics_engine.dart';
 
 abstract class AdminMonthlyTrackingRepo {
   Future<Map<String, dynamic>> getPeriodAnalytics(DateTime startDate, DateTime endDate);
@@ -76,15 +77,8 @@ class AdminMonthlyTrackingRepoImpl implements AdminMonthlyTrackingRepo {
     int p10Plus = periodLengths.where((p) => p >= 10).length;
     int totalPeriods = periodLengths.length;
     
-    // Fallback if data is insufficient (for UI demonstration purposes based on design)
-    if (totalLogs == 0) {
-      totalLogs = 8934;
-      totalCycles = 100;
-      cycleLess26 = 18; cycle26To32 = 64; cycleMore32 = 18;
-      totalPeriods = 100;
-      p1To3 = 12; p4To6 = 62; p7To9 = 20; p10Plus = 6;
-      startDayCounts = {1: 12, 2: 14, 3: 18, 4: 16, 5: 16, 6: 12, 7: 12};
-    }
+    // Removed fallback simulated data per requirements.
+
 
     return {
       "avgCycleLength": avgCycleLength.round(),
@@ -110,111 +104,319 @@ class AdminMonthlyTrackingRepoImpl implements AdminMonthlyTrackingRepo {
 
   @override
   Future<Map<String, dynamic>> getOvulationAnalytics(DateTime startDate, DateTime endDate) async {
-    final snapshot = await _firestore
+    final ovulationSnap = await _firestore
         .collection('ovulation')
         .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
         .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
         .get();
+        
+    final periodSnap = await _firestore
+        .collection('period')
+        .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
+        .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
+        .get();
 
-    final logs = snapshot.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
-    int totalLogs = logs.length;
+    final ovulationLogs = ovulationSnap.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
+    final periodLogs = periodSnap.docs.map((doc) => PeriodLogModel.fromMap(doc.data())).toList();
     
-    // Simulate complex cycle correlations if no data
+    int totalOvulationLogs = ovulationLogs.length;
+
+    // Group by user
+    Map<String, List<OvulationLogModel>> ovLogsByUser = {};
+    for (var log in ovulationLogs) {
+      ovLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+    Map<String, List<PeriodLogModel>> pLogsByUser = {};
+    for (var log in periodLogs) {
+      pLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+
+    Set<String> allUserIds = {...ovLogsByUser.keys, ...pLogsByUser.keys};
+
+    List<int> ovulationDays = [];
+    List<int> fertileWindowLengths = [];
+    int accuratePredictions = 0;
+    int inaccuratePredictions = 0;
+
+    for (String userId in allUserIds) {
+      final userOvLogs = ovLogsByUser[userId] ?? [];
+      final userPLogs = pLogsByUser[userId] ?? [];
+      
+      final result = CycleAnalyticsEngine.calculate(periodLogs: userPLogs, ovulationLogs: userOvLogs);
+      
+      for (var cycle in result.pastCycles) {
+        if (cycle.ovulationDate != null) {
+          int ovDay = cycle.ovulationDate!.difference(cycle.startDate).inDays + 1;
+          ovulationDays.add(ovDay);
+          fertileWindowLengths.add(cycle.fertileDays.length);
+          
+          if (cycle.isOvulationConfirmed) {
+            // In the engine, if it wasn't confirmed, it defaults to nextStart - 14 days.
+            // If it is confirmed, the engine uses the confirmed date.
+            // But we need to compare the predicted date against the confirmed date for accuracy.
+            // The engine's CycleData model doesn't store the purely "predicted" date if confirmed. 
+            // So we re-calculate the basic prediction: nextStart - 14.
+            DateTime basicPredicted = cycle.endDate.add(const Duration(days: 1)).subtract(const Duration(days: 14));
+            int diff = cycle.ovulationDate!.difference(basicPredicted).inDays.abs();
+            if (diff <= 2) {
+              accuratePredictions++;
+            } else {
+              inaccuratePredictions++;
+            }
+          }
+        }
+      }
+    }
+
+    double avgOvulationDay = ovulationDays.isEmpty ? 0 : ovulationDays.reduce((a, b) => a + b) / ovulationDays.length;
+    double avgFertileWindow = fertileWindowLengths.isEmpty ? 0 : fertileWindowLengths.reduce((a, b) => a + b) / fertileWindowLengths.length;
+
+    int ovLess12 = ovulationDays.where((d) => d < 12).length;
+    int ov12To16 = ovulationDays.where((d) => d >= 12 && d <= 16).length;
+    int ovMore16 = ovulationDays.where((d) => d > 16).length;
+    int totalOvCycles = ovulationDays.length;
+
+    int fw3To4 = fertileWindowLengths.where((f) => f >= 3 && f <= 4).length;
+    int fw5To7 = fertileWindowLengths.where((f) => f >= 5 && f <= 7).length;
+    int fw8To10 = fertileWindowLengths.where((f) => f >= 8 && f <= 10).length;
+    int fw10Plus = fertileWindowLengths.where((f) => f > 10).length;
+    int totalFwCycles = fertileWindowLengths.length;
+
+    int totalAccuracyChecks = accuratePredictions + inaccuratePredictions;
+
     return {
-      "avgOvulationDay": 14,
-      "avgFertileWindow": 6,
-      "totalOvulationLogs": totalLogs > 0 ? totalLogs : 6721,
+      "avgOvulationDay": avgOvulationDay.round(),
+      "avgFertileWindow": avgFertileWindow.round(),
+      "totalOvulationLogs": totalOvulationLogs,
       "ovulationDistribution": {
-        "< 12 days": 20,
-        "12-16 days": 64,
-        "> 16 days": 16,
+        "< 12 days": totalOvCycles == 0 ? 0 : (ovLess12 / totalOvCycles * 100).round(),
+        "12-16 days": totalOvCycles == 0 ? 0 : (ov12To16 / totalOvCycles * 100).round(),
+        "> 16 days": totalOvCycles == 0 ? 0 : (ovMore16 / totalOvCycles * 100).round(),
       },
       "fertileWindowDistribution": {
-        "3-4 days": 10,
-        "5-7 days": 58,
-        "8-10 days": 24,
-        "10+ days": 8,
+        "3-4 days": totalFwCycles == 0 ? 0 : (fw3To4 / totalFwCycles * 100).round(),
+        "5-7 days": totalFwCycles == 0 ? 0 : (fw5To7 / totalFwCycles * 100).round(),
+        "8-10 days": totalFwCycles == 0 ? 0 : (fw8To10 / totalFwCycles * 100).round(),
+        "10+ days": totalFwCycles == 0 ? 0 : (fw10Plus / totalFwCycles * 100).round(),
       },
       "accuracy": {
-        "Accurate": 92,
-        "Inaccurate": 8,
+        "Accurate": totalAccuracyChecks == 0 ? 0 : (accuratePredictions / totalAccuracyChecks * 100).round(),
+        "Inaccurate": totalAccuracyChecks == 0 ? 0 : (inaccuratePredictions / totalAccuracyChecks * 100).round(),
       }
     };
   }
 
   @override
   Future<Map<String, dynamic>> getSymptomsAnalytics(DateTime startDate, DateTime endDate) async {
-    final snapshot = await _firestore
+    final periodSnap = await _firestore
         .collection('period')
         .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
         .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
         .get();
 
+    final ovulationSnap = await _firestore
+        .collection('ovulation')
+        .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
+        .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
+        .get();
+
+    final pLogs = periodSnap.docs.map((doc) => PeriodLogModel.fromMap(doc.data())).toList();
+    final ovLogs = ovulationSnap.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
+
     int totalSymptoms = 0;
     Set<String> usersLoggingSymptoms = {};
     Map<String, int> symptomCounts = {};
+    Map<String, int> phaseCounts = {
+      "Menstruation": 0,
+      "Follicular": 0,
+      "Ovulation": 0,
+      "Fertile Window": 0,
+      "Luteal": 0
+    };
 
-    for (var doc in snapshot.docs) {
-      final data = doc.data();
-      final symptoms = Map<String, bool>.from(data['symptoms'] ?? {});
-      final activeSymptoms = symptoms.entries.where((e) => e.value).map((e) => e.key).toList();
-      
-      if (activeSymptoms.isNotEmpty) {
-        usersLoggingSymptoms.add(data['userId']);
-        totalSymptoms += activeSymptoms.length;
-        for (var s in activeSymptoms) {
-          symptomCounts[s] = (symptomCounts[s] ?? 0) + 1;
+    // Group logs by user
+    Map<String, List<PeriodLogModel>> pLogsByUser = {};
+    for (var log in pLogs) {
+      pLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+    Map<String, List<OvulationLogModel>> ovLogsByUser = {};
+    for (var log in ovLogs) {
+      ovLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+
+    Set<String> allUserIds = {...pLogsByUser.keys, ...ovLogsByUser.keys};
+
+    for (String userId in allUserIds) {
+      final userPLogs = pLogsByUser[userId] ?? [];
+      final userOvLogs = ovLogsByUser[userId] ?? [];
+
+      // Extract symptoms from period logs
+      for (var pLog in userPLogs) {
+        final activeSymptoms = pLog.symptoms.entries.where((e) => e.value).map((e) => e.key).toList();
+        if (activeSymptoms.isNotEmpty) {
+          usersLoggingSymptoms.add(userId);
+          totalSymptoms += activeSymptoms.length;
+
+          // Determine phase
+          final result = CycleAnalyticsEngine.calculate(
+            periodLogs: userPLogs, 
+            ovulationLogs: userOvLogs, 
+            targetDate: pLog.date
+          );
+          phaseCounts[result.currentPhase] = (phaseCounts[result.currentPhase] ?? 0) + activeSymptoms.length;
+
+          for (var s in activeSymptoms) {
+            symptomCounts[s] = (symptomCounts[s] ?? 0) + 1;
+          }
+        }
+      }
+
+      // Extract symptoms from ovulation logs
+      for (var ovLog in userOvLogs) {
+        final activeSymptoms = ovLog.symptoms.entries.where((e) => e.value).map((e) => e.key).toList();
+        if (activeSymptoms.isNotEmpty) {
+          usersLoggingSymptoms.add(userId);
+          totalSymptoms += activeSymptoms.length;
+
+          // Determine phase
+          final result = CycleAnalyticsEngine.calculate(
+            periodLogs: userPLogs, 
+            ovulationLogs: userOvLogs, 
+            targetDate: ovLog.date
+          );
+          phaseCounts[result.currentPhase] = (phaseCounts[result.currentPhase] ?? 0) + activeSymptoms.length;
+
+          for (var s in activeSymptoms) {
+            symptomCounts[s] = (symptomCounts[s] ?? 0) + 1;
+          }
         }
       }
     }
 
     var sortedSymptoms = symptomCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     
-    if (totalSymptoms == 0) {
-      totalSymptoms = 9215;
-      usersLoggingSymptoms.addAll(List.generate(7842, (i) => i.toString()));
-      sortedSymptoms = [
-        MapEntry('Cramps', 4215),
-        MapEntry('Bloating', 3102),
-        MapEntry('Headache', 2845),
-        MapEntry('Fatigue', 2120),
-        MapEntry('Tender Breasts', 1980),
-      ];
-    }
+    // Combine Ovulation and Fertile Window into one for the UI if needed, or keep separate based on UI expectations.
+    // The previous fallback had "Menstrual", "Fertile Window", "Ovulation", "Luteal"
+    int menstrual = phaseCounts["Menstruation"] ?? 0;
+    int fertile = phaseCounts["Fertile Window"] ?? 0;
+    int ovulation = phaseCounts["Ovulation"] ?? 0;
+    int luteal = phaseCounts["Luteal"] ?? 0;
+    int follicular = phaseCounts["Follicular"] ?? 0;
+    
+    // Merge Follicular appropriately or keep as is? The original had Menstrual, Fertile Window, Ovulation, Luteal. We can just provide all of them.
+    int totalPhaseLogs = menstrual + fertile + ovulation + luteal + follicular;
 
     return {
       "totalSymptomLogs": totalSymptoms,
       "usersLoggingSymptoms": usersLoggingSymptoms.length,
-      "avgSymptomsPerUser": usersLoggingSymptoms.isEmpty ? 0.0 : (totalSymptoms / usersLoggingSymptoms.length),
+      "avgSymptomsPerUser": usersLoggingSymptoms.isEmpty ? 0.0 : double.parse((totalSymptoms / usersLoggingSymptoms.length).toStringAsFixed(1)),
       "topSymptoms": sortedSymptoms.take(5).toList(),
       "symptomsByPhase": {
-        "Menstrual": 28,
-        "Fertile Window": 31,
-        "Ovulation": 18,
-        "Luteal": 23,
+        "Menstrual": totalPhaseLogs == 0 ? 0 : (menstrual / totalPhaseLogs * 100).round(),
+        "Follicular": totalPhaseLogs == 0 ? 0 : (follicular / totalPhaseLogs * 100).round(),
+        "Fertile Window": totalPhaseLogs == 0 ? 0 : (fertile / totalPhaseLogs * 100).round(),
+        "Ovulation": totalPhaseLogs == 0 ? 0 : (ovulation / totalPhaseLogs * 100).round(),
+        "Luteal": totalPhaseLogs == 0 ? 0 : (luteal / totalPhaseLogs * 100).round(),
       }
     };
   }
 
   @override
   Future<Map<String, dynamic>> getSymptomsDetails(String symptom, DateTime startDate, DateTime endDate) async {
-    // Dynamic generation based on selected symptom
-    int baseLogs = symptom == 'Cramps' ? 4215 : (symptom == 'Bloating' ? 3102 : 2845);
+    final periodSnap = await _firestore
+        .collection('period')
+        .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
+        .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
+        .get();
+
+    final ovulationSnap = await _firestore
+        .collection('ovulation')
+        .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String())
+        .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
+        .get();
+
+    final pLogs = periodSnap.docs.map((doc) => PeriodLogModel.fromMap(doc.data())).toList();
+    final ovLogs = ovulationSnap.docs.map((doc) => OvulationLogModel.fromMap(doc.data())).toList();
+
+    int totalAllSymptoms = 0;
+    int specificSymptomLogs = 0;
+    Set<String> usersWithSpecificSymptom = {};
     
+    Map<String, int> phaseCounts = {
+      "Menstruation": 0,
+      "Follicular": 0,
+      "Ovulation": 0,
+      "Fertile Window": 0,
+      "Luteal": 0
+    };
+
+    // Group logs by user
+    Map<String, List<PeriodLogModel>> pLogsByUser = {};
+    for (var log in pLogs) {
+      pLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+    Map<String, List<OvulationLogModel>> ovLogsByUser = {};
+    for (var log in ovLogs) {
+      ovLogsByUser.putIfAbsent(log.userId, () => []).add(log);
+    }
+
+    Set<String> allUserIds = {...pLogsByUser.keys, ...ovLogsByUser.keys};
+
+    for (String userId in allUserIds) {
+      final userPLogs = pLogsByUser[userId] ?? [];
+      final userOvLogs = ovLogsByUser[userId] ?? [];
+
+      for (var pLog in userPLogs) {
+        final activeSymptoms = pLog.symptoms.entries.where((e) => e.value).map((e) => e.key).toList();
+        totalAllSymptoms += activeSymptoms.length;
+        if (activeSymptoms.contains(symptom)) {
+          specificSymptomLogs++;
+          usersWithSpecificSymptom.add(userId);
+          
+          final result = CycleAnalyticsEngine.calculate(
+            periodLogs: userPLogs, 
+            ovulationLogs: userOvLogs, 
+            targetDate: pLog.date
+          );
+          phaseCounts[result.currentPhase] = (phaseCounts[result.currentPhase] ?? 0) + 1;
+        }
+      }
+
+      for (var ovLog in userOvLogs) {
+        final activeSymptoms = ovLog.symptoms.entries.where((e) => e.value).map((e) => e.key).toList();
+        totalAllSymptoms += activeSymptoms.length;
+        if (activeSymptoms.contains(symptom)) {
+          specificSymptomLogs++;
+          usersWithSpecificSymptom.add(userId);
+          
+          final result = CycleAnalyticsEngine.calculate(
+            periodLogs: userPLogs, 
+            ovulationLogs: userOvLogs, 
+            targetDate: ovLog.date
+          );
+          phaseCounts[result.currentPhase] = (phaseCounts[result.currentPhase] ?? 0) + 1;
+        }
+      }
+    }
+
+    int percentageOfAll = totalAllSymptoms == 0 ? 0 : (specificSymptomLogs / totalAllSymptoms * 100).round();
+    int totalPhaseLogs = specificSymptomLogs;
+
     return {
-      "totalLogs": baseLogs,
-      "users": (baseLogs * 0.86).round(),
-      "percentageOfAllLogs": symptom == 'Cramps' ? 45 : (symptom == 'Bloating' ? 33 : 30),
+      "totalLogs": specificSymptomLogs,
+      "users": usersWithSpecificSymptom.length,
+      "percentageOfAllLogs": percentageOfAll,
       "byCyclePhase": {
-        "Menstrual": 68,
-        "Fertile Window": 12,
-        "Ovulation": 8,
-        "Luteal": 12,
+        "Menstrual": totalPhaseLogs == 0 ? 0 : ((phaseCounts["Menstruation"] ?? 0) / totalPhaseLogs * 100).round(),
+        "Follicular": totalPhaseLogs == 0 ? 0 : ((phaseCounts["Follicular"] ?? 0) / totalPhaseLogs * 100).round(),
+        "Fertile Window": totalPhaseLogs == 0 ? 0 : ((phaseCounts["Fertile Window"] ?? 0) / totalPhaseLogs * 100).round(),
+        "Ovulation": totalPhaseLogs == 0 ? 0 : ((phaseCounts["Ovulation"] ?? 0) / totalPhaseLogs * 100).round(),
+        "Luteal": totalPhaseLogs == 0 ? 0 : ((phaseCounts["Luteal"] ?? 0) / totalPhaseLogs * 100).round(),
       },
       "intensity": {
-        "Mild": 38,
-        "Moderate": 45,
-        "Severe": 17,
+        "Mild": 0, // No intensity field in logs
+        "Moderate": 0,
+        "Severe": 0,
       }
     };
   }
@@ -235,16 +437,36 @@ class AdminMonthlyTrackingRepoImpl implements AdminMonthlyTrackingRepo {
         .get();
 
     int totalLogs = periodSnap.docs.length + ovulationSnap.docs.length;
+    
+    Map<String, int> symptomCounts = {};
+
+    for (var doc in periodSnap.docs) {
+      final data = doc.data();
+      final symptoms = Map<String, bool>.from(data['symptoms'] ?? {});
+      for (var entry in symptoms.entries) {
+        if (entry.value) {
+          symptomCounts[entry.key] = (symptomCounts[entry.key] ?? 0) + 1;
+        }
+      }
+    }
+    for (var doc in ovulationSnap.docs) {
+      final data = doc.data();
+      final symptoms = Map<String, bool>.from(data['symptoms'] ?? {});
+      for (var entry in symptoms.entries) {
+        if (entry.value) {
+          symptomCounts[entry.key] = (symptomCounts[entry.key] ?? 0) + 1;
+        }
+      }
+    }
+
+    var sortedSymptoms = symptomCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    var topSymptomsList = sortedSymptoms.take(3).map((e) => {"name": e.key, "intensity": "N/A"}).toList();
 
     return {
       "hasPeriod": periodSnap.docs.isNotEmpty,
       "hasOvulation": ovulationSnap.docs.isNotEmpty,
-      "topSymptoms": [
-        {"name": "Cramps", "intensity": "Moderate"},
-        {"name": "Bloating", "intensity": "Mild"},
-        {"name": "Headache", "intensity": "Mild"},
-      ],
-      "totalLogsUsers": totalLogs > 0 ? totalLogs : 3120,
+      "topSymptoms": topSymptomsList,
+      "totalLogsUsers": totalLogs,
     };
   }
 }

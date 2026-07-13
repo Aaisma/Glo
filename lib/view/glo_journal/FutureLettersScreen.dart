@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import '../../viewmodel/future_letters_viewmodel.dart';
 import '../../viewmodel/journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FutureLettersScreen extends StatefulWidget {
   const FutureLettersScreen({Key? key}) : super(key: key);
@@ -16,7 +18,6 @@ class FutureLettersScreen extends StatefulWidget {
 class _FutureLettersScreenState extends State<FutureLettersScreen> {
   final Color primaryPink = const Color(0xFFFF2D65);
   final Color backgroundSoftPink = const Color(0xFFFFF5F6);
-  bool isLockedSelected = true;
 
   void _showWriteLetterDialog() {
     final titleController = TextEditingController();
@@ -82,7 +83,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                   
                   final letter = JournalModel(
                     id: const Uuid().v4(),
-                    userId: userViewModel.user?.id ?? 'unknown',
+                    userId: FirebaseAuth.instance.currentUser?.uid ?? userViewModel.user?.id ?? 'unknown',
                     userName: userViewModel.user?.name ?? 'Anonymous',
                     title: titleController.text,
                     content: contentController.text,
@@ -112,7 +113,9 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
+    final viewModel = Provider.of<FutureLettersViewModel>(context);
+    final userViewModel = Provider.of<UserViewModel>(context);
+    final userId = userViewModel.user?.id ?? '';
 
     return Scaffold(
       backgroundColor: backgroundSoftPink,
@@ -130,23 +133,23 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            _buildToggleButtons(),
+            _buildToggleButtons(viewModel),
             const SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<List<JournalModel>>(
-                stream: viewModel.getJournals(),
+                stream: userId.isEmpty ? Stream.value([]) : viewModel.getLettersStream(userId),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                   
                   final now = DateTime.now();
-                  final letters = snapshot.data!.where((j) => j.category == 'future_letter').toList();
+                  final letters = snapshot.data!;
                   final displayedLetters = letters.where((l) {
                     final isUnlocked = l.unlockDate != null && l.unlockDate!.isBefore(now);
-                    return isLockedSelected ? !isUnlocked : isUnlocked;
+                    return viewModel.isLockedSelected ? !isUnlocked : isUnlocked;
                   }).toList();
 
                   if (displayedLetters.isEmpty) {
-                    return Center(child: Text(isLockedSelected ? "No locked letters yet." : "No unlocked letters yet."));
+                    return Center(child: Text(viewModel.isLockedSelected ? "No locked letters yet." : "No unlocked letters yet."));
                   }
 
                   return ListView.builder(
@@ -175,7 +178,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
     );
   }
 
-  Widget _buildToggleButtons() {
+  Widget _buildToggleButtons(FutureLettersViewModel viewModel) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Container(
@@ -185,27 +188,27 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => isLockedSelected = true),
+                onTap: () => viewModel.toggleTab(true),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isLockedSelected ? primaryPink : Colors.transparent,
+                    color: viewModel.isLockedSelected ? primaryPink : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text('Locked', style: TextStyle(color: isLockedSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
+                  child: Text('Locked', style: TextStyle(color: viewModel.isLockedSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => isLockedSelected = false),
+                onTap: () => viewModel.toggleTab(false),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: !isLockedSelected ? primaryPink : Colors.transparent,
+                    color: !viewModel.isLockedSelected ? primaryPink : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text('Unlocked', style: TextStyle(color: !isLockedSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
+                  child: Text('Unlocked', style: TextStyle(color: !viewModel.isLockedSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),

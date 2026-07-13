@@ -22,13 +22,6 @@ class AdminPeriodAnalyticsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      DateFilterSelector(),
-                      ExportButton(),
-                    ],
-                  ),
                   const SizedBox(height: 24),
                   Row(
                     children: [

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../repo/water_history_repo_impl.dart';
+import '../../repo/water_history_repo_impl.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/water_tracker_viewmodel.dart';
-import '../app_colors.dart';
+import '../../viewmodel/water_tracker_viewmodel.dart';
+import '../../constants/app_colors.dart';
 
 
 class WaterHistoryScreen extends StatefulWidget {

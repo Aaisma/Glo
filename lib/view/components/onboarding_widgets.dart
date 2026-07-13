@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/ayd_colour.dart';
+import 'package:glo/constants/ayd_colour.dart';
 
 class OnboardingPageScaffold extends StatelessWidget {
   final int currentStep;

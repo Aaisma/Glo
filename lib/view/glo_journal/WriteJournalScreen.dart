@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/write_journal_viewmodel.dart';
 import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class WriteJournalScreen extends StatefulWidget {
   const WriteJournalScreen({Key? key}) : super(key: key);
@@ -17,8 +18,6 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
   final TextEditingController _textController = TextEditingController();
   final Color primaryPink = const Color(0xFFFF2D65);
   final Color backgroundSoftPink = const Color(0xFFFFF5F6);
-  String selectedMood = 'Happy';
-  String selectedEmoji = '😀';
 
   final Map<String, String> moodToEmoji = {
     'Amazing': '🤩',
@@ -42,36 +41,25 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
       return;
     }
 
-    final viewModel = Provider.of<JournalViewModel>(context, listen: false);
+    final viewModel = Provider.of<WriteJournalViewModel>(context, listen: false);
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
 
-    final id = const Uuid().v4();
-
-    // Get current user info
-    final userId = userViewModel.user?.id ?? 'unknown';
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? userViewModel.user?.id ?? 'unknown';
     final userName = userViewModel.user?.name ?? 'Anonymous User';
 
-    // Use first line or first 20 chars as title
     String content = _textController.text.trim();
     String title = content.split('\n').first;
     if (title.length > 30) {
       title = '${title.substring(0, 27)}...';
     }
 
-    final journal = JournalModel(
-      id: id,
-      userId: userId,
-      userName: userName,
-      title: title,
-      content: content,
-      mood: selectedMood,
-      emoji: selectedEmoji,
-      createdAt: DateTime.now(),
-      category: 'regular',
-    );
-
     try {
-      await viewModel.addJournal(journal);
+      await viewModel.saveEntry(
+        userId: userId,
+        userName: userName,
+        title: title,
+        content: content,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Journal Saved Successfully! 🌸')),
@@ -89,6 +77,7 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final writeJournalVM = context.watch<WriteJournalViewModel>();
     return Scaffold(
       backgroundColor: backgroundSoftPink,
       appBar: AppBar(
@@ -196,7 +185,7 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: moodToEmoji.entries.map((entry) => _buildMoodItem(entry.value, entry.key)).toList(),
+                children: moodToEmoji.entries.map((entry) => _buildMoodItem(entry.value, entry.key, writeJournalVM)).toList(),
               ),
               const SizedBox(height: 20),
               Row(
@@ -230,14 +219,11 @@ class _WriteJournalScreenState extends State<WriteJournalScreen> {
     );
   }
 
-  Widget _buildMoodItem(String emoji, String label) {
-    bool isSelected = selectedMood == label;
+  Widget _buildMoodItem(String emoji, String label, WriteJournalViewModel vm) {
+    bool isSelected = vm.selectedMood == label;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedMood = label;
-          selectedEmoji = emoji;
-        });
+        vm.updateMood(label, emoji);
       },
       child: Column(
         children: [

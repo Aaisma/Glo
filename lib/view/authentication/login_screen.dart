@@ -5,16 +5,23 @@ import 'package:provider/provider.dart';
 import 'package:glo/constants/ayd_colour.dart';
 import 'login_component.dart';
 import 'register_screen.dart';
+import 'package:glo/view/survey_page.dart';
 import 'package:glo/viewmodel/auth_viewmodel.dart';
 import 'package:glo/viewmodel/user_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
-  /// Called once email/password (or Google/Facebook, via
-  /// [LoginOptionsSection]) sign-in succeeds. Your `AuthWrapper` already
-  /// listens to `FirebaseAuth.instance.authStateChanges()` and handles
-  /// fetching the profile and routing to Survey / Profile / Dashboard /
-  /// Admin, so just hand off to it here, e.g.:
-  /// `Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false)`.
+  /// Optional hook for side effects (e.g. analytics) once email/password
+  /// (or Google/Facebook, via [LoginOptionsSection]) sign-in succeeds.
+  ///
+  /// NOTE: LoginScreen no longer relies on this for navigation. Your
+  /// `AuthWrapper` already listens to `FirebaseAuth.instance.authStateChanges()`
+  /// and rebuilds to the right screen on its own, so `_completeLogin` now
+  /// navigates using its own (guaranteed-mounted) context — popping back to
+  /// AuthWrapper if it's already on the stack, or pushing it fresh if not.
+  /// Passing a callback that itself calls `Navigator.of(context)` from a
+  /// caller-captured context (e.g. AuthenticationPage) can throw "Looking up
+  /// a deactivated widget's ancestor is unsafe", since that context may be
+  /// deactivated by AuthWrapper's rebuild before the callback runs.
   final VoidCallback? onAuthenticated;
 
   const LoginScreen({super.key, this.onAuthenticated});
@@ -53,7 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted && authViewModel.user != null) {
         await _completeLogin();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // TEMP DEBUG: prints the real exception type + trace to console.
+      // The snackbar only ever shows a generic message for anything that
+      // isn't a FirebaseAuthException, so this is the only way to see
+      // what's actually throwing. Remove once the real cause is fixed.
+      debugPrint('LoginScreen._handleLogin real error: ${e.runtimeType} - $e');
+      debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_friendlyAuthError(e))),
@@ -132,19 +145,28 @@ class _LoginScreenState extends State<LoginScreen> {
       userViewModel.setUserId(authViewModel.user!.uid);
       await userViewModel.fetchCurrentUser();
 
+      // AuthWrapper's authStateChanges() listener already swaps in the
+      // correct screen beneath us the moment sign-in resolves — often
+      // before this line even runs. That means:
+      //   - if LoginScreen was pushed on top of AuthWrapper (e.g. from
+      //     AuthenticationPage), AuthWrapper's child has already been
+      //     rebuilt underneath, so we just need to pop back to reveal it.
+      //   - if LoginScreen is the only route on the stack (e.g. reached
+      //     via the named '/login' route after a sign-out), there's
+      //     nothing to pop back to, so we push AuthWrapper fresh.
+      //
+      // Either way we use LoginScreen's OWN context (valid as long as
+      // `mounted` is true) rather than delegating to widget.onAuthenticated,
+      // whose closure may capture a caller's context (e.g. AuthenticationPage)
+      // that AuthWrapper's rebuild has already deactivated. Calling
+      // Navigator.of(context) on that stale context is what throws
+      // "Looking up a deactivated widget's ancestor is unsafe".
       if (mounted) {
-        if (widget.onAuthenticated != null) {
-          widget.onAuthenticated!();
+        final navigator = Navigator.of(context);
+        if (navigator.canPop()) {
+          navigator.popUntil((route) => route.isFirst);
         } else {
-          final userModel = userViewModel.user;
-          // Check role and navigate accordingly
-          // AuthWrapper handles the actual widget switching based on role and onboarding status
-          if (userModel?.role == 'admin') {
-            Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false);
-          } else {
-            // Role 'user' or default
-            Navigator.of(context).pushNamedAndRemoveUntil('/authWrapper', (route) => false);
-          }
+          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
         }
       }
     }
@@ -307,7 +329,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             ..onTap = () {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
-                                  builder: (_) => const RegisterScreen(),
+                                  builder: (routeContext) => RegisterScreen(
+                                    onRegisterSuccess: () {
+                                      Navigator.of(routeContext).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (_) => const SurveyPage(),
+                                        ),
+                                      );
+                                    },
+                                    onAuthenticated: () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                          routeContext, '/authWrapper', (route) => false);
+                                    },
+                                  ),
                                 ),
                               );
                             },

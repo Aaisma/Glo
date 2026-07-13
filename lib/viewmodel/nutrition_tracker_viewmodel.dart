@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import '../model/nutrition_entry_model.dart';
 import '../repo/nutrition_repo.dart';
@@ -10,7 +10,7 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   NutritionTrackerViewModel(this._repo);
 
   void updateUserId(String? newUserId) {
-    final resolvedUserId = newUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    final resolvedUserId = newUserId;
     if (_userId != resolvedUserId) {
       _userId = resolvedUserId;
       if (_userId != null) {
@@ -25,7 +25,7 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   }
 
   Future<void> ensureUserId() async {
-    final resolvedUserId = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    final resolvedUserId = _userId;
     if (resolvedUserId == null || resolvedUserId.isEmpty) {
       meals = [];
       history = [];
@@ -112,8 +112,7 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   }
 
   Future<void> saveToday([String? userId]) async {
-    final resolvedUserId =
-        userId ?? _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    final resolvedUserId = userId ?? _userId;
     if (resolvedUserId == null || resolvedUserId.isEmpty) {
       errorMessage = 'Please sign in to save nutrition progress.';
       notifyListeners();
@@ -143,7 +142,7 @@ class NutritionTrackerViewModel extends ChangeNotifier {
   }
 
   Future<void> saveEntryForDate(String date, List<Map<String, dynamic>> dateMeals, String dateNote) async {
-    final resolvedUserId = _userId ?? FirebaseAuth.instance.currentUser?.uid;
+    final resolvedUserId = _userId;
     if (resolvedUserId == null || resolvedUserId.isEmpty) {
       errorMessage = 'Please sign in to save nutrition progress.';
       notifyListeners();

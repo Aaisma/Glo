@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../components/top_navigation.dart';
+import 'package:glo/view/components/top_navigation.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
-import '../glo_profile/help_support_page.dart';
-import '../glo_profile/glo_about_us_screen.dart';
-import '../survey_page.dart';
+import 'package:glo/view/glo_profile/help_support_page.dart';
+import 'package:glo/view/glo_profile/glo_about_us_screen.dart';
+import 'package:glo/view//survey_page.dart';
 
 class AuthenticationPage extends StatelessWidget {
   const AuthenticationPage({super.key});
@@ -66,9 +66,12 @@ class AuthenticationPage extends StatelessWidget {
                     _authButton(
                       context,
                       "Log In",
-                      const Color(0xFFFA4E6F
-                      ),
-                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                      const Color(0xFFFA4E6F),
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => LoginScreen(
+                        onAuthenticated: () {
+                          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
+                        },
+                      ))),
                     ),
                     const SizedBox(height: 8),
                     _authButton(
@@ -78,6 +81,9 @@ class AuthenticationPage extends StatelessWidget {
                       () => Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen(
                         onRegisterSuccess: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const SurveyPage()));
+                        },
+                        onAuthenticated: () {
+                          Navigator.pushNamedAndRemoveUntil(context, '/authWrapper', (route) => false);
                         },
                       ))),
                     ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../viewmodel/journal_viewmodel.dart';
+import '../../viewmodel/search_journals_viewmodel.dart';
+import '../../viewmodel/user_viewmodel.dart';
 import '../../model/journal_model.dart';
 
 class SearchJournalsScreen extends StatefulWidget {
@@ -20,6 +21,16 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
   final List<String> filters = ['All', 'Title', 'Mood', 'Content'];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userVM = Provider.of<UserViewModel>(context, listen: false);
+      final userId = userVM.user?.id ?? '';
+      Provider.of<SearchJournalsViewModel>(context, listen: false).loadJournals(userId);
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -27,7 +38,9 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<JournalViewModel>(context);
+    final viewModel = Provider.of<SearchJournalsViewModel>(context);
+    final userVM = Provider.of<UserViewModel>(context);
+    final userId = userVM.user?.id ?? '';
 
     return Scaffold(
       backgroundColor: backgroundSoftPink,
@@ -60,7 +73,10 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (val) => setState(() {}),
+                  onChanged: (val) {
+                    setState(() {});
+                    viewModel.searchJournals(userId, val);
+                  },
                   decoration: InputDecoration(
                     hintText: 'Search journals...',
                     hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
@@ -70,6 +86,7 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
                       onTap: () {
                         _searchController.clear();
                         setState(() {});
+                        viewModel.searchJournals(userId, '');
                       },
                       child: const Icon(Icons.cancel, color: Colors.grey),
                     )
@@ -94,6 +111,7 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
                       setState(() {
                         selectedFilter = filter;
                       });
+                      viewModel.setFilter(filter);
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -118,43 +136,18 @@ class _SearchJournalsScreenState extends State<SearchJournalsScreen> {
             ),
             const SizedBox(height: 14),
             Expanded(
-              child: StreamBuilder<List<JournalModel>>(
-                stream: viewModel.getJournals(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text("No journals found."));
-                  }
-
-                  final query = _searchController.text.toLowerCase();
-                  final journals = snapshot.data!.where((journal) {
-                    final titleMatch = journal.title.toLowerCase().contains(query);
-                    final moodMatch = journal.mood.toLowerCase().contains(query);
-                    final contentMatch = journal.content.toLowerCase().contains(query);
-
-                    if (selectedFilter == 'Title') return titleMatch;
-                    if (selectedFilter == 'Mood') return moodMatch;
-                    if (selectedFilter == 'Content') return contentMatch;
-                    
-                    return titleMatch || moodMatch || contentMatch;
-                  }).toList();
-
-                  if (journals.isEmpty) {
-                    return const Center(child: Text("No results match your search."));
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    itemCount: journals.length,
-                    itemBuilder: (context, index) {
-                      final journal = journals[index];
-                      return _buildJournalItem(journal);
-                    },
-                  );
-                },
-              ),
+              child: viewModel.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : viewModel.filteredJournals.isEmpty
+                      ? const Center(child: Text("No journals found."))
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          itemCount: viewModel.filteredJournals.length,
+                          itemBuilder: (context, index) {
+                            final journal = viewModel.filteredJournals[index];
+                            return _buildJournalItem(journal);
+                          },
+                        ),
             ),
           ],
         ),

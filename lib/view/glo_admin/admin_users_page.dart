@@ -5,7 +5,7 @@ import '../../viewmodel/user_viewmodel.dart';
 import '../../model/user_model.dart';
 import '../admin_navigation/admin_top_panel.dart';
 import '../admin_navigation/admin_sidebar.dart';
-import '../../app_colors.dart';
+import '../../constants/app_colors.dart';
 
 class AdminUsersPage extends StatefulWidget {
   const AdminUsersPage({super.key});

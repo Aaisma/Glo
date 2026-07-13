@@ -37,54 +37,6 @@ class AdminTrackingAppBar extends StatelessWidget implements PreferredSizeWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class DateFilterSelector extends StatelessWidget {
-  const DateFilterSelector({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<AdminMonthlyTrackingViewModel>();
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(vm.dateRangeText, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-          const SizedBox(width: 8),
-          const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-        ],
-      ),
-    );
-  }
-}
-
-class ExportButton extends StatelessWidget {
-  const ExportButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.upload, size: 14, color: Colors.grey),
-          SizedBox(width: 6),
-          Text("Export", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-}
-
 class TrackingStatCard extends StatelessWidget {
   final String title;
   final String value;

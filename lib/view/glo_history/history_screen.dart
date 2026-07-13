@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:glo/view/glo_profile/glo_profile.dart';
-import 'package:glo/view/calendar_screen.dart';
+import 'package:glo/view/calender/calendar_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';

@@ -420,7 +420,7 @@ class _Bg extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Image.asset(
-        "assets/images/background1.png",
+        "assets/images/background.png",
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
             Container(color: SkinHealthTipsScreen.lightPink),

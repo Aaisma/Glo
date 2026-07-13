@@ -10,7 +10,7 @@ import 'repo/acne_repo_impl.dart';
 import 'viewmodel/user_viewmodel.dart';
 import 'viewmodel/acne_tracker_viewmodel.dart';
 
-import 'view/acne_tracker.dart';
+import 'view/acne/acne_tracker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

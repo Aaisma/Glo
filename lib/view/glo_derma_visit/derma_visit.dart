@@ -22,7 +22,7 @@ class DermaVisitScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "assets/images/background1.png",
+              "assets/images/background.png",
               fit: BoxFit.cover,
             ),
           ),

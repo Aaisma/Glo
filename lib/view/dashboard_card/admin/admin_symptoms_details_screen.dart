@@ -22,13 +22,6 @@ class AdminSymptomsDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      DateFilterSelector(),
-                      ExportButton(),
-                    ],
-                  ),
                   const SizedBox(height: 24),
                   _buildDropdownSelector(context, vm),
                   const SizedBox(height: 16),

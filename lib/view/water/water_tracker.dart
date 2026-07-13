@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../viewmodel/water_tracker_viewmodel.dart';
+import '../../viewmodel/water_tracker_viewmodel.dart';
 
 import 'water_history_screen.dart';
 

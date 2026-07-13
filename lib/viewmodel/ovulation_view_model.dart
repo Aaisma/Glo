@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import '../model/ovulation_log_model.dart';
 import '../model/period_log_model.dart';
 import '../model/cycle_analytics_engine.dart';
@@ -12,14 +12,10 @@ class OvulationViewModel extends ChangeNotifier {
   final PeriodRepo _periodRepo;
   String _userId;
 
-  OvulationViewModel({required OvulationRepo ovulationRepo, PeriodRepo? periodRepo, FirebaseAuth? auth})
+  OvulationViewModel({required OvulationRepo ovulationRepo, PeriodRepo? periodRepo})
       : _repo = ovulationRepo,
         _periodRepo = periodRepo ?? PeriodRepoImpl(),
-        _userId = (auth ?? FirebaseAuth.instance).currentUser?.uid ?? 'guest' {
-    if (_userId != 'guest') {
-      fetchLogs();
-    }
-  }
+        _userId = '' {}
 
   String get userId => _userId;
 

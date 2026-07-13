@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../viewmodel/admin_health_overview_viewmodel.dart';
+import 'package:glo/viewmodel/admin_health_overview_viewmodel.dart';
 
 class HealthOverviewScreen extends StatelessWidget {
   const HealthOverviewScreen({

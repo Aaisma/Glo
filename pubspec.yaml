@@ -65,21 +65,12 @@ flutter:
     - assets/images/survey/skin_type/
     - assets/images/survey/tips/
     - assets/images/feed/
-
-
-    - assets/images/pill.png
+    - assets/images/feed/community_background.png
     - assets/images/tablet.png
     - assets/images/creamtube.png
     - assets/images/reminder.png
     - assets/images/historylog.png
     - assets/images/background.png
-
-    - assets/images/whiteheads.png
-    - assets/images/blackheads.png
-    - assets/images/papules.png
-    - assets/images/pustules.png
-    - assets/images/nodules.png
-    - assets/images/cystic.png
     - assets/images/women_heart.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -107,25 +98,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
-
-    - assets/images/flower.png
-    - assets/images/logo.png
-    - assets/images/profilepicture.png
-    - assets/images/labresult.png
-    - assets/images/logdocvisit.png
-    - assets/images/splash_background.png
-    - assets/images/notes.png
-    - assets/images/prescription.png
-    - assets/images/skintips.png
-    - assets/images/background1.png
-    - assets/images/history-background.png
-    - assets/images/fruits_bowl.png
-    - assets/images/cleanser.png
-    - assets/images/hydrated.png
-    - assets/images/sunscreen_face.png
-    - assets/images/glow.png
-    - assets/images/glow1.png
 
 
 

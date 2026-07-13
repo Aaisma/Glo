@@ -7,7 +7,7 @@ class JournalViewModel extends ChangeNotifier {
 
   JournalViewModel({required this.repo});
 
-  Stream<List<JournalModel>> getJournals() => repo.getJournals();
+  Stream<List<JournalModel>> getJournals(String userId) => repo.getJournals(userId);
 
   Future<void> addJournal(JournalModel journal) async {
     await repo.addJournal(journal);
@@ -19,8 +19,8 @@ class JournalViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteJournal(String id) async {
-    await repo.deleteJournal(id);
+  Future<void> deleteJournal(String userId, String id) async {
+    await repo.deleteJournal(userId, id);
     notifyListeners();
   }
 }
