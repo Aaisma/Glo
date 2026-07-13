@@ -169,13 +169,6 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearUser() {
-    _userId = null;
-    _user = null;
-    _error = null;
-    notifyListeners();
-  }
-
   Future<void> fetchCurrentUser() async {
     if (_userId == null) return;
     setLoading(true);
@@ -264,27 +257,6 @@ class UserViewModel extends ChangeNotifier {
     } catch (e) {
       setError(e.toString());
       return null;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Future<bool> completeProfile() async {
-    final id = _userId ?? FirebaseAuth.instance.currentUser?.uid;
-    if (id == null) {
-      setError('No logged-in user found');
-      return false;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      await _userRepo.markProfileCompleted(id);
-      await fetchCurrentUser();
-      return true;
-    } catch (e) {
-      setError(e.toString());
-      return false;
     } finally {
       setLoading(false);
     }
