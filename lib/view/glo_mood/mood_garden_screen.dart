@@ -89,11 +89,10 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    // Balanced viewport sizing calculations to eliminate layout overflow artifacts
     final double availableHeight = screenHeight - appBarHeight - statusBarHeight - bottomPadding;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7F4), // Organic canvas backdrop tone
+      backgroundColor: const Color(0xFFF3F7F4),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -121,7 +120,6 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,
                   children: [
-                    // Premium Beveled Wooden Shelf Line Base
                     Positioned(
                       bottom: 12,
                       left: 0,
@@ -145,8 +143,6 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
                         ),
                       ),
                     ),
-
-                    // Main Botanical Grid (Maintains strict uniform heights across all items)
                     Positioned(
                       bottom: 18,
                       left: 0,
@@ -271,14 +267,13 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
     );
   }
 
-  // Restores your exact custom-styled visual containers with interactive logic
   Widget _buildInteractivePlantTile(String title, String subtitle, int level, int count, Color progressColor, String type, double targetHeight) {
     double progressFraction = count / 10.0;
 
     return GestureDetector(
       onTap: () => _cultivatePlant(type),
       child: Container(
-        height: targetHeight.clamp(48.0, 64.0), // Fits all dimensions flawlessly without cropping
+        height: targetHeight.clamp(48.0, 64.0),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -293,7 +288,6 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
         ),
         child: Row(
           children: [
-            // Left embedded vector canvas thumbnail container box
             Container(
               width: 38,
               height: 38,
@@ -354,7 +348,6 @@ class _MoodGardenScreenState extends State<MoodGardenScreen> {
     );
   }
 
-  // Preserves your original uniform flower structure perfectly
   Widget _buildUniformShelfPlant(String type) {
     return Expanded(
       child: AspectRatio(
@@ -380,7 +373,6 @@ class UnifiedGardenPlantPainter extends CustomPainter {
     final double cx = size.width / 2;
     final double bottomY = size.height;
 
-    // Strict uniform aspect modifiers derived directly from your layout
     final double potScale = isMiniature ? 0.45 : 0.82;
     final double potWidthBase = 15 * potScale;
     final double potWidthTop = 19 * potScale;

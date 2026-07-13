@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/viewmodel/admin_monthly_tracking_viewmodel.dart';
 import 'admin_period_analytics_screen.dart';
 import 'admin_ovulation_analytics_screen.dart';
 import 'admin_symptoms_analytics_screen.dart';
@@ -41,7 +43,18 @@ class AdminMonthlyTrackingScreen extends StatelessWidget {
               iconPath: Icons.water_drop,
               iconColor: const Color(0xFFFF5252),
               bgColor: const Color(0xFFFFF5F5),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPeriodAnalyticsScreen())),
+              onTap: () {
+                final vm = context.read<AdminMonthlyTrackingViewModel>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider.value(
+                      value: vm,
+                      child: const AdminPeriodAnalyticsScreen(),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             _MenuCard(
@@ -50,7 +63,18 @@ class AdminMonthlyTrackingScreen extends StatelessWidget {
               iconPath: Icons.eco,
               iconColor: const Color(0xFF4CAF50),
               bgColor: const Color(0xFFF5FFF5),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOvulationAnalyticsScreen())),
+              onTap: () {
+                final vm = context.read<AdminMonthlyTrackingViewModel>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider.value(
+                      value: vm,
+                      child: const AdminOvulationAnalyticsScreen(),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             _MenuCard(
@@ -59,7 +83,18 @@ class AdminMonthlyTrackingScreen extends StatelessWidget {
               iconPath: Icons.local_florist,
               iconColor: const Color(0xFF9C27B0),
               bgColor: const Color(0xFFFDF5FF),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSymptomsAnalyticsScreen())),
+              onTap: () {
+                final vm = context.read<AdminMonthlyTrackingViewModel>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider.value(
+                      value: vm,
+                      child: const AdminSymptomsAnalyticsScreen(),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             _MenuCard(
@@ -68,7 +103,18 @@ class AdminMonthlyTrackingScreen extends StatelessWidget {
               iconPath: Icons.analytics,
               iconColor: const Color(0xFF2196F3),
               bgColor: const Color(0xFFF5F9FF),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSymptomsDetailsScreen())),
+              onTap: () {
+                final vm = context.read<AdminMonthlyTrackingViewModel>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider.value(
+                      value: vm,
+                      child: const AdminSymptomsDetailsScreen(),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 32),
             Container(

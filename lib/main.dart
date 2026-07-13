@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:glo/view/authentication/auth_wrapper.dart';
-import 'package:glo/view/dashboard_page.dart';
-import 'package:glo/view/glo_admin/Daily_Journal/AdminDashboard.dart';
-import 'package:glo/view/admin_dashboard_screen.dart';
+import 'package:glo/view/glo_splash/glo_splash_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -30,8 +28,8 @@ import 'repo/community_moderation_repo.dart';
 import 'repo/community_moderation_repo_impl.dart';
 import 'repo/water_tracker_repo.dart';
 import 'repo/water_tracker_repo_impl.dart';
-import 'repo/mood_repository.dart';
-import 'repo/mood_repository_impl.dart';
+import 'repo/mood_repo.dart';
+import 'repo/mood_repo_impl.dart';
 import 'repo/nutrition_repo.dart';
 import 'repo/nutrition_repo_impl.dart';
 import 'repo/acne_repo.dart';
@@ -54,7 +52,8 @@ import 'viewmodel/period_view_model.dart';
 import 'viewmodel/ovulation_view_model.dart';
 import 'viewmodel/insight_view_model.dart';
 import 'viewmodel/community_view_model.dart';
-import 'viewmodel/wellness_viewmodel.dart';
+import 'viewmodel/moderation_view_model.dart';
+import 'viewmodel/mood_view_model.dart';
 import 'viewmodel/water_tracker_viewmodel.dart';
 import 'viewmodel/nutrition_tracker_viewmodel.dart';
 import 'viewmodel/medication_viewmodel.dart';
@@ -116,7 +115,7 @@ class MyApp extends StatelessWidget {
         Provider<InsightsModerationRepo>(create: (_) => InsightsModerationRepoImpl()),
         Provider<CommunityModerationRepo>(create: (_) => CommunityModerationRepoImpl()),
         Provider<WaterTrackerRepo>(create: (_) => WaterTrackerRepoImpl()),
-        Provider<MoodRepository>(create: (_) => MoodRepositoryImpl()),
+        Provider<MoodRepo>(create: (_) => MoodRepoImpl()),
         Provider<NutritionRepo>(create: (_) => NutritionRepoImpl()),
         Provider<AcneRepo>(create: (_) => AcneRepoImpl()),
         Provider<MedicationRepo>(create: (_) => MedicationRepoImpl()),
@@ -148,7 +147,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => EditDiscussionViewModel(ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => EditPollViewModel(ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => DiscussionDetailViewModel(ctx.read<CommunityRepo>(), ctx.read<CommunityModerationRepo>())),
-        ChangeNotifierProvider(create: (ctx) => WellnessViewModel(moodRepository: ctx.read<MoodRepository>())),
+        ChangeNotifierProvider(create: (ctx) => InsightsLibraryViewModel(ctx.read<InsightsRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CommunityLibraryViewModel(ctx.read<CommunityRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CommunityModerationQueueViewModel(ctx.read<CommunityModerationRepo>())),
+        ChangeNotifierProvider(create: (ctx) => InsightsModerationQueueViewModel(ctx.read<InsightsModerationRepo>())),
+        ChangeNotifierProvider(create: (ctx) => MoodViewModel(moodRepo: ctx.read<MoodRepo>())),
         ChangeNotifierProxyProvider<SessionProvider, WaterTrackerViewModel>(
           create: (ctx) => WaterTrackerViewModel(ctx.read<WaterTrackerRepo>()),
           update: (ctx, session, previous) => previous!..updateUserId(session.userId),
@@ -188,7 +191,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           useMaterial3: true,
         ),
-        home: const AuthWrapper(),
+        home: const SplashScreen(),
         routes: {
           '/authWrapper': (context) => const AuthWrapper(),
           '/home': (context) => const AuthWrapper(),

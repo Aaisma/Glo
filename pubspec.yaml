@@ -33,7 +33,7 @@ dependencies:
   hive_flutter: ^1.1.0
   fl_chart: ^1.2.0
 
-  lucide_icons: ^0.257.0
+  lucide_icons_flutter: ^3.1.15
   image: ^4.3.0
   firebase_messaging: ^16.4.1
   nepali_utils: ^3.0.8

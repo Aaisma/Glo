@@ -23,7 +23,7 @@ class LogoutDialog {
               if (context.mounted) {
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   '/authWrapper',
-                  (route) => false,
+                      (route) => false,
                 );
               }
             },
