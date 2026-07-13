@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:glo/view/authentication/auth_wrapper.dart';
-import 'package:glo/view/dashboard_page.dart';
-import 'package:glo/view/glo_admin/Daily_Journal/AdminDashboard.dart';
-import 'package:glo/view/admin_dashboard_screen.dart';
+import 'package:glo/view/glo_splash/glo_splash_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -188,7 +186,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.pink,
           useMaterial3: true,
         ),
-        home: const AuthWrapper(),
+        home: const SplashScreen(),
         routes: {
           '/authWrapper': (context) => const AuthWrapper(),
           '/home': (context) => const AuthWrapper(),

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/admin_analytics_viewmodel.dart';
 
+
 class AdminSkinJournalScreen extends StatefulWidget {
   const AdminSkinJournalScreen({super.key});
 
@@ -69,7 +70,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                   color: const Color(0xFFFFF0F0),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.redAccent.withOpacity(0.5),
+                    color: Colors.redAccent.withValues(alpha: 0.5),
                   ),
                 ),
                 child: Text(
@@ -89,7 +90,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -195,7 +196,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -308,7 +309,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -334,7 +335,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                           show: true,
                           drawVerticalLine: false,
                           getDrawingHorizontalLine: (value) => FlLine(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: Colors.grey.withValues(alpha: 0.1),
                             strokeWidth: 1,
                           ),
                         ),
@@ -389,7 +390,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                               show: true,
                               color: const Color(
                                 0xFF9B7FE8,
-                              ).withOpacity(0.15),
+                              ).withValues(alpha: 0.15),
                             ),
                           ),
                         ],
@@ -418,7 +419,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -509,7 +510,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -549,7 +550,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
                                 color:
                                 (colors[entry["severity"]] ??
                                     Colors.grey)
-                                    .withOpacity(0.15),
+                                    .withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -620,7 +621,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -631,7 +632,7 @@ class _AdminSkinJournalScreenState extends State<AdminSkinJournalScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/admin_analytics_viewmodel.dart';
 
+
 class AdminHydrationHubScreen extends StatefulWidget {
   const AdminHydrationHubScreen({super.key});
 
@@ -56,7 +57,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                   color: const Color(0xFFFFF0F0),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.redAccent.withOpacity(0.5),
+                    color: Colors.redAccent.withValues(alpha: 0.5),
                   ),
                 ),
                 child: Text(
@@ -77,11 +78,11 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                   color: const Color(0xFFFFF0F0),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFFFF7D7D).withOpacity(0.4),
+                    color: const Color(0xFFFF7D7D).withValues(alpha: 0.4),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF7D7D).withOpacity(0.1),
+                      color: const Color(0xFFFF7D7D).withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -92,7 +93,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF7D7D).withOpacity(0.2),
+                        color: const Color(0xFFFF7D7D).withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -189,7 +190,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -215,7 +216,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                           show: true,
                           drawVerticalLine: false,
                           getDrawingHorizontalLine: (value) => FlLine(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: Colors.grey.withValues(alpha: 0.1),
                             strokeWidth: 1,
                           ),
                         ),
@@ -270,7 +271,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                               show: true,
                               color: const Color(
                                 0xFF6FC3F7,
-                              ).withOpacity(0.15),
+                              ).withValues(alpha: 0.15),
                             ),
                           ),
                         ],
@@ -299,7 +300,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -327,6 +328,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                   )
                       : Column(
                     children: vm.lowestIntakeUsers.map((u) {
+                      final val = (u['intake'] as num?)?.toDouble() ?? (u['avgIntake'] as num?)?.toDouble() ?? 0.0;
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 6,
@@ -344,8 +346,8 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEAF3FD),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEAF3FD),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -378,7 +380,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                                   BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  "${u['intake']} L",
+                                  "${val.toStringAsFixed(1)} L",
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -405,7 +407,114 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Highest Intake Users",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2A2A2A),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  vm.highestIntakeUsers.isEmpty
+                      ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "No data yet",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                      : Column(
+                    children: vm.highestIntakeUsers.map((u) {
+                      final val = (u['intake'] as num?)?.toDouble() ?? (u['avgIntake'] as num?)?.toDouble() ?? 0.0;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEAFDF3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 18,
+                                  color: Color(0xFF2E7D32),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  vm.displayNameForUser(
+                                    u['userId']?.toString(),
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF2A2A2A),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEAFDF3),
+                                  borderRadius:
+                                  BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  "${val.toStringAsFixed(1)} L",
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E7D32),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -444,7 +553,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(
                                   0xFF6FC3F7,
-                                ).withOpacity(0.15),
+                                ).withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -511,7 +620,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -522,7 +631,7 @@ class _AdminHydrationHubScreenState extends State<AdminHydrationHubScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),

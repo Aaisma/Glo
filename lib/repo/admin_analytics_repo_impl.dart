@@ -163,7 +163,7 @@ class AdminAnalyticsRepoImpl {
       final avgIntake = e.value.reduce((a, b) => a + b) / e.value.length;
       final goals = goalByUser[e.key];
       final avgGoal = (goals != null && goals.isNotEmpty) ? goals.reduce((a, b) => a + b) / goals.length : 0.0;
-      return {"userId": e.key, "avgIntake": avgIntake, "avgGoal": avgGoal};
+      return {"userId": e.key, "avgIntake": avgIntake, "intake": avgIntake, "avgGoal": avgGoal};
     }).toList();
 
     results.sort((a, b) => (a["avgIntake"] as double).compareTo(b["avgIntake"] as double));
@@ -428,5 +428,29 @@ class AdminAnalyticsRepoImpl {
       }
     }
     return names;
+  }
+
+  Future<List<Map<String, dynamic>>> getHighestIntakeUsers({int limit = 5}) async {
+    final snapshot = await _firestore.collectionGroup('water_history').get();
+    final Map<String, List<double>> intakeByUser = {};
+    final Map<String, List<double>> goalByUser = {};
+
+    for (final doc in snapshot.docs) {
+      final userId = doc.reference.parent.parent?.id ?? "unknown";
+      final intake = (doc.data()['intake'] as num?)?.toDouble();
+      final goal = (doc.data()['goal'] as num?)?.toDouble();
+      if (intake != null) intakeByUser.putIfAbsent(userId, () => []).add(intake);
+      if (goal != null) goalByUser.putIfAbsent(userId, () => []).add(goal);
+    }
+
+    final results = intakeByUser.entries.map((e) {
+      final avgIntake = e.value.reduce((a, b) => a + b) / e.value.length;
+      final goals = goalByUser[e.key];
+      final avgGoal = (goals != null && goals.isNotEmpty) ? goals.reduce((a, b) => a + b) / goals.length : 0.0;
+      return {"userId": e.key, "avgIntake": avgIntake, "intake": avgIntake, "avgGoal": avgGoal};
+    }).toList();
+
+    results.sort((a, b) => (b["avgIntake"] as double).compareTo(a["avgIntake"] as double));
+    return results.take(limit).toList();
   }
 }

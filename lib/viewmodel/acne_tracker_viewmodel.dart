@@ -52,6 +52,7 @@ class AcneTrackerViewModel extends ChangeNotifier {
     } catch (e) {
       errorMessage = "Failed to load detection model: $e";
     }
+    notifyListeners();
   }
 
   Future<void> loadToday(String userId) async {
@@ -67,6 +68,8 @@ class AcneTrackerViewModel extends ChangeNotifier {
         products = entry.products;
         note = entry.note;
         imagePath = entry.imagePath;
+        detectedType = entry.detectedType.isNotEmpty ? entry.detectedType : null;
+        detectedConfidence = entry.detectedConfidence > 0 ? entry.detectedConfidence : null;
       }
     } catch (e) {
       errorMessage = "Failed to load today's entry: $e";
@@ -135,6 +138,8 @@ class AcneTrackerViewModel extends ChangeNotifier {
         } catch (e) {
           errorMessage = "Detection failed: $e";
         }
+      } else {
+        errorMessage = "Detection model isn't ready yet.";
       }
 
       final url = await _cloudinaryService.uploadImage(file);
@@ -163,6 +168,8 @@ class AcneTrackerViewModel extends ChangeNotifier {
         products: products,
         note: note,
         imagePath: imagePath,
+        detectedType: detectedType ?? "",
+        detectedConfidence: detectedConfidence ?? 0.0,
       );
       await _repo.saveEntry(entry);
     } catch (e) {

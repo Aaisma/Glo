@@ -38,43 +38,18 @@ class UserRepoImpl implements UserRepo {
   }
 
   @override
-  Future<void> editProfile(UserModel userModel) async {
-    final batch = firestore.batch();
-    final userRef = firestore.collection("users").doc(userModel.id);
-    batch.update(userRef, userModel.toMap());
-
-    try {
-      final discQuery = await firestore.collection('discussions').where('userId', isEqualTo: userModel.id).get();
-      for (var doc in discQuery.docs) {
-        batch.update(doc.reference, {
-          'username': userModel.name,
-          'profileImageUrl': userModel.imageUrl,
-        });
-      }
-
-      final pollQuery = await firestore.collection('community_polls').where('userId', isEqualTo: userModel.id).get();
-      for (var doc in pollQuery.docs) {
-        batch.update(doc.reference, {
-          'username': userModel.name,
-          'profileImageUrl': userModel.imageUrl,
-        });
-      }
-    } catch (e) {
-      // Ignore index errors if they occur during profile update before indexes are ready
-    }
-
-    await batch.commit();
+  Future<void> editProfile(UserModel userModel) {
+    return firestore
+        .collection("users")
+        .doc(userModel.id)
+        .update(userModel.toMap());
   }
 
   @override
-  Future<void> markProfileCompleted(String userId) {
-    // Merge-only write: touches nothing but this one flag, so it can never
-    // clobber fields owned by ProfileViewModel (bio, username, profileImagePath)
-    // or survey data written by updateSurvey().
-    return firestore.collection("users").doc(userId).set(
-      {'profileCompleted': true},
-      SetOptions(merge: true),
-    );
+  Future<void> markProfileCompleted(String id) {
+    return firestore.collection("users").doc(id).update({
+      'profileCompleted': true,
+    });
   }
 
   @override

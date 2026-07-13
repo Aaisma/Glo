@@ -57,6 +57,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/ml/
     - assets/images/
     - assets/images/survey/
     - assets/images/dashboard/

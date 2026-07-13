@@ -5,10 +5,10 @@ abstract class UserRepo {
   Future<UserModel?> getUserByID(String id);
   Future<void> addUser(UserModel userModel);
   Future<void> editProfile(UserModel userModel);
-  Future<void> markProfileCompleted(String userId);
   Future<void> deleteUser(String id);
   Future<List<UserModel>> getAllUser();
   Future<void> createDefaultProfile(User user);
+  Future<void> markProfileCompleted(String id);
 
   Future<void> updateSurvey({
     required String userId,

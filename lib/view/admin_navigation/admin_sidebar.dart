@@ -3,6 +3,20 @@ import 'package:glo/view/admin_dashboard_screen.dart';
 import 'package:glo/view/glo_admin/admin_skin_journal_screen.dart';
 import 'package:glo/view/glo_admin/admin_hydration_hub_screen.dart';
 import 'package:glo/view/glo_admin/nutrition_dashboard.dart';
+import 'package:glo/view/glo_admin/Daily_Journal/JournalManagementScreen.dart';
+import 'package:glo/viewmodel/admin_journal_viewmodel.dart';
+import 'package:glo/repo/admin_journal_repo.dart';
+import 'package:glo/repo/admin_journal_repo_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:glo/view/glo_admin/health_overview_screen.dart';
+import 'package:glo/view/glo_admin/Wellness_Journey/WellnessAdminScreen.dart';
+import 'package:glo/view/glo_admin/admin_feedback/MainDashboardScreen.dart';
+import 'package:glo/viewmodel/admin_wellness_viewmodel.dart';
+import 'package:glo/repo/admin_wellness_repo_impl.dart';
+import 'package:glo/viewmodel/admin_health_overview_viewmodel.dart';
+import 'package:glo/repo/admin_health_overview_repo_impl.dart';
+import 'package:glo/viewmodel/admin_feedback_view_model.dart';
+import 'package:glo/repo/feedback_repo_impl.dart';
 import 'package:glo/view/dashboard_card/admin/admin_monthly_tracking_screen.dart';
 import 'package:glo/view/community/admin/community_posts_library_view.dart';
 import 'package:glo/view/community/admin/community_moderation_queue_view.dart';
@@ -32,6 +46,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
       {"icon": Icons.book, "label": "Skin Journal"},
       {"icon": Icons.water_drop, "label": "Hydration Hub"},
       {"icon": Icons.restaurant_menu, "label": "Nutrition Analytics"},
+      {"icon": Icons.menu_book, "label": "Journal Overview"},
       {"icon": Icons.feedback, "label": "Feedback"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
@@ -174,6 +189,55 @@ class _AdminSidebarState extends State<AdminSidebar> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => const NutritionDashboard(),
+                            ),
+                          );
+                        } else if (item["label"] == "Health Overview") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider(
+                                create: (_) => AdminHealthOverviewViewModel(
+                                  AdminHealthOverviewRepoImpl(),
+                                )..loadOverview(),
+                                child: Consumer<AdminHealthOverviewViewModel>(
+                                  builder: (context, vm, _) =>
+                                      HealthOverviewScreen(data: vm.overview),
+                                ),
+                              ),
+                            ),
+                          );
+                        } else if (item["label"] == "Wellness Journey") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider(
+                                create: (_) => AdminWellnessViewModel(
+                                  repo: AdminWellnessRepoImpl(),
+                                ),
+                                child: const WellnessAdminScreen(),
+                              ),
+                            ),
+                          );
+                        } else if (item["label"] == "Feedback") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider(
+                                create: (_) => AdminFeedbackViewModel(
+                                  repository: FeedbackRepoImpl(),
+                                ),
+                                child: const MainDashboardScreen(),
+                              ),
+                            ),
+                          );
+                        } else if (item["label"] == "Journal Overview") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider(
+                                create: (_) => AdminJournalViewModel(repo: AdminJournalRepoImpl()),
+                                child: const JournalManagementScreen(),
+                              ),
                             ),
                           );
                         } else if (item["label"] == "Monthly Tracking") {
