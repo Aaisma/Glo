@@ -242,7 +242,7 @@ class CreateDiscussionViewModel extends ChangeNotifier {
 
   final titleController = TextEditingController();
   final contentController = TextEditingController();
-  
+
   String? _categoryId;
   String? get categoryId => _categoryId;
 
@@ -454,7 +454,7 @@ class CreatePollViewModel extends ChangeNotifier {
       questionController.text = draftItem.content['question'] ?? '';
       _categoryId = draftItem.content['categoryId'];
       _isAnonymous = draftItem.content['isAnonymous'] ?? false;
-      
+
       final List<String> opts = List<String>.from(draftItem.content['options'] ?? []);
       for (var controller in _optionControllers) {
         controller.dispose();
@@ -473,7 +473,7 @@ class CreatePollViewModel extends ChangeNotifier {
           _optionControllers.add(controller);
         }
       }
-      
+
       _showDraftRecovery = false;
       _hasUnsavedChanges = false;
       notifyListeners();
@@ -565,7 +565,7 @@ class CreatePollViewModel extends ChangeNotifier {
 
   Future<void> publish(UserModel? currentUser) async {
     if (questionController.text.trim().isEmpty || _categoryId == null) return;
-    
+
     final Map<String, int> optionsMap = {};
     for (var controller in _optionControllers) {
       final text = controller.text.trim();
@@ -610,15 +610,26 @@ class CreatePollViewModel extends ChangeNotifier {
     _autoSaveTimer?.cancel();
     _autoSaveTimer = null;
     questionController.clear();
-    for (var controller in _optionControllers) {
-      controller.dispose();
+
+    // Reset down to two empty option fields WITHOUT disposing the surviving
+    // controllers. clearForm() is called right after publish(), while the
+    // create-poll screen's TextFormFields can still briefly be mounted and
+    // pointing at these exact controller instances (e.g. during the pop
+    // transition). Disposing + swapping them here caused "A TextEditingController
+    // was used after being disposed" errors and visible jank right after
+    // publishing a poll.
+    while (_optionControllers.length > minOptions) {
+      _optionControllers.removeLast().dispose();
     }
-    _optionControllers = [
-      TextEditingController(),
-      TextEditingController(),
-    ];
-    _optionControllers[0].addListener(_onFieldChanged);
-    _optionControllers[1].addListener(_onFieldChanged);
+    for (var controller in _optionControllers) {
+      controller.clear();
+    }
+    while (_optionControllers.length < minOptions) {
+      final controller = TextEditingController();
+      controller.addListener(_onFieldChanged);
+      _optionControllers.add(controller);
+    }
+
     _isAnonymous = false;
     _categoryId = null;
     _activeDraftId = null;
@@ -723,12 +734,12 @@ class MyPostsViewModel extends ChangeNotifier {
 
     try {
       final List<dynamic> loadedItems = [];
-      
+
       if (_selectedTab == 'All' || _selectedTab == 'Discussions') {
         final discussions = await _repo.getDiscussions(page: 1, limit: 100, userId: userId);
         loadedItems.addAll(discussions);
       }
-      
+
       if (_selectedTab == 'All' || _selectedTab == 'Polls') {
         final polls = await _repo.getPolls(page: 1, limit: 100, userId: userId);
         loadedItems.addAll(polls);
@@ -781,17 +792,17 @@ class EditDiscussionViewModel extends ChangeNotifier {
   Future<void> loadDiscussion(String id) async {
     _isLoading = true;
     notifyListeners();
-    
+
     _categories = await _repo.getCategories();
     _discussion = await _repo.getDiscussionById(id);
-    
+
     if (_discussion != null) {
       titleController.text = _discussion!.title;
       contentController.text = _discussion!.content;
       _categoryId = _discussion!.categoryId;
       _isAnonymous = _discussion!.isAnonymous;
     }
-    
+
     _isLoading = false;
     notifyListeners();
   }
@@ -836,7 +847,7 @@ class EditPollViewModel extends ChangeNotifier {
   String? _categoryId;
   List<CommunityCategory> _categories = [];
   bool _isLoading = false;
-  
+
   final int minOptions = 2;
   final int maxOptions = 6;
 
@@ -851,10 +862,10 @@ class EditPollViewModel extends ChangeNotifier {
   Future<void> loadPoll(String id) async {
     _isLoading = true;
     notifyListeners();
-    
+
     _categories = await _repo.getCategories();
     _poll = await _repo.getPollById(id);
-    
+
     if (_poll != null) {
       questionController.text = _poll!.question;
       _categoryId = _poll!.categoryId;
@@ -867,7 +878,7 @@ class EditPollViewModel extends ChangeNotifier {
         optionControllers.add(TextEditingController());
       }
     }
-    
+
     _isLoading = false;
     notifyListeners();
   }

@@ -4,7 +4,7 @@ import '../model/shared_models.dart';
 abstract class CommunityRepo {
   Future<List<CommunityCategory>> getCategories();
   Future<CommunityCategory?> getCategoryById(String id);
-  
+
   Future<List<Discussion>> getDiscussions({required int page, required int limit, String? query, String? filter, String? userId});
   Future<Discussion?> getDiscussionById(String id);
   Future<void> addDiscussion(Discussion discussion);
@@ -12,7 +12,7 @@ abstract class CommunityRepo {
   Future<void> likeDiscussion(String id);
   Future<void> addReply(String discussionId, DiscussionReply reply);
   Future<void> likeReply(String discussionId, String replyId);
-  
+
   Future<List<CommunityPoll>> getPolls({
     required int page,
     required int limit,
@@ -25,6 +25,7 @@ abstract class CommunityRepo {
   Future<void> addPoll(CommunityPoll poll);
   Future<void> updatePoll(CommunityPoll poll);
   Future<void> votePoll(String pollId, String option);
+  Future<String?> getUserVoteForPoll(String pollId);
   Future<void> sharePoll(String pollId);
 
   Future<void> saveDraft(DraftItem draft);
@@ -40,6 +41,7 @@ abstract class CommunityRepo {
   Future<void> addPollView(String id);
   Future<bool> isDiscussionLiked(String id);
   Future<void> hideDiscussion(String id);
+  Future<void> hidePoll(String id);
   Future<List<String>> getHiddenContentIds();
   Future<void> toggleSaveDiscussion(String id);
   Future<List<Discussion>> getSavedDiscussions();

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../viewmodel/community_view_model.dart';
-import '../../community/user/poll_preview_view.dart';
+import 'package:intl/intl.dart';
+import '../../../viewmodel/insight_view_model.dart';
+import '../../../constants/ayd_colour.dart';
 
 class CreatePollView extends StatefulWidget {
   const CreatePollView({super.key});
@@ -15,15 +16,57 @@ class _CreatePollViewState extends State<CreatePollView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CreatePollViewModel>().loadCategories();
+      context.read<CreateInsightPollViewModel>().checkForUnfinishedDraft();
     });
+  }
+
+  void _showDraftRecoveryDialog(CreateInsightPollViewModel viewModel) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("Unfinished Draft Found 🌸"),
+          content: const Text(
+            "Would you like to restore your previous draft or start fresh?",
+            style: TextStyle(height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await viewModel.discardDraft();
+                if (mounted) Navigator.of(ctx).pop();
+              },
+              child: const Text("Discard Draft", style: TextStyle(color: Colors.redAccent)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AydColors.adminInsightButton,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () async {
+                await viewModel.restoreDraft();
+                if (mounted) Navigator.of(ctx).pop();
+              },
+              child: const Text("Continue Editing", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<CreatePollViewModel>();
-    final pinkTheme = const Color(0xFFFD8CA1);
-    final accentColor = const Color(0xFFFF3E63);
+    final viewModel = context.watch<CreateInsightPollViewModel>();
+    final activeColor = AydColors.adminInsightButton;
+
+    if (viewModel.showDraftRecovery) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showDraftRecoveryDialog(viewModel);
+      });
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6F8),
@@ -48,42 +91,24 @@ class _CreatePollViewState extends State<CreatePollView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category Dropdown
+              // Category
               const Text(
                 "Category",
                 style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+              TextField(
+                controller: viewModel.categoryController,
+                decoration: InputDecoration(
+                  hintText: "Health & Wellness, Lifestyle, Community...",
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: viewModel.categoryId,
-                    isExpanded: true,
-                    hint: const Text(
-                      "Select Category",
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    items: viewModel.categories.map((cat) {
-                      return DropdownMenuItem<String>(
-                        value: cat.id,
-                        child: Text(
-                          cat.name,
-                          style: const TextStyle(color: Color(0xFF332B2C)),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        viewModel.setCategory(val);
-                      }
-                    },
-                  ),
-                ),
+                onChanged: (_) => viewModel.setCategory(viewModel.categoryController.text),
               ),
 
               const SizedBox(height: 20),
@@ -101,10 +126,9 @@ class _CreatePollViewState extends State<CreatePollView> {
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                   filled: true,
                   fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
                 ),
               ),
 
@@ -134,10 +158,9 @@ class _CreatePollViewState extends State<CreatePollView> {
                               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                               filled: true,
                               fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
                             ),
                           ),
                         ),
@@ -161,8 +184,8 @@ class _CreatePollViewState extends State<CreatePollView> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: accentColor,
-                      side: BorderSide(color: pinkTheme),
+                      foregroundColor: activeColor,
+                      side: BorderSide(color: AydColors.border),
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -174,53 +197,98 @@ class _CreatePollViewState extends State<CreatePollView> {
 
               const SizedBox(height: 24),
 
-              // Post Anonymously Toggle
+              // Publishing Options — same pattern as CreateInsightDetailsView
+              const Text(
+                "Publishing Options",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
+              ),
+              const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SwitchListTile(
-                  title: const Text(
-                    "Post Anonymously",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF332B2C)),
-                  ),
-                  subtitle: const Text("Your username won't be shown publicly"),
-                  value: viewModel.isAnonymous,
-                  activeThumbColor: accentColor,
-                  onChanged: viewModel.toggleAnonymous,
-                  contentPadding: EdgeInsets.zero,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  children: [
+                    RadioListTile<String>(
+                      title: const Text("Publish Now", style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: const Text("Make it live immediately"),
+                      value: "Publish Now",
+                      groupValue: viewModel.publishType,
+                      onChanged: (val) {
+                        if (val != null) viewModel.setPublishType(val);
+                      },
+                      activeColor: activeColor,
+                    ),
+                    const Divider(),
+                    RadioListTile<String>(
+                      title: const Text("Schedule", style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        viewModel.scheduleDate == null
+                            ? "Choose date & time"
+                            : DateFormat('yyyy-MM-dd HH:mm').format(viewModel.scheduleDate!),
+                      ),
+                      value: "Schedule",
+                      groupValue: viewModel.publishType,
+                      onChanged: (val) async {
+                        if (val == null) return;
+                        viewModel.setPublishType(val);
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 30)),
+                        );
+                        if (date != null && context.mounted) {
+                          final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                          if (time != null) {
+                            viewModel.setScheduleDate(
+                              DateTime(date.year, date.month, date.day, time.hour, time.minute),
+                            );
+                          }
+                        }
+                      },
+                      activeColor: activeColor,
+                    ),
+                    const Divider(),
+                    RadioListTile<String>(
+                      title: const Text("Save as Draft", style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: const Text("Continue editing later"),
+                      value: "Save as Draft",
+                      groupValue: viewModel.publishType,
+                      onChanged: (val) {
+                        if (val != null) viewModel.setPublishType(val);
+                      },
+                      activeColor: activeColor,
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 40),
 
-              // Preview/Publish Button
+              // Save / Publish Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: activeColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (viewModel.questionController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Please enter a question! 🌸")),
                       );
                       return;
                     }
-                    
-                    if (viewModel.categoryId == null) {
+
+                    if (viewModel.categoryController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please select a category! 🌸")),
+                        const SnackBar(content: Text("Please enter a category! 🌸")),
                       );
                       return;
                     }
 
-                    // Filter non-empty fields
                     int nonEmptyCount = 0;
                     for (var controller in viewModel.optionControllers) {
                       if (controller.text.trim().isNotEmpty) nonEmptyCount++;
@@ -233,18 +301,46 @@ class _CreatePollViewState extends State<CreatePollView> {
                       return;
                     }
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PollPreviewView(),
-                      ),
-                    );
+                    if (viewModel.publishType == 'Schedule' && viewModel.scheduleDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please choose a schedule date & time! 🌸")),
+                      );
+                      return;
+                    }
+
+                    if (viewModel.publishType == 'Save as Draft') {
+                      await viewModel.autoSaveDraft();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Draft saved successfully! 🌸")),
+                        );
+                      }
+                    } else {
+                      await viewModel.publish();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              viewModel.publishType == 'Schedule'
+                                  ? "Poll scheduled successfully! 🌸"
+                                  : "Poll published successfully! 🌸",
+                            ),
+                          ),
+                        );
+                      }
+                    }
                   },
-                  child: const Text(
-                    "Preview Poll",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  child: Text(
+                    viewModel.publishType == 'Save as Draft'
+                        ? "Save Draft"
+                        : (viewModel.publishType == 'Schedule' ? "Schedule Now" : "Publish Now"),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),

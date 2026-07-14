@@ -134,16 +134,16 @@ class Insight {
       category: map['category'] ?? '',
       readTime: map['readTime'] ?? '',
       status: InsightStatus.values.firstWhere(
-        (e) => e.name == map['status'],
+            (e) => e.name == map['status'],
         orElse: () => InsightStatus.draft,
       ),
       isFeatured: map['isFeatured'] ?? false,
       isTrending: map['isTrending'] ?? false,
-      createdAt: map['createdAt'] is Timestamp 
-          ? (map['createdAt'] as Timestamp).toDate() 
+      createdAt: map['createdAt'] is Timestamp
+          ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
-      publishedAt: map['publishedAt'] != null 
-          ? (map['publishedAt'] is Timestamp ? (map['publishedAt'] as Timestamp).toDate() : DateTime.parse(map['publishedAt'])) 
+      publishedAt: map['publishedAt'] != null
+          ? (map['publishedAt'] is Timestamp ? (map['publishedAt'] as Timestamp).toDate() : DateTime.parse(map['publishedAt']))
           : null,
       authorId: map['authorId'] ?? '',
       views: map['views'] ?? 0,
@@ -152,11 +152,11 @@ class Insight {
       shares: map['shares'] ?? 0,
       commentsCount: map['commentsCount'] ?? 0,
       isDeleted: map['isDeleted'] ?? false,
-      deletedAt: map['deletedAt'] != null 
-          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'].toString())) 
+      deletedAt: map['deletedAt'] != null
+          ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'].toString()))
           : null,
-      updatedAt: map['updatedAt'] != null 
-          ? (map['updatedAt'] is Timestamp ? (map['updatedAt'] as Timestamp).toDate() : DateTime.parse(map['updatedAt'].toString())) 
+      updatedAt: map['updatedAt'] != null
+          ? (map['updatedAt'] is Timestamp ? (map['updatedAt'] as Timestamp).toDate() : DateTime.parse(map['updatedAt'].toString()))
           : null,
     );
   }
@@ -224,10 +224,160 @@ class InsightComment {
       username: map['username'] ?? '',
       content: map['content'] ?? '',
       likes: map['likes'] ?? 0,
-      createdAt: map['createdAt'] is Timestamp 
-          ? (map['createdAt'] as Timestamp).toDate() 
+      createdAt: map['createdAt'] is Timestamp
+          ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       isDeleted: map['isDeleted'] ?? false,
     );
   }
+}
+
+/// A single answer choice on an [InsightPoll].
+class InsightPollOption {
+  final String id;
+  final String text;
+  final int votes;
+
+  InsightPollOption({
+    required this.id,
+    required this.text,
+    this.votes = 0,
+  });
+
+  InsightPollOption copyWith({String? id, String? text, int? votes}) {
+    return InsightPollOption(
+      id: id ?? this.id,
+      text: text ?? this.text,
+      votes: votes ?? this.votes,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {'id': id, 'text': text, 'votes': votes};
+  }
+
+  factory InsightPollOption.fromMap(Map<String, dynamic> map) {
+    return InsightPollOption(
+      id: map['id'] ?? '',
+      text: map['text'] ?? '',
+      votes: map['votes'] ?? 0,
+    );
+  }
+}
+
+/// A poll created from the Insights admin panel. This is intentionally
+/// separate from the community feed's own poll model/repo/viewmodel —
+/// it lives in its own Firestore collection ('insight_polls') and is
+/// never read or written by the community feed code.
+class InsightPoll {
+  final String id;
+  final String question;
+  final String category;
+  final List<InsightPollOption> options;
+  final InsightStatus status;
+  final DateTime createdAt;
+  final DateTime? publishedAt;
+  final String authorId;
+  final bool isDeleted;
+  final DateTime? deletedAt;
+  final DateTime? updatedAt;
+
+  InsightPoll({
+    required this.id,
+    required this.question,
+    required this.category,
+    required this.options,
+    required this.status,
+    required this.createdAt,
+    this.publishedAt,
+    required this.authorId,
+    this.isDeleted = false,
+    this.deletedAt,
+    this.updatedAt,
+  });
+
+  int get totalVotes => options.fold(0, (sum, o) => sum + o.votes);
+
+  InsightPoll copyWith({
+    String? id,
+    String? question,
+    String? category,
+    List<InsightPollOption>? options,
+    InsightStatus? status,
+    DateTime? createdAt,
+    DateTime? publishedAt,
+    String? authorId,
+    bool? isDeleted,
+    DateTime? deletedAt,
+    DateTime? updatedAt,
+  }) {
+    return InsightPoll(
+      id: id ?? this.id,
+      question: question ?? this.question,
+      category: category ?? this.category,
+      options: options ?? this.options,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      publishedAt: publishedAt ?? this.publishedAt,
+      authorId: authorId ?? this.authorId,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'question': question,
+      'category': category,
+      'options': options.map((o) => o.toMap()).toList(),
+      'status': status.name,
+      'createdAt': createdAt,
+      'publishedAt': publishedAt,
+      'authorId': authorId,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+
+  factory InsightPoll.fromMap(Map<String, dynamic> map) {
+    return InsightPoll(
+      id: map['id'] ?? '',
+      question: map['question'] ?? '',
+      category: map['category'] ?? '',
+      options: (map['options'] as List<dynamic>? ?? [])
+          .map((o) => InsightPollOption.fromMap(Map<String, dynamic>.from(o)))
+          .toList(),
+      status: InsightStatus.values.firstWhere(
+            (e) => e.name == map['status'],
+        orElse: () => InsightStatus.draft,
+      ),
+      createdAt: map['createdAt'] is Timestamp
+          ? (map['createdAt'] as Timestamp).toDate()
+          : DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      publishedAt: map['publishedAt'] != null
+          ? (map['publishedAt'] is Timestamp
+          ? (map['publishedAt'] as Timestamp).toDate()
+          : DateTime.parse(map['publishedAt']))
+          : null,
+      authorId: map['authorId'] ?? '',
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'] != null
+          ? (map['deletedAt'] is Timestamp
+          ? (map['deletedAt'] as Timestamp).toDate()
+          : DateTime.parse(map['deletedAt'].toString()))
+          : null,
+      updatedAt: map['updatedAt'] != null
+          ? (map['updatedAt'] is Timestamp
+          ? (map['updatedAt'] as Timestamp).toDate()
+          : DateTime.parse(map['updatedAt'].toString()))
+          : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory InsightPoll.fromJson(String source) => InsightPoll.fromMap(json.decode(source));
 }

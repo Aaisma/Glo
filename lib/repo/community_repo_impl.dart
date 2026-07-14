@@ -56,11 +56,21 @@ class CommunityRepoImpl implements CommunityRepo {
     if (filter == 'Unanswered') {
       filtered = filtered.where((item) => item.repliesCount == 0).toList();
     } else if (filter == 'Following') {
-      return []; 
+      return [];
     }
 
     if (filter == 'Trending') {
-      filtered.sort((a, b) => (b.views + b.likes + b.repliesCount).compareTo(a.views + a.likes + a.repliesCount));
+      filtered.sort((a, b) {
+        final int aScore = a.views + a.likes + a.repliesCount;
+        final int bScore = b.views + b.likes + b.repliesCount;
+        final scoreCmp = bScore.compareTo(aScore);
+        // Tie-breaker: List.sort is not stable, so items with equal scores
+        // (almost always brand-new posts, which all start at 0) would
+        // otherwise land in an arbitrary, inconsistent order between
+        // fetches — making new posts seem to randomly appear/disappear.
+        // Newest-first keeps that tied group in a predictable order.
+        return scoreCmp != 0 ? scoreCmp : b.createdAt.compareTo(a.createdAt);
+      });
     } else {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
@@ -99,16 +109,16 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> likeDiscussion(String id) async {
     if (_auth.currentUser == null) return;
-    
+
     final likeRef = _firestore.collection('users').doc(_uid).collection('likes').doc('disc_$id');
     final discRef = _firestore.collection('discussions').doc(id);
 
     return _firestore.runTransaction((transaction) async {
       final likeDoc = await transaction.get(likeRef);
       final discDoc = await transaction.get(discRef);
-      
+
       if (!discDoc.exists) return;
-      
+
       final currentLikes = discDoc.data()?['likes'] ?? 0;
 
       if (likeDoc.exists) {
@@ -124,7 +134,7 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> addReply(String discussionId, DiscussionReply reply) async {
     final discRef = _firestore.collection('discussions').doc(discussionId);
-    
+
     await _firestore.runTransaction((transaction) async {
       final doc = await transaction.get(discRef);
       if (!doc.exists) return;
@@ -150,11 +160,11 @@ class CommunityRepoImpl implements CommunityRepo {
     await _firestore.runTransaction((transaction) async {
       final likeDoc = await transaction.get(likeRef);
       final discDoc = await transaction.get(discRef);
-      
+
       if (!discDoc.exists) return;
 
       final disc = Discussion.fromMap(discDoc.data()!);
-      
+
       int likesDiff = 0;
       if (likeDoc.exists) {
         transaction.delete(likeRef);
@@ -253,7 +263,7 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> votePoll(String pollId, String option) async {
     if (_auth.currentUser == null) return;
-    
+
     final pollRef = _firestore.collection('community_polls').doc(pollId);
     final voteRef = _firestore.collection('users').doc(_uid).collection('votes').doc(pollId);
 
@@ -275,6 +285,14 @@ class CommunityRepoImpl implements CommunityRepo {
 
       transaction.set(voteRef, {'votedOption': option, 'votedAt': FieldValue.serverTimestamp()});
     });
+  }
+
+  @override
+  Future<String?> getUserVoteForPoll(String pollId) async {
+    if (_auth.currentUser == null) return null;
+    final doc = await _firestore.collection('users').doc(_uid).collection('votes').doc(pollId).get();
+    if (!doc.exists) return null;
+    return doc.data()?['votedOption'] as String?;
   }
 
   @override
@@ -317,7 +335,7 @@ class CommunityRepoImpl implements CommunityRepo {
     String? filter,
     String? userId,
   }) async {
-    if (filter == 'Following') return []; 
+    if (filter == 'Following') return [];
 
     final discussions = await getDiscussions(page: 1, limit: 100, query: query, filter: filter, userId: userId);
     final polls = await getPolls(page: 1, limit: 100, userId: userId, filter: filter, query: query);
@@ -334,7 +352,13 @@ class CommunityRepoImpl implements CommunityRepo {
         final int bScore = (b is Discussion)
             ? (b.views + b.likes + b.repliesCount)
             : ((b as CommunityPoll).views + b.totalVotes + b.shares);
-        return bScore.compareTo(aScore);
+        final scoreCmp = bScore.compareTo(aScore);
+        if (scoreCmp != 0) return scoreCmp;
+        // Tie-breaker for equal scores (brand-new posts all start at 0) —
+        // see comment in getDiscussions() for why this matters.
+        final DateTime aTime = (a is Discussion) ? a.createdAt : (a as CommunityPoll).createdAt;
+        final DateTime bTime = (b is Discussion) ? b.createdAt : (b as CommunityPoll).createdAt;
+        return bTime.compareTo(aTime);
       });
     } else {
       feed.sort((a, b) {
@@ -429,6 +453,17 @@ class CommunityRepoImpl implements CommunityRepo {
   }
 
   @override
+  Future<void> hidePoll(String id) async {
+    if (_auth.currentUser == null) return;
+    final hidden = HiddenContent(
+      userId: _uid,
+      contentId: id,
+      type: ContentType.poll,
+    );
+    await _firestore.collection('users').doc(_uid).collection('hidden_content').doc('hidden_$id').set(hidden.toMap());
+  }
+
+  @override
   Future<List<String>> getHiddenContentIds() async {
     if (_auth.currentUser == null) return [];
     final snapshot = await _firestore.collection('users').doc(_uid).collection('hidden_content').get();
@@ -438,16 +473,16 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> toggleSaveDiscussion(String id) async {
     if (_auth.currentUser == null) return;
-    
+
     final favRef = _firestore.collection('users').doc(_uid).collection('favorites').doc('disc_$id');
     final discRef = _firestore.collection('discussions').doc(id);
 
     return _firestore.runTransaction((transaction) async {
       final favDoc = await transaction.get(favRef);
       final discDoc = await transaction.get(discRef);
-      
+
       if (!discDoc.exists) return;
-      
+
       final currentSaves = discDoc.data()?['saves'] ?? 0;
 
       if (favDoc.exists) {
@@ -472,7 +507,7 @@ class CommunityRepoImpl implements CommunityRepo {
     final snapshot = await _firestore.collection('users').doc(_uid).collection('favorites')
         .where('type', isEqualTo: FavoriteType.discussion.name)
         .get();
-    
+
     final result = <Discussion>[];
     for (var doc in snapshot.docs) {
       final item = FavoriteItem.fromMap(doc.data());
@@ -485,14 +520,14 @@ class CommunityRepoImpl implements CommunityRepo {
   @override
   Future<void> toggleSavePoll(String id) async {
     if (_auth.currentUser == null) return;
-    
+
     final favRef = _firestore.collection('users').doc(_uid).collection('favorites').doc('poll_$id');
     final pollRef = _firestore.collection('community_polls').doc(id);
 
     return _firestore.runTransaction((transaction) async {
       final favDoc = await transaction.get(favRef);
       final pollDoc = await transaction.get(pollRef);
-      
+
       if (!pollDoc.exists) return;
 
       if (favDoc.exists) {
@@ -515,7 +550,7 @@ class CommunityRepoImpl implements CommunityRepo {
     final snapshot = await _firestore.collection('users').doc(_uid).collection('favorites')
         .where('type', isEqualTo: FavoriteType.poll.name)
         .get();
-    
+
     final result = <CommunityPoll>[];
     for (var doc in snapshot.docs) {
       final item = FavoriteItem.fromMap(doc.data());

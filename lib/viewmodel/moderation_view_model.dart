@@ -10,6 +10,11 @@ class InsightsModerationQueueViewModel extends ChangeNotifier {
 
   InsightsModerationQueueViewModel(this._repo);
 
+  // Full unfiltered-by-page lists, used for accurate tab counts.
+  List<ModerationItem> _allReported = [];
+  List<ModerationItem> _allHidden = [];
+
+  // Current page slice, used for display.
   List<ModerationItem> _reportedItems = [];
   List<ModerationItem> get reportedItems => _reportedItems;
 
@@ -42,17 +47,30 @@ class InsightsModerationQueueViewModel extends ChangeNotifier {
     try {
       final all = await _repo.getModerationQueue(
         page: 1,
-        limit: 100,
+        limit: 1000,
         isArchived: false,
       );
 
-      _reportedItems = all.where((e) => e.reportsCount > 0).toList();
-      _hiddenItems = all.where((e) => e.hiddenCount > 0).toList();
+      _allReported = all.where((e) => e.reportsCount > 0).toList();
+      _allHidden = all.where((e) => e.hiddenCount > 0).toList();
 
-      final activeList = _selectedTab == 'Reported' ? _reportedItems : _hiddenItems;
+      final activeList = _selectedTab == 'Reported' ? _allReported : _allHidden;
       final startIndex = (_page - 1) * _limit;
-      
-      _hasMore = (startIndex + _limit) < activeList.length;
+      final endIndex = (startIndex + _limit) > activeList.length
+          ? activeList.length
+          : (startIndex + _limit);
+
+      final pageItems = startIndex >= activeList.length
+          ? <ModerationItem>[]
+          : activeList.sublist(startIndex, endIndex);
+
+      if (_selectedTab == 'Reported') {
+        _reportedItems = pageItems;
+      } else {
+        _hiddenItems = pageItems;
+      }
+
+      _hasMore = endIndex < activeList.length;
     } catch (e) {
       // error
     } finally {
@@ -85,8 +103,8 @@ class InsightsModerationQueueViewModel extends ChangeNotifier {
 
   int get currentPage => _page;
 
-  int get reportedCount => _reportedItems.length;
-  int get hiddenCount => _hiddenItems.length;
+  int get reportedCount => _allReported.length;
+  int get hiddenCount => _allHidden.length;
 }
 
 class InsightsModerationDetailViewModel extends ChangeNotifier {
@@ -145,6 +163,11 @@ class CommunityModerationQueueViewModel extends ChangeNotifier {
 
   CommunityModerationQueueViewModel(this._repo);
 
+  // Full unfiltered-by-page lists, used for accurate tab counts.
+  List<ModerationItem> _allReported = [];
+  List<ModerationItem> _allHidden = [];
+
+  // Current page slice, used for display.
   List<ModerationItem> _reportedItems = [];
   List<ModerationItem> get reportedItems => _reportedItems;
 
@@ -177,17 +200,30 @@ class CommunityModerationQueueViewModel extends ChangeNotifier {
     try {
       final all = await _repo.getModerationQueue(
         page: 1,
-        limit: 100,
+        limit: 1000,
         isArchived: false,
       );
 
-      _reportedItems = all.where((e) => e.reportsCount > 0).toList();
-      _hiddenItems = all.where((e) => e.hiddenCount > 0).toList();
+      _allReported = all.where((e) => e.reportsCount > 0).toList();
+      _allHidden = all.where((e) => e.hiddenCount > 0).toList();
 
-      final activeList = _selectedTab == 'Reported' ? _reportedItems : _hiddenItems;
+      final activeList = _selectedTab == 'Reported' ? _allReported : _allHidden;
       final startIndex = (_page - 1) * _limit;
-      
-      _hasMore = (startIndex + _limit) < activeList.length;
+      final endIndex = (startIndex + _limit) > activeList.length
+          ? activeList.length
+          : (startIndex + _limit);
+
+      final pageItems = startIndex >= activeList.length
+          ? <ModerationItem>[]
+          : activeList.sublist(startIndex, endIndex);
+
+      if (_selectedTab == 'Reported') {
+        _reportedItems = pageItems;
+      } else {
+        _hiddenItems = pageItems;
+      }
+
+      _hasMore = endIndex < activeList.length;
     } catch (e) {
       // error
     } finally {
@@ -220,8 +256,8 @@ class CommunityModerationQueueViewModel extends ChangeNotifier {
 
   int get currentPage => _page;
 
-  int get reportedCount => _reportedItems.length;
-  int get hiddenCount => _hiddenItems.length;
+  int get reportedCount => _allReported.length;
+  int get hiddenCount => _allHidden.length;
 }
 
 

@@ -4,6 +4,7 @@ import '../model/insight_models.dart';
 import '../model/community_models.dart';
 import '../model/shared_models.dart';
 import '../repo/insights_repo.dart';
+import '../repo/insights_poll_repo.dart';
 import '../repo/community_repo.dart';
 import '../repo/insights_moderation_repo.dart';
 
@@ -410,9 +411,9 @@ class CreateInsightViewModel extends ChangeNotifier {
 
   Future<void> checkForUnfinishedDraft() async {
     // Note: To properly recover without id, you might need a getDrafts() method.
-    // For now we assume no active recovery if activeDraftId is unknown, 
+    // For now we assume no active recovery if activeDraftId is unknown,
     // or we'd fetch all drafts from repo.
-    // Since getDraft takes an ID, if _activeDraftId is null, we can't fetch it easily 
+    // Since getDraft takes an ID, if _activeDraftId is null, we can't fetch it easily
     // unless we add getDrafts to repo. We'll disable this for MVP or add getDrafts later.
   }
 
@@ -453,7 +454,7 @@ class CreateInsightViewModel extends ChangeNotifier {
     _coverImage = insight.coverImage;
     _isFeatured = insight.isFeatured;
     _isTrending = insight.isTrending;
-    
+
     if (insight.status == InsightStatus.scheduled) {
       _publishType = 'Schedule';
       _scheduleDate = insight.publishedAt;
@@ -669,4 +670,231 @@ class InsightsLibraryViewModel extends ChangeNotifier {
   }
 
   int get currentPage => _page;
+}
+
+/// Drives poll creation from the Insights admin panel. Deliberately
+/// separate from the community feed's CreatePollViewModel — it talks
+/// only to InsightsPollRepo and never touches community data. Mirrors
+/// CreateInsightViewModel's draft/schedule/publish/autosave pattern so
+/// the two content types (article, poll) behave consistently within
+/// the Insights domain.
+class CreateInsightPollViewModel extends ChangeNotifier {
+  final InsightsPollRepo _repo;
+
+  CreateInsightPollViewModel(this._repo);
+
+  final TextEditingController questionController = TextEditingController();
+  final TextEditingController categoryController = TextEditingController(text: 'Health & Wellness');
+  List<TextEditingController> optionControllers = [TextEditingController(), TextEditingController()];
+
+  String _publishType = 'Publish Now'; // 'Publish Now', 'Schedule', 'Save as Draft'
+  String get publishType => _publishType;
+
+  DateTime? _scheduleDate;
+  DateTime? get scheduleDate => _scheduleDate;
+
+  String? _activeDraftId;
+  String? _existingPublishedId;
+  DateTime? _existingCreatedAt;
+  DateTime? _existingPublishedAt;
+
+  bool _hasUnsavedChanges = false;
+  Timer? _autoSaveTimer;
+
+  bool _showDraftRecovery = false;
+  bool get showDraftRecovery => _showDraftRecovery;
+
+  int _currentStep = 0;
+  int get currentStep => _currentStep;
+
+  bool get canAddOption => optionControllers.length < 6;
+  bool get canRemoveOption => optionControllers.length > 2;
+
+  void addOptionField() {
+    if (!canAddOption) return;
+    optionControllers.add(TextEditingController());
+    _onFieldChanged();
+    notifyListeners();
+  }
+
+  void removeOptionField(int index) {
+    if (!canRemoveOption) return;
+    optionControllers.removeAt(index);
+    _onFieldChanged();
+    notifyListeners();
+  }
+
+  void setPublishType(String type) {
+    _publishType = type;
+    _onFieldChanged();
+    notifyListeners();
+  }
+
+  void setScheduleDate(DateTime date) {
+    _scheduleDate = date;
+    _onFieldChanged();
+    notifyListeners();
+  }
+
+  void setCategory(String category) {
+    categoryController.text = category;
+    _onFieldChanged();
+    notifyListeners();
+  }
+
+  void _onFieldChanged() {
+    _hasUnsavedChanges = true;
+    _startTimer();
+  }
+
+  void _startTimer() {
+    if (_autoSaveTimer != null) return;
+    _autoSaveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (_hasUnsavedChanges) {
+        autoSaveDraft();
+      }
+    });
+  }
+
+  Future<void> checkForUnfinishedDraft() async {
+    // Same MVP limitation as CreateInsightViewModel.checkForUnfinishedDraft:
+    // without a getPollDrafts() listing method, recovery only kicks in
+    // once an activeDraftId is already known (e.g. via loadExistingPoll).
+  }
+
+  Future<void> restoreDraft() async {
+    if (_activeDraftId == null) return;
+    final draft = await _repo.getPollDraft(_activeDraftId!);
+    if (draft != null) {
+      questionController.text = draft.question;
+      categoryController.text = draft.category;
+      optionControllers = draft.options.map((o) => TextEditingController(text: o.text)).toList();
+      if (optionControllers.length < 2) {
+        optionControllers = [TextEditingController(), TextEditingController()];
+      }
+      _showDraftRecovery = false;
+      _hasUnsavedChanges = false;
+      notifyListeners();
+    }
+  }
+
+  void loadExistingPoll(InsightPoll poll) {
+    clearForm();
+    if (poll.status == InsightStatus.draft) {
+      _activeDraftId = poll.id;
+    } else {
+      _existingPublishedId = poll.id;
+      _existingCreatedAt = poll.createdAt;
+      _existingPublishedAt = poll.publishedAt;
+    }
+
+    questionController.text = poll.question;
+    categoryController.text = poll.category;
+    optionControllers = poll.options.map((o) => TextEditingController(text: o.text)).toList();
+    if (optionControllers.length < 2) {
+      optionControllers = [TextEditingController(), TextEditingController()];
+    }
+
+    if (poll.status == InsightStatus.scheduled) {
+      _publishType = 'Schedule';
+      _scheduleDate = poll.publishedAt;
+    } else if (poll.status == InsightStatus.published) {
+      _publishType = 'Publish Now';
+    }
+
+    _hasUnsavedChanges = false;
+    notifyListeners();
+  }
+
+  Future<void> discardDraft() async {
+    if (_activeDraftId != null) {
+      await _repo.discardPollDraft(_activeDraftId!);
+    }
+    clearForm();
+  }
+
+  List<InsightPollOption> _buildOptions() {
+    final nonEmpty = optionControllers.where((c) => c.text.trim().isNotEmpty).toList();
+    return List.generate(
+      nonEmpty.length,
+          (i) => InsightPollOption(id: 'opt_$i', text: nonEmpty[i].text.trim()),
+    );
+  }
+
+  Future<void> autoSaveDraft() async {
+    if (questionController.text.trim().isEmpty) return;
+
+    final id = _activeDraftId ?? 'poll_draft_${DateTime.now().millisecondsSinceEpoch}';
+    _activeDraftId = id;
+
+    final draft = InsightPoll(
+      id: id,
+      question: questionController.text,
+      category: categoryController.text,
+      options: _buildOptions(),
+      status: InsightStatus.draft,
+      createdAt: DateTime.now(),
+      authorId: 'admin_1',
+    );
+
+    await _repo.savePollDraft(draft);
+    _hasUnsavedChanges = false;
+    notifyListeners();
+  }
+
+  Future<void> publish() async {
+    final isUpdate = _existingPublishedId != null;
+    final id = isUpdate ? _existingPublishedId! : (_activeDraftId ?? 'poll_${DateTime.now().millisecondsSinceEpoch}');
+
+    final poll = InsightPoll(
+      id: id,
+      question: questionController.text,
+      category: categoryController.text,
+      options: _buildOptions(),
+      status: _publishType == 'Schedule' ? InsightStatus.scheduled : InsightStatus.published,
+      createdAt: isUpdate ? _existingCreatedAt! : DateTime.now(),
+      publishedAt: _publishType == 'Schedule' ? _scheduleDate : (isUpdate ? _existingPublishedAt : DateTime.now()),
+      updatedAt: isUpdate ? DateTime.now() : null,
+      authorId: 'admin_1',
+    );
+
+    if (isUpdate) {
+      await _repo.updatePoll(poll);
+    } else {
+      await _repo.publishPoll(poll);
+    }
+    clearForm();
+  }
+
+  void clearForm() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    _existingPublishedId = null;
+    _existingCreatedAt = null;
+    _existingPublishedAt = null;
+    _activeDraftId = null;
+    questionController.clear();
+    categoryController.text = 'Health & Wellness';
+    for (var c in optionControllers) {
+      c.dispose();
+    }
+    optionControllers = [TextEditingController(), TextEditingController()];
+    _publishType = 'Publish Now';
+    _scheduleDate = null;
+    _currentStep = 0;
+    _showDraftRecovery = false;
+    _hasUnsavedChanges = false;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _autoSaveTimer?.cancel();
+    questionController.dispose();
+    categoryController.dispose();
+    for (var c in optionControllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
 }

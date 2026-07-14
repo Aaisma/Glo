@@ -26,6 +26,12 @@ class _PollDetailViewState extends State<PollDetailView> {
   List<CommunityPoll> _relatedPolls = [];
   StreamSubscription<CommunityPoll?>? _pollSubscription;
 
+  // Tracked separately from `_poll!.userVotedOption` because that field lives
+  // on the shared poll document and is never actually written by votePoll() —
+  // relying on it caused the "voted" state to reset whenever the poll stream
+  // pushed an update (e.g. right after voting).
+  String? _userVotedOption;
+
   @override
   void initState() {
     super.initState();
@@ -56,11 +62,13 @@ class _PollDetailViewState extends State<PollDetailView> {
     await repo.addPollView(widget.pollId);
     final poll = await repo.getPollById(widget.pollId);
     final allPolls = await repo.getAllAdminPolls();
-    
+    final userVote = await repo.getUserVoteForPoll(widget.pollId);
+
     if (mounted) {
       setState(() {
         _poll = poll;
         _relatedPolls = allPolls.where((p) => p.id != widget.pollId && !p.isDeleted).toList();
+        _userVotedOption = userVote;
         _isLoading = false;
       });
     }
@@ -119,12 +127,12 @@ class _PollDetailViewState extends State<PollDetailView> {
   }
 
   Future<void> _handleVote(String option) async {
-    if (_poll == null || _poll!.userVotedOption != null) return;
+    if (_poll == null || _userVotedOption != null) return;
     final repo = context.read<CommunityRepo>();
-    
+
     setState(() {
+      _userVotedOption = option;
       _poll = _poll!.copyWith(
-        userVotedOption: option,
         totalVotes: _poll!.totalVotes + 1,
         options: {
           ..._poll!.options,
@@ -145,7 +153,7 @@ class _PollDetailViewState extends State<PollDetailView> {
       );
     }
 
-    final hasVoted = _poll!.userVotedOption != null;
+    final hasVoted = _userVotedOption != null;
     final formattedDate = DateFormat('MMMM dd, yyyy').format(_poll!.createdAt);
 
     return Container(
@@ -177,8 +185,8 @@ class _PollDetailViewState extends State<PollDetailView> {
                 if (value == 'hide') {
                   final modRepo = context.read<CommunityModerationRepo>();
                   final repo = context.read<CommunityRepo>();
-                  
-                  await repo.hideDiscussion(_poll!.id); // Shared hide logic for now or we can add hidePoll if it exists
+
+                  await repo.hidePoll(_poll!.id);
                   await modRepo.recordHiddenContent(
                     contentId: _poll!.id,
                     contentType: ContentType.poll,
@@ -186,7 +194,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                     authorName: _poll!.username,
                     contentSnippet: _poll!.question,
                   );
-                  
+
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -215,7 +223,7 @@ class _PollDetailViewState extends State<PollDetailView> {
               itemBuilder: (context) {
                 final userVM = context.read<UserViewModel>();
                 final isOwner = userVM.user != null && _poll!.userId == userVM.user!.id;
-                
+
                 return [
                   if (isOwner)
                     const PopupMenuItem(
@@ -355,7 +363,7 @@ class _PollDetailViewState extends State<PollDetailView> {
                       ..._poll!.options.keys.map((option) {
                         final votes = _poll!.options[option] ?? 0;
                         final double percent = _poll!.totalVotes > 0 ? (votes / _poll!.totalVotes) : 0;
-                        final isSelected = _poll!.userVotedOption == option;
+                        final isSelected = _userVotedOption == option;
 
                         return GestureDetector(
                           onTap: () => _handleVote(option),
