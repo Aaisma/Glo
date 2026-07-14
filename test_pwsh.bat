@@ -1,0 +1,1 @@
+call pwsh -ExecutionPolicy Bypass  

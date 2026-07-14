@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WomenGlo</string>
+    <string name="facebook_app_id">2276352609836908</string>
+    <string name="facebook_client_token">5050efff0dd9f920f72d3f21ba80ea9c</string>
+    <string name="facebook_login_protocol_scheme">fb2276352609836908</string>
+</resources>
