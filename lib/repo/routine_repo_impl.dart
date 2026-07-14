@@ -13,8 +13,8 @@ class RoutineRepoImpl implements RoutineRepo {
         .collection('calendar_notes')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => CalendarNoteModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((doc) => CalendarNoteModel.fromMap(doc.data(), doc.id))
+        .toList());
   }
 
   @override
@@ -45,8 +45,8 @@ class RoutineRepoImpl implements RoutineRepo {
         .collection('calendar_todos')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => CalendarTodoModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((doc) => CalendarTodoModel.fromMap(doc.data(), doc.id))
+        .toList());
   }
 
   @override
@@ -78,8 +78,8 @@ class RoutineRepoImpl implements RoutineRepo {
         .orderBy('startTime')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => RoutineModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((doc) => RoutineModel.fromMap(doc.data(), doc.id))
+        .toList());
   }
 
   @override

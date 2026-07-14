@@ -10,18 +10,6 @@ import 'package:glo/viewmodel/auth_viewmodel.dart';
 import 'package:glo/viewmodel/user_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
-  /// Optional hook for side effects (e.g. analytics) once email/password
-  /// (or Google/Facebook, via [LoginOptionsSection]) sign-in succeeds.
-  ///
-  /// NOTE: LoginScreen no longer relies on this for navigation. Your
-  /// `AuthWrapper` already listens to `FirebaseAuth.instance.authStateChanges()`
-  /// and rebuilds to the right screen on its own, so `_completeLogin` now
-  /// navigates using its own (guaranteed-mounted) context — popping back to
-  /// AuthWrapper if it's already on the stack, or pushing it fresh if not.
-  /// Passing a callback that itself calls `Navigator.of(context)` from a
-  /// caller-captured context (e.g. AuthenticationPage) can throw "Looking up
-  /// a deactivated widget's ancestor is unsafe", since that context may be
-  /// deactivated by AuthWrapper's rebuild before the callback runs.
   final VoidCallback? onAuthenticated;
 
   const LoginScreen({super.key, this.onAuthenticated});
