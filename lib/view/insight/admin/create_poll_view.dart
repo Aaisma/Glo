@@ -4,6 +4,15 @@ import 'package:intl/intl.dart';
 import '../../../viewmodel/insight_view_model.dart';
 import '../../../constants/ayd_colour.dart';
 
+/// Fixed category options for Insights polls (kept identical to the
+/// article create flow so both use the same category strings).
+const List<String> kInsightCategories = [
+  'Health & Wellness',
+  'Lifestyle',
+  'Community',
+  'Expert Insights',
+];
+
 class CreatePollView extends StatefulWidget {
   const CreatePollView({super.key});
 
@@ -97,10 +106,12 @@ class _CreatePollViewState extends State<CreatePollView> {
                 style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C)),
               ),
               const SizedBox(height: 8),
-              TextField(
-                controller: viewModel.categoryController,
+              DropdownButtonFormField<String>(
+                initialValue: viewModel.categoryController.text.isEmpty
+                    ? null
+                    : viewModel.categoryController.text,
                 decoration: InputDecoration(
-                  hintText: "Health & Wellness, Lifestyle, Community...",
+                  hintText: "Select a category",
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                   filled: true,
                   fillColor: Colors.white,
@@ -108,7 +119,14 @@ class _CreatePollViewState extends State<CreatePollView> {
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
                 ),
-                onChanged: (_) => viewModel.setCategory(viewModel.categoryController.text),
+                items: kInsightCategories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val == null) return;
+                  viewModel.categoryController.text = val;
+                  viewModel.setCategory(val);
+                },
               ),
 
               const SizedBox(height: 20),

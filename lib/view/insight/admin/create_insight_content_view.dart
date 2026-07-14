@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../../viewmodel/insight_view_model.dart';
 import 'create_poll_view.dart';
@@ -8,6 +9,7 @@ import '../../../constants/ayd_colour.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../../viewmodel/image_viewmodel.dart';
+
 class CreateInsightViews extends StatefulWidget {
   const CreateInsightViews({super.key});
 
@@ -75,50 +77,50 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
     }
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AydColors.admin,
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text(
-          "Create Insight",
-          style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
+        decoration: const BoxDecoration(
+          color: AydColors.admin,
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
-          onPressed: () {
-            viewModel.clearForm();
-            Navigator.of(context).pop();
-          },
-        ),
-
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ProgressBar
-            _buildProgressBar(viewModel.currentStep, themeColor),
-
-            const SizedBox(height: 16),
-
-            // Main Body Switcher
-            Expanded(
-              child: IndexedStack(
-                index: viewModel.currentStep,
-                children: [
-                  _buildStep1Content(viewModel, themeColor),
-                  CreateInsightDetailsView(activeColor: themeColor),
-                  CreateInsightPreviewView(activeColor: themeColor),
-                ],
-              ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text(
+              "Create Insight",
+              style: TextStyle(color: Color(0xFF332B2C), fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-      ),
-    ));
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF332B2C)),
+              onPressed: () {
+                viewModel.clearForm();
+                Navigator.of(context).pop();
+              },
+            ),
+
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // ProgressBar
+                _buildProgressBar(viewModel.currentStep, themeColor),
+
+                const SizedBox(height: 16),
+
+                // Main Body Switcher
+                Expanded(
+                  child: IndexedStack(
+                    index: viewModel.currentStep,
+                    children: [
+                      _buildStep1Content(viewModel, themeColor),
+                      CreateInsightDetailsView(activeColor: themeColor),
+                      CreateInsightPreviewView(activeColor: themeColor),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 
   Widget _buildProgressBar(int step, Color activeColor) {
@@ -155,13 +157,13 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
             child: isDone
                 ? const Icon(Icons.check, size: 16, color: Colors.white)
                 : Text(
-                    "${num + 1}",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isActive ? activeColor : Colors.grey,
-                    ),
-                  ),
+              "${num + 1}",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isActive ? activeColor : Colors.grey,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 4),
@@ -189,171 +191,229 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
 
   Widget _buildStep1Content(CreateInsightViewModel viewModel, Color activeColor) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title
-          const Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
-          const SizedBox(height: 8),
-          TextField(
-            controller: viewModel.titleController,
-            maxLength: 100,
-            decoration: InputDecoration(
-              hintText: "Morning Rituals That Set a Positive Tone",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            const Text("Title", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
+            const SizedBox(height: 8),
+            TextField(
+              controller: viewModel.titleController,
+              maxLength: 100,
+              decoration: InputDecoration(
+                hintText: "Morning Rituals That Set a Positive Tone",
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Category
-          const Text("Category", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
-          const SizedBox(height: 8),
-          TextField(
-            controller: viewModel.categoryController,
-            decoration: InputDecoration(
-              hintText: "Health & Wellness, Lifestyle, Community...",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+            // Category
+            const Text("Category", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: viewModel.categoryController.text.isEmpty
+                  ? null
+                  : viewModel.categoryController.text,
+              decoration: InputDecoration(
+                hintText: "Select a category",
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+              ),
+              items: kInsightCategories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (val) {
+                if (val == null) return;
+                viewModel.categoryController.text = val;
+                viewModel.setCategory(val);
+              },
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Summary
-          const Text("Summary", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
-          const SizedBox(height: 8),
-          TextField(
-            controller: viewModel.summaryController,
-            maxLength: 160,
-            maxLines: 2,
-            decoration: InputDecoration(
-              hintText: "Simple morning habits that boost your mood, energy, and focus all day long.",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+            // Summary
+            const Text("Summary", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
+            const SizedBox(height: 8),
+            TextField(
+              controller: viewModel.summaryController,
+              maxLength: 160,
+              maxLines: 2,
+              decoration: InputDecoration(
+                hintText: "Simple morning habits that boost your mood, energy, and focus all day long.",
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Cover Image Loader
-          const Text("Cover Image", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () async {
-              final source = await showModalBottomSheet<ImageSource>(
-                context: context,
-                builder: (ctx) => SafeArea(
-                  child: Wrap(
+            // Cover Image Loader
+            const Text("Cover Image", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () async {
+                final source = await showModalBottomSheet<ImageSource>(
+                  context: context,
+                  builder: (ctx) => SafeArea(
+                    child: Wrap(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.camera_alt),
+                          title: const Text('Camera'),
+                          onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.photo_library),
+                          title: const Text('Gallery'),
+                          onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+
+                if (source != null && context.mounted) {
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: source);
+                  if (pickedFile != null && context.mounted) {
+                    await viewModel.setCoverImage(pickedFile.path);
+                  }
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      ListTile(
-                        leading: const Icon(Icons.camera_alt),
-                        title: const Text('Camera'),
-                        onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.photo_library),
-                        title: const Text('Gallery'),
-                        onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
-                      ),
+                      _buildCoverImage(viewModel.coverImage),
+                      if (viewModel.isUploadingCoverImage)
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          padding: const EdgeInsets.all(16),
+                          child: const CircularProgressIndicator(color: Colors.white),
+                        ),
                     ],
                   ),
                 ),
-              );
-              
-              if (source != null && context.mounted) {
-                final picker = ImagePicker();
-                final pickedFile = await picker.pickImage(source: source);
-                if (pickedFile != null && context.mounted) {
-                  viewModel.setCoverImage(pickedFile.path);
-                }
-              }
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: double.infinity,
-                child: _buildCoverImage(viewModel.coverImage),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Content body
-          const Text("Article Content", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
-          const SizedBox(height: 8),
-          TextField(
-            controller: viewModel.contentController,
-            maxLines: 8,
-            decoration: InputDecoration(
-              hintText: "Write your article content here...",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+            // Content body
+            const Text("Article Content", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
+            const SizedBox(height: 8),
+            TextField(
+              controller: viewModel.contentController,
+              maxLines: 8,
+              decoration: InputDecoration(
+                hintText: "Write your article content here...",
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // Actions
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AydColors.adminInsightButton,
-                  side: const BorderSide(color: Color(0xFFE4DAF9)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            // Actions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AydColors.adminInsightButton,
+                    side: const BorderSide(color: Color(0xFFE4DAF9)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CreatePollView()),
+                    );
+                  },
+                  child: const Text("Create Poll"),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CreatePollView()),
-                  );
-                },
-                child: const Text("Create Poll"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: activeColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: activeColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () => viewModel.setStep(1),
+                  child: const Text("Next: Details"),
                 ),
-                onPressed: () => viewModel.setStep(1),
-                child: const Text("Next: Details"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 100), // padding for keyboard
-      ],
-    ));
+              ],
+            ),
+            const SizedBox(height: 100), // padding for keyboard
+          ],
+        ));
   }
 
   Widget _buildCoverImage(String coverImage) {
+    const placeholderHeight = 140.0;
+    Widget placeholder() => Container(
+      height: placeholderHeight,
+      width: double.infinity,
+      color: const Color(0xFFFFE5EC),
+      child: const Icon(Icons.image_outlined, color: Colors.grey, size: 32),
+    );
+
     if (coverImage.isEmpty) {
-      return Image.asset('assets/images/feed/image.png', height: 100, fit: BoxFit.cover);
+      return placeholder();
     } else if (coverImage.startsWith('http') || coverImage.startsWith('blob:')) {
-      return Image.network(coverImage, height: 100, fit: BoxFit.cover);
+      return Image.network(
+        coverImage,
+        height: placeholderHeight,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return SizedBox(
+            height: placeholderHeight,
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        },
+        errorBuilder: (_, __, ___) => placeholder(),
+      );
     } else if (coverImage.startsWith('assets/')) {
-      return Image.asset(coverImage, height: 100, fit: BoxFit.cover);
+      return Image.asset(
+        coverImage,
+        height: placeholderHeight,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder(),
+      );
+    } else if (!kIsWeb) {
+      return Image.file(
+        File(coverImage),
+        height: placeholderHeight,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder(),
+      );
     } else {
-      return Image.file(File(coverImage), height: 100, fit: BoxFit.cover);
+      // On web, a picked-but-not-yet-uploaded file won't have an http/blob
+      // URL or a real filesystem path, so dart:io File() would throw.
+      return placeholder();
     }
   }
 }

@@ -7,6 +7,7 @@ import '../repo/insights_repo.dart';
 import '../repo/insights_poll_repo.dart';
 import '../repo/community_repo.dart';
 import '../repo/insights_moderation_repo.dart';
+import '../repo/image_repo.dart';
 
 class InsightsFeedViewModel extends ChangeNotifier {
   final InsightsRepo _repo;
@@ -309,9 +310,10 @@ class ArticleDetailViewModel extends ChangeNotifier {
 
 class CreateInsightViewModel extends ChangeNotifier {
   final InsightsRepo _repo;
+  final ImageRepo _imageRepo;
   Timer? _autoSaveTimer;
 
-  CreateInsightViewModel(this._repo) {
+  CreateInsightViewModel(this._repo, this._imageRepo) {
     titleController.addListener(_onFieldChanged);
     summaryController.addListener(_onFieldChanged);
     contentController.addListener(_onFieldChanged);
@@ -330,6 +332,9 @@ class CreateInsightViewModel extends ChangeNotifier {
 
   String _coverImage = 'assets/images/stressandsleep.png';
   String get coverImage => _coverImage;
+
+  bool _isUploadingCoverImage = false;
+  bool get isUploadingCoverImage => _isUploadingCoverImage;
 
   String _publishType = 'Publish Now'; // 'Publish Now', 'Schedule', 'Save as Draft'
   String get publishType => _publishType;
@@ -384,10 +389,25 @@ class CreateInsightViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setCoverImage(String path) {
+  Future<void> setCoverImage(String path) async {
+    // Show the local pick immediately so the picker feels responsive
+    // while the upload is in flight.
     _coverImage = path;
+    _isUploadingCoverImage = true;
     _onFieldChanged();
     notifyListeners();
+
+    try {
+      final uploaded = await _imageRepo.uploadProfileImage('admin_1', path);
+      _coverImage = uploaded.url;
+    } catch (e) {
+      // Upload failed — leave the local path in place. It won't render
+      // in the feed (which only trusts http URLs), but publishing isn't
+      // blocked, and the field can be retried before the user publishes.
+    } finally {
+      _isUploadingCoverImage = false;
+      notifyListeners();
+    }
   }
 
   void setStep(int step) {

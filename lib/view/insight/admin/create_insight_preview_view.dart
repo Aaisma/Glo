@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../../viewmodel/insight_view_model.dart';
@@ -129,8 +130,8 @@ class CreateInsightPreviewView extends StatelessWidget {
                     }
                   }
                 },
-                child: Text(viewModel.publishType == 'Save as Draft' 
-                    ? "Save Draft" 
+                child: Text(viewModel.publishType == 'Save as Draft'
+                    ? "Save Draft"
                     : (viewModel.publishType == 'Schedule' ? "Schedule Now" : "Publish Now")),
               ),
             ],
@@ -167,6 +168,9 @@ class CreateInsightPreviewView extends StatelessWidget {
         errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
       );
     } else {
+      if (kIsWeb) {
+        return Container(height: 160, color: const Color(0xFFFFE5EC));
+      }
       return Image.file(
         File(coverImage),
         height: 160,

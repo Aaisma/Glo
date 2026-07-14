@@ -21,6 +21,8 @@ import 'repo/ovulation_repo.dart';
 import 'repo/ovulation_repo_impl.dart';
 import 'repo/insights_repo.dart';
 import 'repo/insights_repo_impl.dart';
+import 'repo/insights_poll_repo.dart';
+import 'repo/insights_poll_repo_impl.dart';
 import 'repo/community_repo.dart';
 import 'repo/community_repo_impl.dart';
 import 'repo/insights_moderation_repo.dart';
@@ -46,6 +48,8 @@ import 'repo/journal_repo_impl.dart';
 import 'repo/admin_analytics_repo_impl.dart';
 import 'repo/feedback_repo.dart';
 import 'repo/feedback_repo_impl.dart';
+import 'repo/image_repo.dart';
+import 'repo/Image_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_viewmodel.dart';
@@ -117,6 +121,7 @@ class MyApp extends StatelessWidget {
         Provider<PeriodRepo>(create: (_) => PeriodRepoImpl()),
         Provider<OvulationRepo>(create: (_) => OvulationRepoImpl()),
         Provider<InsightsRepo>(create: (_) => InsightsRepoImpl()),
+        Provider<InsightsPollRepo>(create: (_) => InsightsPollRepoImpl()),
         Provider<CommunityRepo>(create: (_) => CommunityRepoImpl()),
         Provider<InsightsModerationRepo>(create: (_) => InsightsModerationRepoImpl()),
         Provider<CommunityModerationRepo>(create: (_) => CommunityModerationRepoImpl()),
@@ -131,6 +136,7 @@ class MyApp extends StatelessWidget {
         Provider<JournalRepo>(create: (_) => JournalRepoImpl()),
         Provider<AdminAnalyticsRepoImpl>(create: (_) => AdminAnalyticsRepoImpl()),
         Provider<FeedbackRepo>(create: (_) => FeedbackRepoImpl()),
+        Provider<ImageRepo>(create: (_) => ImageRepoImpl()),
 
         // ViewModels
         ChangeNotifierProvider(create: (_) => SessionProvider()),
@@ -159,7 +165,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => CommunityLibraryViewModel(ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => CommunityModerationQueueViewModel(ctx.read<CommunityModerationRepo>())),
         ChangeNotifierProvider(create: (ctx) => InsightsModerationQueueViewModel(ctx.read<InsightsModerationRepo>())),
-        ChangeNotifierProvider(create: (ctx) => CreateInsightViewModel(ctx.read<InsightsRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CreateInsightViewModel(ctx.read<InsightsRepo>(), ctx.read<ImageRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CreateInsightPollViewModel(ctx.read<InsightsPollRepo>())),
         ChangeNotifierProvider(create: (ctx) => CommunityModerationDetailViewModel(ctx.read<CommunityModerationRepo>(), ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => InsightsModerationDetailViewModel(ctx.read<InsightsModerationRepo>())),
         // FIXED: was reading ctx.read<WellnessViewModel>() (itself, before it's built) — now reads MoodRepo
