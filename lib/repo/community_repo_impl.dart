@@ -37,9 +37,11 @@ class CommunityRepoImpl implements CommunityRepo {
     String? filter,
     String? userId,
   }) async {
-    Query q = _firestore.collection('discussions').where('isDeleted', isEqualTo: false);
+    Query q = _firestore.collection('discussions');
     if (userId != null) {
       q = q.where('userId', isEqualTo: userId);
+    } else {
+      q = q.where('isDeleted', isEqualTo: false);
     }
 
     final snapshot = await q.get();
@@ -47,7 +49,7 @@ class CommunityRepoImpl implements CommunityRepo {
       final map = d.data() as Map<String, dynamic>;
       map['id'] = d.id;
       return Discussion.fromMap(map);
-    }).toList();
+    }).where((item) => !item.isDeleted).toList();
 
     var filtered = allItems;
 
@@ -181,10 +183,13 @@ class CommunityRepoImpl implements CommunityRepo {
     required int limit,
     String? userId,
     String? filter,
+    String? query,
   }) async {
-    Query q = _firestore.collection('community_polls').where('isDeleted', isEqualTo: false);
+    Query q = _firestore.collection('community_polls');
     if (userId != null) {
       q = q.where('userId', isEqualTo: userId);
+    } else {
+      q = q.where('isDeleted', isEqualTo: false);
     }
     final snapshot = await q.get();
 
@@ -192,12 +197,17 @@ class CommunityRepoImpl implements CommunityRepo {
       final map = d.data() as Map<String, dynamic>;
       map['id'] = d.id;
       return CommunityPoll.fromMap(map);
-    }).toList();
+    }).where((item) => !item.isDeleted).toList();
 
     var filtered = allItems;
 
     if (filter == 'Unanswered') {
       filtered = filtered.where((item) => item.totalVotes == 0).toList();
+    }
+
+    if (query != null && query.trim().isNotEmpty) {
+      final queryLower = query.toLowerCase();
+      filtered = filtered.where((e) => e.question.toLowerCase().contains(queryLower)).toList();
     }
 
     // Sort locally to avoid Firestore composite index requirement
@@ -310,7 +320,7 @@ class CommunityRepoImpl implements CommunityRepo {
     if (filter == 'Following') return []; 
 
     final discussions = await getDiscussions(page: 1, limit: 100, query: query, filter: filter, userId: userId);
-    final polls = await getPolls(page: 1, limit: 100, userId: userId, filter: filter);
+    final polls = await getPolls(page: 1, limit: 100, userId: userId, filter: filter, query: query);
 
     final List<dynamic> feed = [];
     feed.addAll(discussions);

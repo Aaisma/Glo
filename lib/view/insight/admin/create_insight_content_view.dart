@@ -188,8 +188,6 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   }
 
   Widget _buildStep1Content(CreateInsightViewModel viewModel, Color activeColor) {
-    final categories = ["Health & Wellness", "Lifestyle", "Community", "Expert Insights", "Trending"];
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -216,23 +214,16 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
           // Category
           const Text("Category", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF332B2C))),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: viewModel.category,
-                isExpanded: true,
-                onChanged: (val) {
-                  if (val != null) viewModel.setCategory(val);
-                },
-                items: categories.map((cat) {
-                  return DropdownMenuItem<String>(
-                    value: cat,
-                    child: Text(cat),
-                  );
-                }).toList(),
-              ),
+          TextField(
+            controller: viewModel.categoryController,
+            decoration: InputDecoration(
+              hintText: "Health & Wellness, Lifestyle, Community...",
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AydColors.border, width: 2)),
             ),
           ),
           const SizedBox(height: 16),
@@ -357,7 +348,7 @@ class _CreateInsightViewsState extends State<CreateInsightViews> {
   Widget _buildCoverImage(String coverImage) {
     if (coverImage.isEmpty) {
       return Image.asset('assets/images/feed/image.png', height: 100, fit: BoxFit.cover);
-    } else if (coverImage.startsWith('http')) {
+    } else if (coverImage.startsWith('http') || coverImage.startsWith('blob:')) {
       return Image.network(coverImage, height: 100, fit: BoxFit.cover);
     } else if (coverImage.startsWith('assets/')) {
       return Image.asset(coverImage, height: 100, fit: BoxFit.cover);

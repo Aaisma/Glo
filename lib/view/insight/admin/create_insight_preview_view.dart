@@ -150,7 +150,7 @@ class CreateInsightPreviewView extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => Container(height: 160, color: const Color(0xFFFFE5EC)),
       );
-    } else if (coverImage.startsWith('http')) {
+    } else if (coverImage.startsWith('http') || coverImage.startsWith('blob:')) {
       return Image.network(
         coverImage,
         height: 160,

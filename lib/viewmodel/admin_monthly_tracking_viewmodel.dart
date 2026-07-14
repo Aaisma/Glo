@@ -17,13 +17,13 @@ class AdminMonthlyTrackingViewModel extends ChangeNotifier {
 
   // Period Data
   Map<String, dynamic> periodAnalytics = {};
-  
+
   // Ovulation Data
   Map<String, dynamic> ovulationAnalytics = {};
-  
+
   // Symptoms Data
   Map<String, dynamic> symptomsAnalytics = {};
-  
+
   // Symptoms Details
   String selectedSymptom = 'Cramps';
   List<String> availableSymptoms = ['Cramps', 'Bloating', 'Headache', 'Fatigue', 'Tender Breasts'];
@@ -32,6 +32,8 @@ class AdminMonthlyTrackingViewModel extends ChangeNotifier {
   // Calendar
   DateTime selectedCalendarDate = DateTime.now();
   Map<String, dynamic> calendarSummary = {};
+  DateTime focusedMonth = DateTime.now();
+  Map<String, Map<String, dynamic>> calendarMonthSummary = {};
 
   DateTime get startDate {
     final now = DateTime.now();
@@ -52,7 +54,7 @@ class AdminMonthlyTrackingViewModel extends ChangeNotifier {
     }
     return DateTime.now();
   }
-  
+
   String get dateRangeText {
     // Basic formatting, could use intl package
     return "${startDate.month}/${startDate.day}/${startDate.year} - ${endDate.month}/${endDate.day}/${endDate.year}";
@@ -71,10 +73,22 @@ class AdminMonthlyTrackingViewModel extends ChangeNotifier {
     selectedSymptom = symptom;
     loadSymptomsDetails();
   }
-  
+
   void setCalendarDate(DateTime date) {
     selectedCalendarDate = date;
     loadCalendarSummary();
+  }
+
+  Future<void> setFocusedMonth(DateTime month) async {
+    focusedMonth = month;
+    final monthStart = DateTime(month.year, month.month, 1);
+    final monthEndExclusive = DateTime(month.year, month.month + 1, 1);
+    try {
+      calendarMonthSummary = await _repo.getCalendarMonthSummary(monthStart, monthEndExclusive);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error loading calendar month summary: $e");
+    }
   }
 
   Future<void> loadAllAnalytics() async {
@@ -86,13 +100,13 @@ class AdminMonthlyTrackingViewModel extends ChangeNotifier {
       final periodFuture = _repo.getPeriodAnalytics(startDate, endDate);
       final ovulationFuture = _repo.getOvulationAnalytics(startDate, endDate);
       final symptomsFuture = _repo.getSymptomsAnalytics(startDate, endDate);
-      
+
       final results = await Future.wait([periodFuture, ovulationFuture, symptomsFuture]);
-      
+
       periodAnalytics = results[0];
       ovulationAnalytics = results[1];
       symptomsAnalytics = results[2];
-      
+
       // Update available symptoms based on top symptoms
       if (symptomsAnalytics['topSymptoms'] != null) {
         availableSymptoms = (symptomsAnalytics['topSymptoms'] as List)

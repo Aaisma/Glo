@@ -345,16 +345,16 @@ class CreateDiscussionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> publish(UserModel currentUser) async {
+  Future<void> publish(UserModel? currentUser) async {
     if (titleController.text.trim().isEmpty || contentController.text.trim().isEmpty || _categoryId == null) return;
 
     final disc = Discussion(
       id: 'disc_${DateTime.now().millisecondsSinceEpoch}',
       title: titleController.text,
       content: contentController.text,
-      userId: currentUser.id,
-      username: _isAnonymous ? 'Anonymous' : (currentUser.username.isNotEmpty ? currentUser.username : currentUser.name),
-      profileImageUrl: _isAnonymous ? null : currentUser.imageUrl,
+      userId: currentUser?.id ?? 'admin_1',
+      username: _isAnonymous ? 'Anonymous' : (currentUser != null && currentUser.username.isNotEmpty ? currentUser.username : (currentUser?.name ?? 'Admin')),
+      profileImageUrl: _isAnonymous ? null : currentUser?.imageUrl,
       isAnonymous: _isAnonymous,
       categoryId: _categoryId!,
       createdAt: DateTime.now(),
@@ -426,6 +426,8 @@ class CreatePollViewModel extends ChangeNotifier {
 
   static const int minOptions = 2;
   static const int maxOptions = 6;
+
+
 
   void _onFieldChanged() {
     _hasUnsavedChanges = true;
@@ -561,7 +563,7 @@ class CreatePollViewModel extends ChangeNotifier {
   bool get canAddOption => _optionControllers.length < maxOptions;
   bool get canRemoveOption => _optionControllers.length > minOptions;
 
-  Future<void> publish(UserModel currentUser) async {
+  Future<void> publish(UserModel? currentUser) async {
     if (questionController.text.trim().isEmpty || _categoryId == null) return;
     
     final Map<String, int> optionsMap = {};
@@ -574,20 +576,30 @@ class CreatePollViewModel extends ChangeNotifier {
 
     if (optionsMap.length < minOptions) return;
 
+    final isUpdate = _activeDraftId != null && !_activeDraftId!.startsWith('poll_draft_');
+    final id = isUpdate ? _activeDraftId! : 'poll_${DateTime.now().millisecondsSinceEpoch}';
+
     final poll = CommunityPoll(
-      id: 'poll_${DateTime.now().millisecondsSinceEpoch}',
+      id: id,
       question: questionController.text,
       options: optionsMap,
       categoryId: _categoryId!,
       createdAt: DateTime.now(),
-      userId: currentUser.id,
-      username: _isAnonymous ? 'Anonymous' : (currentUser.username.isNotEmpty ? currentUser.username : currentUser.name),
-      profileImageUrl: _isAnonymous ? null : currentUser.imageUrl,
+      userId: currentUser?.id ?? 'admin_1',
+      username: _isAnonymous ? 'Anonymous' : (currentUser != null && currentUser.username.isNotEmpty ? currentUser.username : (currentUser?.name ?? 'Admin')),
+      profileImageUrl: _isAnonymous ? null : currentUser?.imageUrl,
       userVotedOption: null,
       isAnonymous: _isAnonymous,
+      status: PollStatus.published,
+      publishedAt: DateTime.now(),
     );
 
-    await _repo.addPoll(poll);
+    if (isUpdate) {
+      await _repo.updatePoll(poll);
+    } else {
+      await _repo.addPoll(poll);
+    }
+
     if (_activeDraftId != null) {
       await _repo.discardDraft(_activeDraftId!);
     }

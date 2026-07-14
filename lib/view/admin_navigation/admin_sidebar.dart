@@ -18,6 +18,18 @@ import 'package:glo/view/dashboard_card/admin/admin_period_analytics_screen.dart
 import 'package:glo/view/dashboard_card/admin/admin_ovulation_analytics_screen.dart';
 import 'package:glo/view/dashboard_card/admin/admin_symptoms_analytics_screen.dart';
 import 'package:glo/view/dashboard_card/admin/admin_symptoms_details_screen.dart';
+import 'package:glo/view/glo_admin/Daily_Journal/JournalManagementScreen.dart';
+import 'package:glo/viewmodel/admin_journal_viewmodel.dart';
+import 'package:glo/repo/admin_journal_repo_impl.dart';
+import 'package:glo/view/glo_admin/health_overview_screen.dart';
+import 'package:glo/view/glo_admin/Wellness_Journey/WellnessAdminScreen.dart';
+import 'package:glo/view/glo_admin/admin_feedback/MainDashboardScreen.dart';
+import 'package:glo/viewmodel/admin_wellness_viewmodel.dart';
+import 'package:glo/repo/admin_wellness_repo_impl.dart';
+import 'package:glo/viewmodel/admin_health_overview_viewmodel.dart';
+import 'package:glo/repo/admin_health_overview_repo_impl.dart';
+import 'package:glo/viewmodel/admin_feedback_view_model.dart';
+import 'package:glo/repo/feedback_repo_impl.dart';
 
 const Color _kBrand = Color(0xFF4F8FE0);
 const Color _kBrandTint = Color(0xFFEAF3FD);
@@ -50,6 +62,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
       {"icon": Icons.book, "label": "Skin Journal"},
       {"icon": Icons.water_drop, "label": "Hydration Hub"},
       {"icon": Icons.restaurant_menu, "label": "Nutrition Analytics"},
+      {"icon": Icons.menu_book, "label": "Journal Overview"},
       {"icon": Icons.feedback, "label": "Feedback"},
       {"icon": Icons.logout, "label": "Logout"},
     ];
@@ -98,39 +111,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
               ),
             ),
 
-            // Decorative search field — visual only, matches the reference
-            // layout, not wired to any search logic.
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FA),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.search, size: 18, color: _kInactiveIcon),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        enabled: false,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: InputBorder.none,
-                          hintText: "Search for anything...",
-                          hintStyle: TextStyle(
-                            color: _kInactiveIcon,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            // Removed visual-only search field
 
             Expanded(
               child: ListView(
@@ -410,8 +391,8 @@ class _AdminSidebarState extends State<AdminSidebar> {
           onTap: () {
             if (label != "Logout") {
               setState(() => _selectedLabel = label);
+              Navigator.pop(context);
             }
-            Navigator.pop(context);
             if (label == "Dashboard") {
               Navigator.pushReplacement(
                 context,
@@ -445,6 +426,56 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const NutritionDashboard(),
+                ),
+              );
+            } else if (label == "Health Overview") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider(
+                    create: (_) => AdminHealthOverviewViewModel(
+                      AdminHealthOverviewRepoImpl(),
+                    )..loadOverview(),
+                    child: Consumer<AdminHealthOverviewViewModel>(
+                      builder: (context, vm, _) =>
+                          HealthOverviewScreen(data: vm.overview),
+                    ),
+                  ),
+                ),
+              );
+            } else if (label == "Wellness Journey") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider(
+                    create: (_) => AdminWellnessViewModel(
+                      repo: AdminWellnessRepoImpl(),
+                    ),
+                    child: const WellnessAdminScreen(),
+                  ),
+                ),
+              );
+            } else if (label == "Journal Overview") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider(
+                    create: (_) =>
+                        AdminJournalViewModel(repo: AdminJournalRepoImpl()),
+                    child: const JournalManagementScreen(),
+                  ),
+                ),
+              );
+            } else if (label == "Feedback") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider(
+                    create: (_) => AdminFeedbackViewModel(
+                      repository: FeedbackRepoImpl(),
+                    ),
+                    child: const MainDashboardScreen(),
+                  ),
                 ),
               );
             } else if (label == "Logout") {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:glo/viewmodel/mood_view_model.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../viewmodel/wellness_viewmodel.dart';
+import '../../viewmodel/user_mood_viewmodel.dart';
+
 class MoodLogScreen extends StatefulWidget {
   const MoodLogScreen({super.key});
 
@@ -18,32 +18,37 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
 
   final List<Map<String, String>> _moods = [
     {'id': 'Amazing', 'emoji': '😍', 'label': 'Amazing'},
-    {'id': 'Happy', 'emoji': '😁', 'label': 'Happy'},
+    {'id': 'Happy', 'emoji': '😀', 'label': 'Happy'},
     {'id': 'Calm', 'emoji': '😌', 'label': 'Calm'},
     {'id': 'Neutral', 'emoji': '😐', 'label': 'Neutral'},
-    {'id': 'Sad', 'emoji': '🥺', 'label': 'Sad'},
+    {'id': 'Sad', 'emoji': '😢', 'label': 'Sad'},
     {'id': 'Angry', 'emoji': '😡', 'label': 'Angry'},
   ];
 
   final List<Map<String, dynamic>> _factors = [
     {'id': 'Sleep', 'label': 'Sleep', 'icon': LucideIcons.moon, 'color': Colors.blue},
     {'id': 'Food', 'label': 'Food', 'icon': LucideIcons.utensils, 'color': Colors.green},
-    {'id': 'Work', 'label': 'Work', 'icon': LucideIcons.briefcase, 'color': Colors.amber},
-    {'id': 'Study', 'label': 'Study', 'icon': LucideIcons.bookOpen, 'color': Colors.cyan},
+    {'id': 'Work', 'label': 'Work', 'icon': LucideIcons.briefcase_business, 'color': Colors.amber},
+    {'id': 'Study', 'label': 'Study', 'icon': LucideIcons.book_open, 'color': Colors.cyan},
     {'id': 'Stress', 'label': 'Stress', 'icon': LucideIcons.flame, 'color': Colors.orange},
     {'id': 'Hormones', 'label': 'Hormones', 'icon': LucideIcons.activity, 'color': Colors.purple},
     {'id': 'Thoughts', 'label': 'Thoughts', 'icon': LucideIcons.brain, 'color': Colors.indigo},
-    {'id': 'SelfTalk', 'label': 'Self Talk', 'icon': LucideIcons.messageSquare, 'color': Colors.teal},
+    {'id': 'SelfTalk', 'label': 'Self Talk', 'icon': LucideIcons.message_square, 'color': Colors.teal},
   ];
 
-  // MVVM logic: Use the ViewModel to save the mood
-  Future<void> _saveMood() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? "demo_user";
+  void _saveMood() async {
+    final user = context.read<UserMoodViewModel>().user;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to save your mood.')),
+      );
+      return;
+    }
 
     try {
-      await context.read<MoodViewModel>().logMood(
-        userId: userId,
-        moodType: _selectedMood,
+      await context.read<WellnessViewModel>().logMood(
+        userId: user.id,
+        mood: _selectedMood,
         note: _noteController.text,
         factors: _selectedFactors,
       );
@@ -56,12 +61,12 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        Navigator.pop(context); // Go back to dashboard after saving
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving mood: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to save mood: $e')),
         );
       }
     }
@@ -91,6 +96,8 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
+                // 1. App Header Layout
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -102,10 +109,15 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                       'Mood Tracker',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1D2A4A)),
                     ),
-                    const SizedBox(width: 48), // Spacer
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_outlined, size: 20, color: Colors.black54),
+                      onPressed: () {},
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
+
+                // 2. Greeting Banner
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -120,8 +132,11 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // 3. Mood Selection
                 const Text('1. How do you feel?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 8),
+
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -135,28 +150,58 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                   itemBuilder: (context, index) => _buildMoodCard(_moods[index]),
                 ),
                 const SizedBox(height: 16),
+
+                // 4. Text Input Field
                 const Text("2. What's on your mind? (optional)", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 8),
-                TextField(
-                  controller: _noteController,
-                  maxLength: 200,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    hintText: 'Write your thoughts...',
-                    fillColor: Colors.white.withOpacity(0.6),
-                    filled: true,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                  ),
+                Stack(
+                  children: [
+                    TextField(
+                      controller: _noteController,
+                      maxLength: 200,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: 'Write your thoughts...',
+                        hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+                        fillColor: Colors.white.withValues(alpha: 0.6),
+                        filled: true,
+                        counterText: "",
+                        contentPadding: const EdgeInsets.all(12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFFFF5E84)),
+                        ),
+                      ),
+                      onChanged: (value) => setState(() {}),
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 12,
+                      child: Text('${_noteController.text.length}/200', style: const TextStyle(color: Colors.black38, fontSize: 10)),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
+
+                // 5. Factors Section
                 const Text('3. What affected your mood today?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 8),
+
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 8.0,
                   children: _factors.map((factor) {
                     final isSelected = _selectedFactors.contains(factor['id']);
                     return InkWell(
+                      borderRadius: BorderRadius.circular(20),
                       onTap: () {
                         setState(() {
                           if (isSelected) {
@@ -166,26 +211,36 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                           }
                         });
                       },
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 120),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFFFF0F3) : Colors.white,
+                          color: isSelected ? const Color(0xFFFFF0F3) : Colors.white.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: isSelected ? const Color(0xFFFF5E84) : Colors.transparent),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFFFF5E84) : Colors.transparent,
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(factor['icon'], color: factor['color'], size: 15),
                             const SizedBox(width: 6),
-                            Text(factor['label'], style: const TextStyle(fontSize: 12)),
+                            Text(
+                              factor['label'],
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+                            ),
                           ],
                         ),
                       ),
                     );
                   }).toList(),
                 ),
+
                 const Spacer(),
+
+                // 6. Sticky Bottom Action Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -194,8 +249,15 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF527B),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      elevation: 0,
                     ),
-                    child: const Text('Save My Mood 🌸', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Save My Mood ', style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text('🌸', style: TextStyle(fontSize: 15)),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -209,18 +271,31 @@ class _MoodLogScreenState extends State<MoodLogScreen> {
   Widget _buildMoodCard(Map<String, String> mood) {
     final isSelected = _selectedMood == mood['id'];
     return InkWell(
+      borderRadius: BorderRadius.circular(14),
       onTap: () => setState(() => _selectedMood = mood['id']!),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFFFF0F3) : Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isSelected ? const Color(0xFFFF5E84) : Colors.transparent),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFF5E84) : Colors.transparent,
+            width: 1.5,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(mood['emoji']!, style: const TextStyle(fontSize: 24)),
-            Text(mood['label']!, style: TextStyle(fontSize: 11, color: isSelected ? const Color(0xFFFF426F) : Colors.black54)),
+            const SizedBox(height: 2),
+            Text(
+              mood['label']!,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? const Color(0xFFFF426F) : Colors.black54,
+              ),
+            ),
           ],
         ),
       ),

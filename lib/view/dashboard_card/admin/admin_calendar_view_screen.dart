@@ -15,6 +15,18 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
   DateTime _focusedDay = DateTime.now();
 
   @override
+  void initState() {
+    super.initState();
+    // Kick off the real month-range fetch as soon as this screen opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminMonthlyTrackingViewModel>().setFocusedMonth(_focusedDay);
+    });
+  }
+
+  String _dayKey(DateTime d) =>
+      "${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+
+  @override
   Widget build(BuildContext context) {
     final vm = context.watch<AdminMonthlyTrackingViewModel>();
     final summary = vm.calendarSummary;
@@ -59,6 +71,7 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
                               setState(() {
                                 _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1, _focusedDay.day);
                               });
+                              vm.setFocusedMonth(_focusedDay);
                             },
                           ),
                           Text(
@@ -71,6 +84,7 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
                               setState(() {
                                 _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1, _focusedDay.day);
                               });
+                              vm.setFocusedMonth(_focusedDay);
                             },
                           ),
                         ],
@@ -87,6 +101,7 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
                             _focusedDay = DateTime.now();
                           });
                           vm.setCalendarDate(_focusedDay);
+                          vm.setFocusedMonth(_focusedDay);
                         },
                         child: const Text("Today", style: TextStyle(color: Colors.black87)),
                       )
@@ -120,12 +135,41 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
                       vm.setCalendarDate(selectedDay);
                     },
                     calendarBuilders: CalendarBuilders(
+                      defaultBuilder: (context, date, focusedDay) {
+                        final dayData = vm.calendarMonthSummary[_dayKey(date)];
+                        final bool hasOvulation = dayData?["hasOvulation"] == true;
+                        if (!hasOvulation) return null; // fall through to default rendering
+                        return Center(
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: const Color(0xFF66BB6A), width: 2),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "${date.day}",
+                              style: const TextStyle(color: Colors.black87),
+                            ),
+                          ),
+                        );
+                      },
                       markerBuilder: (context, date, events) {
-                        // Simulate some markers based on the date for demonstration matching the UI
-                        bool hasPeriod = date.day >= 11 && date.day <= 15;
-                        bool hasFertile = date.day >= 16 && date.day <= 21;
-                        bool hasOvulation = date.day == 17;
-                        bool hasSymptoms = date.day >= 10 && date.day <= 27 && date.day % 2 != 0;
+                        // Real data only: a day with no entry in calendarMonthSummary
+                        // has no logs at all, so it gets no markers - never a default/fake one.
+                        final dayData = vm.calendarMonthSummary[_dayKey(date)];
+                        final bool hasPeriod = dayData?["hasPeriod"] == true;
+                        final bool hasSymptoms = dayData?["hasSymptoms"] == true;
+                        // NOTE: Ovulation Day is rendered via defaultBuilder above (border
+                        // circle around the day number), matching the legend's visual style.
+                        // NOTE: Fertile Window is not yet backed by real per-day data - the
+                        // repo has no fertile-window calculation at the calendar-day level
+                        // (it requires running CycleAnalyticsEngine per user per day, the way
+                        // getOvulationAnalytics does for its aggregate stats). Left off rather
+                        // than faked; wire this up once that's available for daily granularity.
+
+                        if (dayData == null) return const SizedBox();
 
                         return Positioned(
                           bottom: 0,
@@ -140,15 +184,6 @@ class _AdminCalendarViewScreenState extends State<AdminCalendarViewScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFFCDD2),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                              if (hasFertile)
-                                Container(
-                                  height: 4,
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFC8E6C9),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),

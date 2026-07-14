@@ -242,9 +242,7 @@ class DiscussionPreviewView extends StatelessWidget {
                         ),
                         onPressed: () async {
                           final userViewModel = context.read<UserViewModel>();
-                          if (userViewModel.user == null) return;
-                          
-                          await viewModel.publish(userViewModel.user!);
+                          await viewModel.publish(userViewModel.user);
                           if (context.mounted) {
                             // Pop twice to return to community feed
                             Navigator.of(context).pop(); // pop preview

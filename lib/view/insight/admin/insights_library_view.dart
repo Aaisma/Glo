@@ -5,6 +5,7 @@ import '../../../viewmodel/insight_view_model.dart';
 import '../../../model/insight_models.dart';
 import 'create_insight_content_view.dart';
 import 'create_poll_view.dart';
+import 'draft_scheduled_management_view.dart';
 import '../../../constants/ayd_colour.dart';
 import '../../admin_navigation/admin_top_panel.dart';
 import '../../admin_navigation/admin_sidebar.dart';
@@ -48,32 +49,68 @@ class _InsightsLibraryViewState extends State<InsightsLibraryView> {
         body: SafeArea(
         child: Column(
           children: [
-            // Search Bar
+            // Search Bar & Drafts Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => context.read<InsightsLibraryViewModel>().setSearchQuery(val),
+                        decoration: const InputDecoration(
+                          hintText: "Search library...",
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => context.read<InsightsLibraryViewModel>().setSearchQuery(val),
-                  decoration: const InputDecoration(
-                    hintText: "Search library...",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: AydColors.adminInsightButton,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const DraftScheduledManagementView()),
+                        ).then((_) => viewModel.loadInsights());
+                      },
+                      icon: const Icon(Icons.drafts_outlined, size: 20),
+                      label: const Text("Drafts", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
             ),
             // Admin Action Buttons Row

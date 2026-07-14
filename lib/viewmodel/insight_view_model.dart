@@ -314,14 +314,15 @@ class CreateInsightViewModel extends ChangeNotifier {
     titleController.addListener(_onFieldChanged);
     summaryController.addListener(_onFieldChanged);
     contentController.addListener(_onFieldChanged);
+    categoryController.addListener(_onFieldChanged);
   }
 
   final titleController = TextEditingController();
   final summaryController = TextEditingController();
   final contentController = TextEditingController();
+  final categoryController = TextEditingController(text: 'Health & Wellness');
 
-  String _category = 'Health & Wellness';
-  String get category => _category;
+  String get category => categoryController.text;
 
   String _readTime = '5 min read';
   String get readTime => _readTime;
@@ -358,7 +359,7 @@ class CreateInsightViewModel extends ChangeNotifier {
   bool get showDraftRecovery => _showDraftRecovery;
 
   void setCategory(String value) {
-    _category = value;
+    categoryController.text = value;
     _onFieldChanged();
   }
 
@@ -423,7 +424,7 @@ class CreateInsightViewModel extends ChangeNotifier {
       titleController.text = draft.title;
       summaryController.text = draft.summary;
       contentController.text = draft.content;
-      _category = draft.category;
+      categoryController.text = draft.category;
       _readTime = draft.readTime;
       _coverImage = draft.coverImage;
       _isFeatured = draft.isFeatured;
@@ -447,7 +448,7 @@ class CreateInsightViewModel extends ChangeNotifier {
     titleController.text = insight.title;
     summaryController.text = insight.summary;
     contentController.text = insight.content;
-    _category = insight.category;
+    categoryController.text = insight.category;
     _readTime = insight.readTime;
     _coverImage = insight.coverImage;
     _isFeatured = insight.isFeatured;
@@ -483,7 +484,7 @@ class CreateInsightViewModel extends ChangeNotifier {
       summary: summaryController.text,
       content: contentController.text,
       coverImage: _coverImage,
-      category: _category,
+      category: categoryController.text,
       readTime: _readTime,
       status: InsightStatus.draft,
       isFeatured: _isFeatured,
@@ -514,7 +515,7 @@ class CreateInsightViewModel extends ChangeNotifier {
       summary: summaryController.text,
       content: contentController.text,
       coverImage: _coverImage,
-      category: _category,
+      category: categoryController.text,
       readTime: _readTime,
       status: _publishType == 'Schedule' ? InsightStatus.scheduled : InsightStatus.published,
       isFeatured: _isFeatured,
@@ -543,7 +544,7 @@ class CreateInsightViewModel extends ChangeNotifier {
     titleController.clear();
     summaryController.clear();
     contentController.clear();
-    _category = 'Health & Wellness';
+    categoryController.text = 'Health & Wellness';
     _readTime = '5 min read';
     _coverImage = 'assets/images/stressandsleep.png';
     _isFeatured = false;

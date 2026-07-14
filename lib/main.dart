@@ -11,6 +11,7 @@ import 'firebase_options.dart';
 // Repos
 import 'repo/user_repo.dart';
 import 'repo/admin_monthly_tracking_repo.dart';
+import 'repo/admin_monthly_tracking_repo_impl.dart';
 import 'repo/user_repo_impl.dart';
 import 'repo/auth_repo.dart';
 import 'repo/auth_repo_impl.dart';
@@ -42,6 +43,9 @@ import 'repo/routine_repo.dart';
 import 'repo/routine_repo_impl.dart';
 import 'repo/journal_repo.dart';
 import 'repo/journal_repo_impl.dart';
+import 'repo/admin_analytics_repo_impl.dart';
+import 'repo/feedback_repo.dart';
+import 'repo/feedback_repo_impl.dart';
 
 // ViewModels
 import 'viewmodel/user_viewmodel.dart';
@@ -53,7 +57,8 @@ import 'viewmodel/ovulation_view_model.dart';
 import 'viewmodel/insight_view_model.dart';
 import 'viewmodel/community_view_model.dart';
 import 'viewmodel/moderation_view_model.dart';
-import 'viewmodel/mood_view_model.dart';
+import 'viewmodel/wellness_viewmodel.dart';
+import 'viewmodel/health_viewmodel.dart';
 import 'viewmodel/water_tracker_viewmodel.dart';
 import 'viewmodel/nutrition_tracker_viewmodel.dart';
 import 'viewmodel/medication_viewmodel.dart';
@@ -63,6 +68,7 @@ import 'viewmodel/profile_viewmodel.dart';
 import 'viewmodel/tracker_navigation_view_model.dart';
 import 'viewmodel/routine_viewmodel.dart';
 import 'viewmodel/admin_monthly_tracking_viewmodel.dart';
+import 'viewmodel/admin_analytics_viewmodel.dart';
 import 'viewmodel/journal_viewmodel.dart';
 import 'viewmodel/journal_home_viewmodel.dart';
 import 'viewmodel/write_journal_viewmodel.dart';
@@ -72,7 +78,7 @@ import 'viewmodel/favorites_viewmodel.dart';
 import 'viewmodel/future_letters_viewmodel.dart';
 import 'viewmodel/goal_reflection_viewmodel.dart';
 import 'viewmodel/gratitude_viewmodel.dart';
-import 'viewmodel/journal_calendar_viewmodel.dart';
+//import 'viewmodel/journal_calendar_viewmodel.dart';
 import 'viewmodel/journal_menu_viewmodel.dart';
 import 'viewmodel/physical_activity_viewmodel.dart';
 import 'viewmodel/self_care_viewmodel.dart';
@@ -123,6 +129,8 @@ class MyApp extends StatelessWidget {
         Provider<RoutineRepo>(create: (_) => RoutineRepoImpl()),
         Provider<AdminMonthlyTrackingRepo>(create: (_) => AdminMonthlyTrackingRepoImpl()),
         Provider<JournalRepo>(create: (_) => JournalRepoImpl()),
+        Provider<AdminAnalyticsRepoImpl>(create: (_) => AdminAnalyticsRepoImpl()),
+        Provider<FeedbackRepo>(create: (_) => FeedbackRepoImpl()),
 
         // ViewModels
         ChangeNotifierProvider(create: (_) => SessionProvider()),
@@ -151,7 +159,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => CommunityLibraryViewModel(ctx.read<CommunityRepo>())),
         ChangeNotifierProvider(create: (ctx) => CommunityModerationQueueViewModel(ctx.read<CommunityModerationRepo>())),
         ChangeNotifierProvider(create: (ctx) => InsightsModerationQueueViewModel(ctx.read<InsightsModerationRepo>())),
-        ChangeNotifierProvider(create: (ctx) => MoodViewModel(moodRepo: ctx.read<MoodRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CreateInsightViewModel(ctx.read<InsightsRepo>())),
+        ChangeNotifierProvider(create: (ctx) => CommunityModerationDetailViewModel(ctx.read<CommunityModerationRepo>(), ctx.read<CommunityRepo>())),
+        ChangeNotifierProvider(create: (ctx) => InsightsModerationDetailViewModel(ctx.read<InsightsModerationRepo>())),
+        // FIXED: was reading ctx.read<WellnessViewModel>() (itself, before it's built) — now reads MoodRepo
+        ChangeNotifierProvider(create: (ctx) => WellnessViewModel(moodRepo: ctx.read<MoodRepo>())),
+        ChangeNotifierProvider(create: (ctx) => HealthViewModel()),
         ChangeNotifierProxyProvider<SessionProvider, WaterTrackerViewModel>(
           create: (ctx) => WaterTrackerViewModel(ctx.read<WaterTrackerRepo>()),
           update: (ctx, session, previous) => previous!..updateUserId(session.userId),
@@ -170,6 +183,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => TrackerNavigationViewModel()),
         ChangeNotifierProvider(create: (ctx) => RoutineViewModel(routineRepo: ctx.read<RoutineRepo>())),
         ChangeNotifierProvider(create: (ctx) => AdminMonthlyTrackingViewModel(ctx.read<AdminMonthlyTrackingRepo>())),
+        ChangeNotifierProvider(create: (ctx) => AdminAnalyticsViewModel(ctx.read<AdminAnalyticsRepoImpl>())),
         ChangeNotifierProvider(create: (ctx) => JournalViewModel(repo: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => JournalHomeViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => WriteJournalViewModel(repository: ctx.read<JournalRepo>())),
@@ -179,7 +193,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => FutureLettersViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => GoalReflectionViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => GratitudeViewModel(repository: ctx.read<JournalRepo>())),
-        ChangeNotifierProvider(create: (ctx) => JournalCalendarViewModel(repository: ctx.read<JournalRepo>())),
+        //ChangeNotifierProvider(create: (ctx) => JournalCalendarViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => JournalMenuViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => PhysicalActivityViewModel(repository: ctx.read<JournalRepo>())),
         ChangeNotifierProvider(create: (ctx) => SelfCareViewModel(repository: ctx.read<JournalRepo>())),

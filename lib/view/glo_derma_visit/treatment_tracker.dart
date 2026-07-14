@@ -119,9 +119,9 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Padding(
+      builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
         ),
         child: _bottomSheet(
           children: [
@@ -154,9 +154,9 @@ class _TreatmentTrackerScreenState extends State<TreatmentTrackerScreen> {
 
                   await _saveTreatment(value);
 
-                  if (!mounted) return;
+                  if (!sheetContext.mounted) return;
 
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                 },
               ),
             ),

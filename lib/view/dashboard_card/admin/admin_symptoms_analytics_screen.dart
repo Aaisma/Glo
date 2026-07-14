@@ -19,45 +19,45 @@ class AdminSymptomsAnalyticsScreen extends StatelessWidget {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      TrackingStatCard(
-                        title: "Total Symptom Logs",
-                        value: "${data['totalSymptomLogs'] ?? 0}",
-                        subtitle: "",
-                        valueColor: Colors.black87,
-                      ),
-                      TrackingStatCard(
-                        title: "Users Logging Symptoms",
-                        value: "${data['usersLoggingSymptoms'] ?? 0}",
-                        subtitle: "",
-                        valueColor: const Color(0xFF9C27B0),
-                      ),
-                      TrackingStatCard(
-                        title: "Avg Symptoms / User",
-                        value: (data['avgSymptomsPerUser'] ?? 0).toStringAsFixed(1),
-                        subtitle: "",
-                        valueColor: const Color(0xFF9C27B0),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTopSymptomsChart(data['topSymptoms'] ?? []),
-                  _buildSymptomsByPhaseChart(data['symptomsByPhase'] ?? {}),
-                ],
-              ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                TrackingStatCard(
+                  title: "Total Symptom Logs",
+                  value: "${data['totalSymptomLogs'] ?? 0}",
+                  subtitle: "",
+                  valueColor: Colors.black87,
+                ),
+                TrackingStatCard(
+                  title: "Users Logging Symptoms",
+                  value: "${data['usersLoggingSymptoms'] ?? 0}",
+                  subtitle: "",
+                  valueColor: const Color(0xFF9C27B0),
+                ),
+                TrackingStatCard(
+                  title: "Avg Symptoms / User",
+                  value: (data['avgSymptomsPerUser'] ?? 0).toStringAsFixed(1),
+                  subtitle: "",
+                  valueColor: const Color(0xFF9C27B0),
+                ),
+              ],
             ),
+            const SizedBox(height: 24),
+            _buildTopSymptomsChart(data['topSymptoms'] ?? []),
+            _buildSymptomsByPhaseChart(data['symptomsByPhase'] ?? {}),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildTopSymptomsChart(List<dynamic> topSymptoms) {
     // Reverse the list so the highest is at the top of the horizontal chart
     final reversedSymptoms = List.from(topSymptoms.reversed);
-    
+
     return ChartContainer(
       title: "Top Logged Symptoms",
       child: BarChart(
@@ -76,9 +76,9 @@ class AdminSymptomsAnalyticsScreen extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   final i = value.toInt();
                   if (i < 0 || i >= reversedSymptoms.length) return const SizedBox();
-                  final val = reversedSymptoms[i].value;
-                  // Fake percentage for design parity
-                  final pct = (val / (topSymptoms.first.value as num) * 45).round(); 
+                  final val = reversedSymptoms[i].value as num;
+                  final totalLogged = topSymptoms.fold<num>(0, (sum, e) => sum + (e.value as num));
+                  final pct = totalLogged == 0 ? 0 : (val / totalLogged * 100).round();
                   return Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: Align(
@@ -135,10 +135,10 @@ class AdminSymptomsAnalyticsScreen extends StatelessWidget {
       const Color(0xFF29B6F6), // Ovulation
       const Color(0xFFFFCA28), // Luteal
     ];
-    
+
     final labels = phases.keys.toList();
     final values = phases.values.map<double>((v) => (v as num).toDouble()).toList();
-    
+
     return ChartContainer(
       title: "Symptoms by Phase",
       child: Row(

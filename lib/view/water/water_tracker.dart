@@ -490,7 +490,7 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
           : Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage("assets/images/feed/community_backgroung.png"),
+                  image: AssetImage("assets/images/feed/community_background.png"),
                   fit: BoxFit.cover,
                 ),
               ),

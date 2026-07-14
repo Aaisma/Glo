@@ -18,6 +18,7 @@ abstract class CommunityRepo {
     required int limit,
     String? userId,
     String? filter,
+    String? query,
   });
   Future<CommunityPoll?> getPollById(String id);
   Stream<CommunityPoll?> getPollStream(String id);

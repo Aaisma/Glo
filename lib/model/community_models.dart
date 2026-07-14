@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'shared_models.dart';
 
 enum ModerationReason { spam, misinformation, harassment, inappropriateContent, other }
+enum PollStatus { draft, scheduled, published }
 
 class CommunityCategory {
   final String id;
@@ -270,6 +271,8 @@ class CommunityPoll {
   final String? userVotedOption;
   final bool isDeleted;
   final DateTime? deletedAt;
+  final PollStatus status;
+  final DateTime? publishedAt;
 
   CommunityPoll({
     required this.id,
@@ -289,6 +292,8 @@ class CommunityPoll {
     this.userVotedOption,
     this.isDeleted = false,
     this.deletedAt,
+    this.status = PollStatus.published,
+    this.publishedAt,
   });
 
   CommunityPoll copyWith({
@@ -309,6 +314,8 @@ class CommunityPoll {
     String? userVotedOption,
     bool? isDeleted,
     DateTime? deletedAt,
+    PollStatus? status,
+    DateTime? publishedAt,
   }) {
     return CommunityPoll(
       id: id ?? this.id,
@@ -328,6 +335,8 @@ class CommunityPoll {
       userVotedOption: userVotedOption ?? this.userVotedOption,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      status: status ?? this.status,
+      publishedAt: publishedAt ?? this.publishedAt,
     );
   }
 
@@ -350,6 +359,8 @@ class CommunityPoll {
       'userVotedOption': userVotedOption,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'status': status.name,
+      'publishedAt': publishedAt,
     };
   }
 
@@ -375,6 +386,13 @@ class CommunityPoll {
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'] != null 
           ? (map['deletedAt'] is Timestamp ? (map['deletedAt'] as Timestamp).toDate() : DateTime.parse(map['deletedAt'])) 
+          : null,
+      status: PollStatus.values.firstWhere(
+        (e) => e.name == map['status'],
+        orElse: () => PollStatus.published,
+      ),
+      publishedAt: map['publishedAt'] != null
+          ? (map['publishedAt'] is Timestamp ? (map['publishedAt'] as Timestamp).toDate() : DateTime.parse(map['publishedAt']))
           : null,
     );
   }

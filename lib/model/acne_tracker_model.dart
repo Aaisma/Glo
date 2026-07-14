@@ -6,6 +6,8 @@ class AcneTrackerModel {
   final List<Map<String, dynamic>> products;
   final String note;
   final String imagePath;
+  final String detectedType;
+  final double detectedConfidence;
 
   AcneTrackerModel({
     required this.userId,
@@ -15,6 +17,8 @@ class AcneTrackerModel {
     required this.products,
     required this.note,
     required this.imagePath,
+    this.detectedType = "",
+    this.detectedConfidence = 0.0,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +30,8 @@ class AcneTrackerModel {
       "products": products,
       "note": note,
       "imagePath": imagePath,
+      "detectedType": detectedType,
+      "detectedConfidence": detectedConfidence,
     };
   }
 
@@ -38,6 +44,8 @@ class AcneTrackerModel {
       products: List<Map<String, dynamic>>.from(map["products"] ?? []),
       note: map["note"] ?? "",
       imagePath: map["imagePath"] ?? "",
+      detectedType: map["detectedType"] ?? "",
+      detectedConfidence: (map["detectedConfidence"] ?? 0.0).toDouble(),
     );
   }
 }

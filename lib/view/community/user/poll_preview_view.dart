@@ -238,6 +238,11 @@ class PollPreviewView extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: 32),
+
+              // Publish Options
+
+
               const SizedBox(height: 48),
 
               // Actions Row
@@ -280,9 +285,8 @@ class PollPreviewView extends StatelessWidget {
                         ),
                         onPressed: () async {
                           final userViewModel = context.read<UserViewModel>();
-                          if (userViewModel.user == null) return;
-
-                          await viewModel.publish(userViewModel.user!);
+                          
+                          await viewModel.publish(userViewModel.user);
                           if (context.mounted) {
                             // Pop twice to return to feed
                             Navigator.of(context).pop(); // pop preview
@@ -296,7 +300,7 @@ class PollPreviewView extends StatelessWidget {
                           }
                         },
                         child: const Text(
-                          "Publish Now",
+                          "Publish",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

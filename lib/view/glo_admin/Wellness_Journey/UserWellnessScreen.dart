@@ -66,7 +66,7 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
                           // Filter by user's latest mood status
                           final userMoods = allMoods.where((m) => m.userId == user.id).toList();
                           if (userMoods.isEmpty) return false;
-                          
+
                           userMoods.sort((a, b) => b.date.compareTo(a.date));
                           return userMoods.first.moodType == _selectedFilter;
                         }).toList();
@@ -75,7 +75,7 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
                           itemCount: filteredUsers.length,
                           itemBuilder: (context, index) {
                             final user = filteredUsers[index];
-                            
+
                             // Correctly link moods to users using the userId field
                             final userMoods = allMoods.where((m) => m.userId == user.id).toList();
                             userMoods.sort((a, b) => b.date.compareTo(a.date));
@@ -118,9 +118,9 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
         controller: _searchController,
         onChanged: (val) => setState(() {}),
         decoration: const InputDecoration(
-          icon: Icon(Icons.search), 
-          hintText: "Search users...", 
-          border: InputBorder.none
+            icon: Icon(Icons.search),
+            hintText: "Search users...",
+            border: InputBorder.none
         ),
       ),
     );
@@ -134,7 +134,7 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
         children: filters.map((f) => Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: ChoiceChip(
-            label: Text(f), 
+            label: Text(f),
             selected: _selectedFilter == f,
             onSelected: (selected) {
               setState(() {
@@ -154,7 +154,7 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white, 
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
       ),
@@ -172,10 +172,10 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
               children: [
                 Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                  latestMood != null 
-                    ? "${DateFormat('MMM dd, hh:mm a').format(latestMood.date)} • ${latestMood.moodType}"
-                    : "No recent activity", 
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)
+                    latestMood != null
+                        ? "${DateFormat('MMM dd, hh:mm a').format(latestMood.date)} • ${latestMood.moodType}"
+                        : "No recent activity",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)
                 ),
               ],
             ),
@@ -183,11 +183,11 @@ class _UserWellnessScreenState extends State<UserWellnessScreen> {
           Column(
             children: [
               Text(
-                user.surveyCompleted ? "89%" : "N/A",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  color: user.surveyCompleted ? Colors.green : Colors.grey
-                )
+                  user.surveyCompleted ? "89%" : "N/A",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: user.surveyCompleted ? Colors.green : Colors.grey
+                  )
               ),
               const Text("Score", style: TextStyle(fontSize: 10)),
             ],
